@@ -12,3 +12,7 @@ __pycache__/
 *$py.class
 .DS_Store
 *.pem
+terraform/.terraform/*
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/.terraform.lock.hcl
