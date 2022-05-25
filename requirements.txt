@@ -1,0 +1,12 @@
+asgiref==3.5.0
+Django==4.0.4
+django-ckeditor==6.4.0
+django-js-asset==2.0.0
+django-taggit==2.1.0
+gunicorn
+Pillow==9.1.0
+psycopg2-binary
+pytz==2022.1
+sqlparse==0.4.2
+
+

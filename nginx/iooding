@@ -1,0 +1,19 @@
+server {
+        listen 80;
+        server_name 35.173.121.119;
+
+        location = /favicon.ico { access_log off; log_not_found off; }
+
+        location /static/ {
+                root /var/www/iooding;
+        }
+
+        location /media/ {
+                root /home/ubuntu/iooding;
+        }
+
+        location / {
+                include proxy_params;
+                proxy_pass http://unix:/run/gunicorn.sock;
+        }
+}

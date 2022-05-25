@@ -1,0 +1,14 @@
+# Distribution / packaging
+.Python
+env/
+.env
+*.sqlite3
+.idea/
+media
+db.sqlite3# Editor directories and files
+.idea# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+.DS_Store
+*.pem
