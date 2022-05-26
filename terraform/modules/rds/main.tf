@@ -1,6 +1,6 @@
 // Username for RDS
 data "aws_ssm_parameter" "rds_user_data" {
-  name   = "${var.namespace}-rds-user"
+  name   = "${var.namespace}_rds_user"
 }
 
 // Password for RDS
@@ -11,13 +11,13 @@ resource "random_string" "rds_password" {
 }
 
 resource "aws_ssm_parameter" "rds_password" {
-  name  = "${var.namespace}-rds-password"
+  name  = "${var.namespace}_rds_password"
   type  = "SecureString"
   value = random_string.rds_password.result
 }
 
 data "aws_ssm_parameter" "rds_password_data" {
-  name   = "${var.namespace}-rds-password"
+  name   = "${var.namespace}_rds_password"
   depends_on = [aws_ssm_parameter.rds_password]
 }
 

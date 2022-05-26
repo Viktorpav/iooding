@@ -73,8 +73,12 @@ resource "aws_instance" "ec2_private" {
 }
 
 resource "aws_eip" "eip" {
-  name  = "${var.namespace}-eip"
-  value = aws_eip.eip.public_ip
+  vpc      = true
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
 }
 
 resource "aws_eip_association" "eip_assoc" {

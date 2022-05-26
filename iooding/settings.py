@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ssm.get_parameter(Name=prefix + '-' + django_secret_key, WithDecryption=True)['Parameter']['Value']
+SECRET_KEY = ssm.get_parameter(Name=prefix + '_' + django_secret_key, WithDecryption=True)['Parameter']['Value']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -91,10 +91,10 @@ WSGI_APPLICATION = 'iooding.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': ssm.get_parameter(Name=prefix + '-' + rds-name, WithDecryption=True)['Parameter']['Value'],
-        'USER': ssm.get_parameter(Name=prefix + '-' + rds-user, WithDecryption=True)['Parameter']['Value'],
-        'PASSWORD': ssm.get_parameter(Name=prefix + '-' + rds-password, WithDecryption=True)['Parameter']['Value'],
-        'HOST': ssm.get_parameter(Name=prefix + '-' + rds-host, WithDecryption=True)['Parameter']['Value'],
+        'NAME': ssm.get_parameter(Name=prefix + '_' + rds-name, WithDecryption=True)['Parameter']['Value'],
+        'USER': ssm.get_parameter(Name=prefix + '_' + rds-user, WithDecryption=True)['Parameter']['Value'],
+        'PASSWORD': ssm.get_parameter(Name=prefix + '_' + rds-password, WithDecryption=True)['Parameter']['Value'],
+        'HOST': ssm.get_parameter(Name=prefix + '_' + rds-host, WithDecryption=True)['Parameter']['Value'],
         'PORT': '5432'
     }
 }
