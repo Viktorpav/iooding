@@ -12,8 +12,13 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 
-# Use of environment variables
-import environ
+import boto3
+AWS_REGION = 'eu-central-1'
+
+ssm = boto3.client('ssm', AWS_REGION)
+#ec2 = boto3.client('ec2', AWS_REGION)
+
+prefix = 'iooding'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,13 +28,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ukr^-alq@ceo4iw@gszw^xjiruw2x+mj%s8v_-(ss!*f)j@x(a'
-# SECRET_KEY = env(‘SECRET_KEY’)
+SECRET_KEY = ssm.get_parameter(Name=prefix + '-' + django_secret_key, WithDecryption=True)['Parameter']['Value']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['35.173.121.119']
+ALLOWED_HOSTS = ['*']
+#ALLOWED_HOSTS = [ec2.describe_instances(InstanceIds=[{your_InstanceID_in_quotes}])['Reservations'][0]['Instances'][0]['PublicDnsName']]
 
 SITE_ID = 1
 
@@ -80,29 +85,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'iooding.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-if 'RDS_HOSTNAME' in env():
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'iooding-rds',
-            'USER': 'postgres',
-            'PASSWORD': 'w84cJaURurl&',
-            #'PASSWORD': env('RDS_PASSWORD'),
-            'HOST': 'iooding-rds.ctyk4yjlo43b.eu-central-1.rds.amazonaws.com',
-            'PORT': '5432',
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': ssm.get_parameter(Name=prefix + '-' + rds-name, WithDecryption=True)['Parameter']['Value'],
+        'USER': ssm.get_parameter(Name=prefix + '-' + rds-user, WithDecryption=True)['Parameter']['Value'],
+        'PASSWORD': ssm.get_parameter(Name=prefix + '-' + rds-password, WithDecryption=True)['Parameter']['Value'],
+        'HOST': ssm.get_parameter(Name=prefix + '-' + rds-host, WithDecryption=True)['Parameter']['Value'],
+        'PORT': '5432'
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
