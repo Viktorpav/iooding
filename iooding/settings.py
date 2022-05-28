@@ -12,11 +12,13 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 
+# BOTO3 for managing AWS infrastructure with code
 import boto3
-AWS_REGION = 'eu-central-1'
+aws_region = 'eu-central-1'
 
-ssm = boto3.client('ssm', AWS_REGION)
-#ec2 = boto3.client('ec2', AWS_REGION)
+ssm = boto3.client('ssm', region_name=aws_region)
+ec2 = boto3.client('ec2', region_name=aws_region)
+rds = boto3.client('rds', region_name=aws_region)
 
 prefix = 'iooding'
 
@@ -28,13 +30,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ssm.get_parameter(Name=prefix + '_' + django_secret_key, WithDecryption=True)['Parameter']['Value']
+SECRET_KEY = ssm.get_parameter(Name=prefix + '_django_secret_key', WithDecryption=True)['Parameter']['Value']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
-#ALLOWED_HOSTS = [ec2.describe_instances(InstanceIds=[{your_InstanceID_in_quotes}])['Reservations'][0]['Instances'][0]['PublicDnsName']]
+# EC2 filter for public address
+ec2_filter = [{'Name': 'tag:Name', 'Values': [prefix + '-ec2-public']}]
+ALLOWED_HOSTS = [ec2.describe_instances(Filters=ec2_filter)['Reservations'][0]['Instances'][0]['PublicIpAddress']]
 
 SITE_ID = 1
 
@@ -88,13 +91,19 @@ WSGI_APPLICATION = 'iooding.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+instance = rds.describe_db_instances()
+for db_instance in instance['DBInstances']:
+        rds_name = db_instance['DBInstanceIdentifier']
+        rds_host = db_instance['Endpoint']['Address']
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': ssm.get_parameter(Name=prefix + '_' + rds-name, WithDecryption=True)['Parameter']['Value'],
-        'USER': ssm.get_parameter(Name=prefix + '_' + rds-user, WithDecryption=True)['Parameter']['Value'],
-        'PASSWORD': ssm.get_parameter(Name=prefix + '_' + rds-password, WithDecryption=True)['Parameter']['Value'],
-        'HOST': ssm.get_parameter(Name=prefix + '_' + rds-host, WithDecryption=True)['Parameter']['Value'],
+        'NAME': rds_name,
+        'USER': ssm.get_parameter(Name=prefix + '_rds_user')['Parameter']['Value'],
+        'PASSWORD': ssm.get_parameter(Name=prefix + '_rds_password', WithDecryption=True)['Parameter']['Value'],
+        'HOST': rds_host,
         'PORT': '5432'
     }
 }

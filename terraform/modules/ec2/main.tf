@@ -26,7 +26,7 @@ resource "aws_instance" "ec2_public" {
   vpc_security_group_ids      = [var.sg_pub_id]
 
   tags = {
-    "Name" = "${var.namespace}-EC2-PUBLIC"
+    "Name" = "${var.namespace}-ec2-public"
   }
 
   # Copies the ssh key file to home dir
@@ -67,7 +67,7 @@ resource "aws_instance" "ec2_private" {
   vpc_security_group_ids      = [var.sg_priv_id]
 
   tags = {
-    "Name" = "${var.namespace}-EC2-PRIVATE"
+    "Name" = "${var.namespace}-ec2-private"
   }
 
 }
@@ -75,9 +75,9 @@ resource "aws_instance" "ec2_private" {
 resource "aws_eip" "eip" {
   vpc      = true
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  #lifecycle {
+  #  prevent_destroy = true
+  #}
 
 }
 
