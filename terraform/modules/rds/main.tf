@@ -11,9 +11,10 @@ resource "random_string" "rds_password" {
 }
 
 resource "aws_ssm_parameter" "rds_password" {
-  name  = "${var.namespace}_rds_password"
-  type  = "SecureString"
-  value = random_string.rds_password.result
+  name      = "${var.namespace}_rds_password"
+  type      = "SecureString"
+  value     = random_string.rds_password.result
+  overwrite = true
 }
 
 data "aws_ssm_parameter" "rds_password_data" {

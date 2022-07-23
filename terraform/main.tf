@@ -3,11 +3,6 @@ module "networking" {
   namespace = var.namespace
 }
 
-module "ssh-key" {
-  source    = "./modules/ssh-key"
-  namespace = var.namespace
-}
-
 module "ec2" {
   source     = "./modules/ec2"
   namespace  = var.namespace
@@ -17,6 +12,17 @@ module "ec2" {
   sg_priv_id = module.networking.sg_priv_id
   key_name   = module.ssh-key.key_name
 }
+
+module "ssh-key" {
+  source    = "./modules/ssh-key"
+  namespace = var.namespace
+}
+
+module "iam-user" {
+  source    = "./modules/iam-user"
+  namespace = var.namespace
+}
+
 
 module "rds" {
   source     = "./modules/rds"

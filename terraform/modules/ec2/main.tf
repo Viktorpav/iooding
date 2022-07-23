@@ -40,11 +40,39 @@ resource "aws_instance" "ec2_public" {
       private_key = file("${var.key_name}.pem")
       host        = self.public_ip
     }
+
   }
   
   //chmod key 400 on EC2 instance
   provisioner "remote-exec" {
     inline = ["chmod 400 ~/${var.key_name}.pem"]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("${var.key_name}.pem")
+      host        = self.public_ip
+    }
+
+  }
+
+  provisioner "remote-exec" {
+    inline = ["mkdir /home/ubuntu/.aws"]
+       #"sudo mkdir .aws",
+       #"sudo chown ubuntu .aws"
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("${var.key_name}.pem")
+      host        = self.public_ip
+    }
+
+  }
+
+  provisioner "file" {
+    source      = "./credentials"
+    destination = "/home/ubuntu/.aws/"
 
     connection {
       type        = "ssh"
@@ -75,9 +103,9 @@ resource "aws_instance" "ec2_private" {
 resource "aws_eip" "eip" {
   vpc      = true
 
-  #lifecycle {
-  #  prevent_destroy = true
-  #}
+#  lifecycle {
+#    prevent_destroy = true
+#  }
 
 }
 
