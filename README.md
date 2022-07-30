@@ -10,17 +10,17 @@ The idea to create a skillet of my life-try like a blog, where people and I can 
 1. [Install terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli) :shipit:
 2. [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 3. [Configuration of AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html) *insert your own AWS account values as described in the link.*
-4. Get project from GitHub:
+2. Get project from GitHub:
 ```
 git clone https://github.com/Viktorpav/iooding.git
 cd iooding/terraform
 ```
-5. Initialization of terraform and starting iam-user module to create the user for boto3:
+3. Initialization of terraform and starting iam-user module to create the user for boto3:
 ```
 terrafrom init
 terraform apply -auto-approve
 ```
-6. Copy config file to the project:
+4. Copy config file to the project:
 ```
 cp ~/.aws/credentials <your project dir>/iooding/terraform
 ```
@@ -28,7 +28,7 @@ Or run the command to create a credentials file:
 ```bash
 (echo "[default]"; echo -n "aws_access_key_id = " & terraform output -raw access_key ; echo ""; echo -n "aws_secret_access_key = " ; terraform output -raw secret_key) > ./credentials
 ```
-7. Run a full terraform infrastructure provisioning project
+5. Run a full terraform infrastructure provisioning project
 ```
 terrafrom apply -auto-approve
 ```
