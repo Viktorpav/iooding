@@ -57,9 +57,10 @@ resource "aws_instance" "ec2_public" {
   }
 
   provisioner "remote-exec" {
-    inline = ["mkdir /home/ubuntu/.aws"]
-       #"sudo mkdir .aws",
-       #"sudo chown ubuntu .aws"
+    inline = [
+      "mkdir /home/ubuntu/.aws",
+      "sudo chown -R ubuntu:ubuntu /home/ubuntu/.aws"
+    ]
 
     connection {
       type        = "ssh"
@@ -72,7 +73,7 @@ resource "aws_instance" "ec2_public" {
 
   provisioner "file" {
     source      = "./credentials"
-    destination = "/home/ubuntu/.aws/"
+    destination = "/home/ubuntu/.aws/credentials"
 
     connection {
       type        = "ssh"

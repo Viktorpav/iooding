@@ -93,14 +93,14 @@ WSGI_APPLICATION = 'iooding.wsgi.application'
 
 instance = rds.describe_db_instances()
 for db_instance in instance['DBInstances']:
-        rds_name = db_instance['DBInstanceIdentifier']
+        #rds_name = db_instance['DBInstanceIdentifier']
         rds_host = db_instance['Endpoint']['Address']
 
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': rds_name,
+        'NAME': 'postgres',
         'USER': ssm.get_parameter(Name=prefix + '_rds_user')['Parameter']['Value'],
         'PASSWORD': ssm.get_parameter(Name=prefix + '_rds_password', WithDecryption=True)['Parameter']['Value'],
         'HOST': rds_host,

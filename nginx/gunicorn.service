@@ -10,7 +10,7 @@ WorkingDirectory=/home/ubuntu/iooding
 ExecStart=/home/ubuntu/.local/bin/gunicorn \
           --access-logfile - \
           --workers 3 \
-          --bind unix:/run/gunicorn.sock \
+          --bind unix:/home/ubuntu/gunicorn.sock \
           iooding.wsgi:application
 
 [Install]
