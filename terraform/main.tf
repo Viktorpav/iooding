@@ -20,7 +20,7 @@ resource "aws_iam_user_policy" "ssm_policy" {
     "Statement": [
       {
         "Action": [
-          "ec2:DescribeInstances",
+          "ec2:Describe*",
           "ssm:Describe*",
           "ssm:GetParameter",
           "ssm:List*",
