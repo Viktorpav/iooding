@@ -37,7 +37,8 @@ DEBUG = True
 
 # EC2 filter for public address
 ec2_filter = [{'Name': 'tag:Name', 'Values': [prefix + '-ec2-public']}]
-ALLOWED_HOSTS = [ec2.describe_instances(Filters=ec2_filter)['Reservations'][0]['Instances'][0]['PublicIpAddress']]
+# For list of IP addresses use [<boto3 call>] in list
+ALLOWED_HOSTS = ec2.describe_addresses(Filters=ec2_filter)['Addresses'][0]['PublicIp']
 
 SITE_ID = 1
 

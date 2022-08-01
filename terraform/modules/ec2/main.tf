@@ -104,9 +104,13 @@ resource "aws_instance" "ec2_private" {
 resource "aws_eip" "eip" {
   vpc      = true
 
-#  lifecycle {
-#    prevent_destroy = true
-#  }
+  lifecycle {
+    prevent_destroy = true
+  }
+
+  tags = {
+    "Name" = "${var.namespace}-ec2-public"
+  }
 
 }
 
