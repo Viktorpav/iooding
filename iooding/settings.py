@@ -37,8 +37,7 @@ DEBUG = True
 
 # EC2 filter for public address
 ec2_filter = [{'Name': 'tag:Name', 'Values': [prefix + '-ec2-public']}]
-# For list of IP addresses use [<boto3 call>] in list
-ALLOWED_HOSTS = ec2.describe_addresses(Filters=ec2_filter)['Addresses'][0]['PublicIp']
+ALLOWED_HOSTS = [ec2.describe_addresses(Filters=ec2_filter)['Addresses'][0]['PublicIp']]
 
 SITE_ID = 1
 
@@ -145,13 +144,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = "/static/"
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
-    '/var/www/static/',
+    BASE_DIR / 'static',
 ]
 
-STATIC_ROOT = "/var/www/iooding/static/"
+STATIC_ROOT = '/var/www/' + prefix + '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
