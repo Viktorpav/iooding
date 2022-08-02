@@ -101,29 +101,31 @@ resource "aws_instance" "ec2_private" {
 
 }
 
-resource "aws_eip" "eip" {
-  vpc      = true
+# resource "aws_eip" "eip" {
+#   vpc      = true
 
-  lifecycle {
-    prevent_destroy = true
-  }
+#   lifecycle {
+#     prevent_destroy = true
+#   }
 
-  tags = {
-    "Name" = "${var.namespace}-ec2-public"
-  }
+#   tags = {
+#     "Name" = "${var.namespace}-ec2-public"
+#   }
 
+# }
+
+###########   Add EIP elastic ip to the EC2
+data "aws_eip" "eip" {
+  #name        = "${var.namespace}-ec2-public"
+  #depends_on  = [aws_eip.eip]
+  public_ip   = "3.66.51.156"
 }
 
 resource "aws_eip_association" "eip_assoc" {
   instance_id   = aws_instance.ec2_public.id
-  allocation_id = aws_eip.eip.id
+  allocation_id = data.aws_eip.eip.id
 }
 
-/*
-###########   Add EIP elastic ip to the EC2
-data "aws_eip" "eip" {
-  name   = "${var.namespace}-eip"
-  depends_on = [aws_eip.eip]
-  #public_ip = "3.73.165.22"
-}
-*/
+
+
+

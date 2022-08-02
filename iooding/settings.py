@@ -36,8 +36,9 @@ SECRET_KEY = ssm.get_parameter(Name=prefix + '_django_secret_key', WithDecryptio
 DEBUG = True
 
 # EC2 filter for public address
-ec2_filter = [{'Name': 'tag:Name', 'Values': [prefix + '-ec2-public']}]
-ALLOWED_HOSTS = [ec2.describe_addresses(Filters=ec2_filter)['Addresses'][0]['PublicIp']]
+# ec2_filter = [{'Name': 'tag:Name', 'Values': [prefix + '-ec2-public']}]
+# ALLOWED_HOSTS = [ec2.describe_addresses(Filters=ec2_filter)['Addresses'][0]['PublicIp']]
+ALLOWED_HOSTS = ['drpavlyshyn.com', 'www.drpavlyshyn.com']
 
 SITE_ID = 1
 
