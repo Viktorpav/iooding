@@ -10,7 +10,7 @@ variable key_name {
   type = string
 }
 
-variable "ec2_private" {
+variable "ec2_public" {
   type = any
 }
 

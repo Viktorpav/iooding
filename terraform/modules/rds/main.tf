@@ -1,7 +1,7 @@
 // Username for RDS
-data "aws_ssm_parameter" "rds_user_data" {
-  name   = "${var.namespace}_rds_user"
-}
+# data "aws_ssm_parameter" "rds_user_data" {
+#   name   = "${var.namespace}_rds_user"
+# }
 
 // Password for RDS
 resource "random_string" "rds_password" {
@@ -29,7 +29,8 @@ resource "aws_db_instance" "rds" {
   allocated_storage      = 10
   engine                 = "postgres"
   engine_version         = "14.2"
-  username               = data.aws_ssm_parameter.rds_user_data.value
+  username               = "${var.namespace}_rds_user"
+  #username               = data.aws_ssm_parameter.rds_user_data.value
   password               = data.aws_ssm_parameter.rds_password_data.value
   db_subnet_group_name   = var.sg_id
   vpc_security_group_ids = [var.sec_g_rds_id]

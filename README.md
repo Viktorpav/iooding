@@ -33,9 +33,19 @@ Or run the command to create a credentials file:
 terrafrom apply -auto-approve
 ```
 8. Create Route53 record manualy
-Add hosted zone records of NS to DNS provider(move to AWS records)
+Add hosted zone records of NS to DNS provider(move to AWS records) or choose and create in AWS
 
-9. Create Loadbalancer
+9. Add self signed certificate on the server via openssl for Nginx
+```
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx.key -out /etc/ssl/certs/nginx.crt
+```
+'Because this is self-signed, the only one that really matters is “Common Name,” which should be set to your domain name or your server’s IP address.'
+
+On more command to generate a Diffie-Hellman group to ensure that past communications cannot be decrypted if the session key is compromised
+
+sudo openssl dhparam -out /etc/nginx/dhparam.pem 4096
+
+10. Create Loadbalancer
 ----
 
 <details><summary>Arhitecture overview</summary>

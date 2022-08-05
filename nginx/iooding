@@ -1,11 +1,3 @@
-# Catch all requests with an invalid HOST header
-server {
-        server_name _;
-        listen      80;
-        return      444;
-}
-
-
 server {
         listen 80;
         server_name drpavlyshyn.com www.drpavlyshyn.com;

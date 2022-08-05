@@ -31,6 +31,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = ssm.get_parameter(Name=prefix + '_django_secret_key', WithDecryption=True)['Parameter']['Value']
+#django-insecure-ukr^-alq@ceo4iw@gszw^xjiruw2x+mj%s8v_-(ss!*f)j@x(a
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
