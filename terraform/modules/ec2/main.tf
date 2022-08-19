@@ -87,39 +87,45 @@ resource "aws_instance" "ec2_public" {
 }
 
 // Configure the EC2 instance in a private subnet
-resource "aws_instance" "ec2_private" {
-  ami                         = data.aws_ami.ubuntu.id
-  associate_public_ip_address = false
-  instance_type               = "t2.micro"
-  key_name                    = var.key_name
-  subnet_id                   = var.vpc.private_subnets[1]
-  vpc_security_group_ids      = [var.sg_priv_id]
+# resource "aws_instance" "ec2_private" {
+#   ami                         = data.aws_ami.ubuntu.id
+#   associate_public_ip_address = false
+#   instance_type               = "t2.micro"
+#   key_name                    = var.key_name
+#   subnet_id                   = var.vpc.private_subnets[1]
+#   vpc_security_group_ids      = [var.sg_priv_id]
 
-  tags = {
-    "Name" = "${var.namespace}-ec2-private"
-  }
+#   tags = {
+#     "Name" = "${var.namespace}-ec2-private"
+#   }
 
-}
+# }
 
-resource "aws_eip" "eip" {
-  vpc      = true
+# resource "aws_eip" "eip" {
+#   vpc      = true
 
-#  lifecycle {
-#    prevent_destroy = true
-#  }
+#   lifecycle {
+#     prevent_destroy = true
+#   }
 
+#   tags = {
+#     "Name" = "${var.namespace}-ec2-public"
+#   }
+
+# }
+
+###########   Add EIP elastic ip to the EC2
+data "aws_eip" "eip" {
+  #name        = "${var.namespace}-ec2-public"
+  #depends_on  = [aws_eip.eip]
+  public_ip   = "3.66.51.156"
 }
 
 resource "aws_eip_association" "eip_assoc" {
   instance_id   = aws_instance.ec2_public.id
-  allocation_id = aws_eip.eip.id
+  allocation_id = data.aws_eip.eip.id
 }
 
-/*
-###########   Add EIP elastic ip to the EC2
-data "aws_eip" "eip" {
-  name   = "${var.namespace}-eip"
-  depends_on = [aws_eip.eip]
-  #public_ip = "3.73.165.22"
-}
-*/
+
+
+

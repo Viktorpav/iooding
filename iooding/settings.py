@@ -31,13 +31,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = ssm.get_parameter(Name=prefix + '_django_secret_key', WithDecryption=True)['Parameter']['Value']
+#django-insecure-ukr^-alq@ceo4iw@gszw^xjiruw2x+mj%s8v_-(ss!*f)j@x(a
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 # EC2 filter for public address
-ec2_filter = [{'Name': 'tag:Name', 'Values': [prefix + '-ec2-public']}]
-ALLOWED_HOSTS = [ec2.describe_instances(Filters=ec2_filter)['Reservations'][0]['Instances'][0]['PublicIpAddress']]
+# ec2_filter = [{'Name': 'tag:Name', 'Values': [prefix + '-ec2-public']}]
+# ALLOWED_HOSTS = [ec2.describe_addresses(Filters=ec2_filter)['Addresses'][0]['PublicIp']]
+ALLOWED_HOSTS = ['drpavlyshyn.com', 'www.drpavlyshyn.com']
 
 SITE_ID = 1
 
@@ -144,13 +146,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = "/static/"
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
-    '/var/www/static/',
+    BASE_DIR / 'static',
 ]
 
-STATIC_ROOT = "/var/www/iooding/static/"
+STATIC_ROOT = '/var/www/' + prefix + '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

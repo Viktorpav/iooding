@@ -1,6 +1,7 @@
 server {
         listen 80;
-        server_name 35.173.121.119;
+        server_name drpavlyshyn.com www.drpavlyshyn.com;
+
 
         location = /favicon.ico { access_log off; log_not_found off; }
 

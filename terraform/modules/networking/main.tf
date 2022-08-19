@@ -27,9 +27,9 @@ resource "aws_security_group" "allow_ssh_pub" {
   }
 
   ingress {
-    description = "Django app port"
-    from_port   = 8000
-    to_port     = 8000
+    description = "Nginx SSL port"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
