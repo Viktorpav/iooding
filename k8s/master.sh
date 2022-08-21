@@ -1,5 +1,6 @@
-sudo hostnamectl set-hostname "k8smaster"
-host "k8smaster" | grep -m1 "k8smaster" | awk '{print $4}' | sed 's/$/ k8smaster/' | sudo tee -a /etc/hosts > /dev/null
+hostname="k8snode1"
+sudo hostnamectl set-hostname $hostname
+host $hostname | grep -m1 $hostname | awk -v hostname=$hostname '{print $4, hostname}' | sudo tee -a /etc/hosts > /dev/null
 
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 sudo swapoff -a
@@ -48,7 +49,8 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 curl https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.yaml -O
 kubectl apply -f calico.yaml
 
-# kubeadm join on worker nodes
+
+# kubeadm token create --print-join-command
 # -/////////////////-
-#https://thenewstack.io/how-to-deploy-kubernetes-with-kubeadm-and-containerd/
-#https://www.linuxtechi.com/install-kubernetes-on-ubuntu-22-04/
+# https://thenewstack.io/how-to-deploy-kubernetes-with-kubeadm-and-containerd/
+# https://www.linuxtechi.com/install-kubernetes-on-ubuntu-22-04/
