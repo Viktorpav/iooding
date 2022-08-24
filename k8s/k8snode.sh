@@ -1,8 +1,8 @@
-hostname="k8snode1"
+hostname="k8snode"
 sudo hostnamectl set-hostname $hostname
-host $hostname | grep -m1 $hostname | awk -v hostname=$hostname '{print $4, hostname}' | ssh ubuntu@192.168.0.141 'sudo tee -a /etc/hosts > /dev/null'
+host $hostname | grep -m1 $hostname | awk -v hostname=$hostname '{print $4, hostname}' | ssh -i k8s.pem -o StrictHostKeyChecking=no ubuntu@172.31.28.224 'sudo tee -a /etc/hosts > /dev/null'
 
-rsync -avzh ubuntu@k8smaster:/etc/hosts /etc/hosts # execute command to grep file /etc/hosts from master
+echo "* * * * * rsync -havuz -e 'ssh -i /home/ubuntu/k8s.pem -o StrictHostKeyChecking=no' ubuntu@172.31.28.224:/etc/hosts /etc/hosts" | sudo tee -a /var/spool/cron/crontabs/root # in case of issues stream to >> /home/ubuntu/log.txt 2>&1" after ssh
 
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 sudo swapoff -a
@@ -25,7 +25,8 @@ sudo sysctl --system
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" -y
-sudo apt update -y && sudo apt -y install containerd curl wget vim git gnupg2 software-properties-common apt-transport-https ca-certificates
+sudo apt update -y && sudo DEBIAN_FRONTEND=noninteractive apt upgrade -y
+sudo DEBIAN_FRONTEND=noninteractive apt -y install containerd gnupg2 software-properties-common apt-transport-https ca-certificates
 
 sudo mkdir -p /etc/containerd
 sudo containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1

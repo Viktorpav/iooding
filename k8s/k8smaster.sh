@@ -1,4 +1,4 @@
-hostname="k8snode1"
+hostname="k8smaster"
 sudo hostnamectl set-hostname $hostname
 host $hostname | grep -m1 $hostname | awk -v hostname=$hostname '{print $4, hostname}' | sudo tee -a /etc/hosts > /dev/null
 
