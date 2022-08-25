@@ -1,5 +1,5 @@
 variable "region" {
-  default     = "eu-central-1"
+  default     = "us-east-1"
   description = "AWS region"
 }
 
@@ -13,18 +13,3 @@ variable "namespace" {
   default     = "iooding"
   type        = string
 }
-
-variable "k8smaster" {
-  description = "The kubernetes infrastucture for unique resource naming"
-  default     = "k8smaster"
-  type        = string
-}
-
-variable "k8snode" {
-  description = "The kubernetes infrastucture for unique resource naming"
-  default     = "k8snode"
-  type        = string
-}
-
-
-

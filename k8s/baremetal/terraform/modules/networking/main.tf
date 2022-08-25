@@ -12,10 +12,10 @@ module "vpc" {
   enable_dns_hostnames             = true #gives you an internal host name
 }
 
-// SG to allow SSH connections from anywhere
+// SG to allow K8s master connections from anywhere
 resource "aws_security_group" "allow_ssh_pub" {
-  name        = "${var.namespace}-${k8smaster}-ssh"
-  description = "Allow SSH inbound traffic and K8s traffic"
+  name        = "${var.namespace}-k8smaster-ssh"
+  description = "Allow SSH inbound traffic and K8s master traffic"
   vpc_id      = module.vpc.vpc_id
 
   ingress {
@@ -60,8 +60,8 @@ resource "aws_security_group" "allow_ssh_pub" {
 
   ingress {
     description = "ETCD server"
-    from_port   = 2379-2380
-    to_port     = 2379-2380
+    from_port   = 2379
+    to_port     = 2380
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -71,14 +71,6 @@ resource "aws_security_group" "allow_ssh_pub" {
     from_port   = 30000
     to_port     = 32767
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "External applications"
-    from_port   = 30000
-    to_port     = 32767
-    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -90,32 +82,81 @@ resource "aws_security_group" "allow_ssh_pub" {
   }
 
   tags = {
-    Name = "${var.namespace}-${k8smaster}-ssh-pub"
+    Name = "${var.namespace}-k8smaster-ssh-pub"
   }
 }
 
-// SG to only allow SSH connections from VPC public subnets
-# resource "aws_security_group" "allow_ssh_priv" {
-#   name        = "${var.namespace}-allow_ssh_priv"
-#   description = "Allow SSH inbound traffic"
-#   vpc_id      = module.vpc.vpc_id
+// SG to allow K8s Node connections from anywhere
+resource "aws_security_group" "allow_ssh_priv" {
+  name        = "${var.namespace}-k8snode-ssh"
+  description = "Allow SSH inbound traffic and K8s node traffic"
+  vpc_id      = module.vpc.vpc_id
 
-#   ingress {
-#     description = "SSH only from internal VPC clients"
-#     from_port   = 22
-#     to_port     = 22
-#     protocol    = "tcp"
-#     cidr_blocks = ["10.0.0.0/16"]
-#   }
 
-#   egress {
-#     from_port   = 0
-#     to_port     = 0
-#     protocol    = "-1"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
+  ingress {
+    description = "SSH from the internet"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-#   tags = {
-#     Name = "${var.namespace}-allow_ssh_priv"
-#   }
-# }
+  ingress {
+    description = "Kubernetes API Server"
+    from_port   = 6443
+    to_port     = 6443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Kubelet health check"
+    from_port   = 10250
+    to_port     = 10250
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Kube controller manager"
+    from_port   = 10252
+    to_port     = 10252
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Kubelet API read only"
+    from_port   = 10255
+    to_port     = 10255
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "ETCD server"
+    from_port   = 2379
+    to_port     = 2380
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "External applications"
+    from_port   = 30000
+    to_port     = 32767
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.namespace}-k8snode-ssh-priv"
+  }
+}

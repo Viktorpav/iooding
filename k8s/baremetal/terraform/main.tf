@@ -9,8 +9,8 @@ module "ec2" {
   vpc        = module.networking.vpc
   k8smaster  = module.ec2.k8smaster
   k8snode    = module.ec2.k8snode
-  sg_pub_id  = module.networking.sg_pub_id
- # sg_priv_id = module.networking.sg_priv_id
+  sg_k8smaster  = module.networking.sg_k8smaster
+  sg_k8snode  = module.networking.sg_k8snode
   key_name   = module.ssh-key.key_name
 }
 

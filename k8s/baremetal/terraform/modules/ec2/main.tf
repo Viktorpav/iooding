@@ -23,10 +23,10 @@ resource "aws_instance" "k8smaster" {
   instance_type               = "t2.medium"
   key_name                    = var.key_name
   subnet_id                   = var.vpc.public_subnets[0]
-  vpc_security_group_ids      = [var.sg_k8smaster_id]
+  vpc_security_group_ids      = [var.sg_k8smaster]
 
   tags = {
-    "Name" = "${var.namespace}-${var.k8smaster}"
+    "Name" = "${var.namespace}-k8smaster"
   }
 
   # Copies the ssh key file to home dir
@@ -56,8 +56,8 @@ resource "aws_instance" "k8smaster" {
   
   # Copies the scrypt file to home dir
   provisioner "file" {
-    source      = "./${var.k8smaster}.sh"
-    destination = "/home/ubuntu/${var.k8smaster}.sh"
+    source      = "./../k8smaster.sh"
+    destination = "/home/ubuntu/k8smaster.sh"
 
     connection {
       type        = "ssh"
@@ -70,8 +70,8 @@ resource "aws_instance" "k8smaster" {
   //chmod script to be executable
   provisioner "remote-exec" {
     inline = [
-      "chmod +x ~/${var.k8smaster}.sh",
-      "nohup ./${var.k8smaster}.sh &"
+      "chmod +x ~/k8smaster.sh",
+      "nohup ./k8smaster.sh &"
     ]
 
     connection {
@@ -90,11 +90,11 @@ resource "aws_instance" "k8snode" {
   associate_public_ip_address = true
   instance_type               = "t2.medium"
   key_name                    = var.key_name
-  subnet_id                   = var.vpc.public_subnets[0]
-  vpc_security_group_ids      = [var.sg_k8snode_id]
+  subnet_id                   = var.vpc.public_subnets[1]
+  vpc_security_group_ids      = [var.sg_k8snode]
 
   tags = {
-    "Name" = "${var.namespace}-${var.k8snode}"
+    "Name" = "${var.namespace}-k8snode"
   }
 
   # Copies the ssh key file to home dir
@@ -124,8 +124,8 @@ resource "aws_instance" "k8snode" {
   
   # Copies the scrypt file to home dir
   provisioner "file" {
-    source      = "./${var.k8snode}.sh"
-    destination = "/home/ubuntu/${var.k8snode}.sh"
+    source      = "./../k8snode.sh"
+    destination = "/home/ubuntu/k8snode.sh"
 
     connection {
       type        = "ssh"
@@ -138,8 +138,8 @@ resource "aws_instance" "k8snode" {
   //chmod script to be executable
   provisioner "remote-exec" {
     inline = [
-      "chmod +x ~/${var.k8snode}.sh",
-      "nohup ./${var.k8snode}.sh &"
+      "chmod +x ~/k8snode.sh",
+      "nohup ./k8snode.sh &"
     ]
 
     connection {
@@ -155,27 +155,31 @@ resource "aws_instance" "k8snode" {
 resource "aws_eip" "eip" {
   vpc      = true
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 
+  // Also an option to try:
+  # lifecycle {
+  #   create_before_destory = true
+  # }
   tags = {
-    "Name" = "${var.namespace}-${var.k8smaster}"
+    "Name" = "${var.namespace}-k8smaster"
   }
 
 }
 
 ###########   Add EIP elastic ip to the EC2
 data "aws_eip" "eip" {
-  #name        = "${var.namespace}-${var.k8smaster}"
-  #depends_on  = [aws_eip.eip]
-  public_ip   = "3.66.51.156"
+  # name        = "${var.namespace}-k8smaster"
+  # depends_on  = [aws_eip.eip]
+  public_ip   = "3.229.51.3"
 }
 
-resource "aws_eip_association" "eip_assoc" {
-  instance_id   = aws_instance.k8smaster.id
-  allocation_id = data.aws_eip.eip.id
-}
+# resource "aws_eip_association" "eip_assoc" {
+#   instance_id   = aws_instance.k8smaster.id
+#   allocation_id = data.aws_eip.eip.id
+# }
 
 
 
