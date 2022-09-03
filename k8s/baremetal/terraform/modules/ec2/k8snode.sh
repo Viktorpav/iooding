@@ -1,6 +1,15 @@
-hostname="k8smaster"
+#!/bin/bash
+hostname="k8snode"
+ssh_key="/home/ubuntu/iooding-k8s-key.pem"
+k8smaster_private_ip=${k8smaster_private_ip}
 sudo hostnamectl set-hostname $hostname
-host $hostname | grep -m1 $hostname | awk -v hostname=$hostname '{print $4, hostname}' | sudo tee -a /etc/hosts > /dev/null
+
+host $hostname | grep -m1 $hostname | awk -v hostname=$hostname '{print $4, hostname}' | ssh -i $ssh_key -o StrictHostKeyChecking=no ubuntu@$k8smaster_private_ip 'sudo tee -a /etc/hosts > /dev/null'
+
+(sudo crontab -l 2>/dev/null ; echo "* * * * * rsync -havuz -e 'ssh -i $ssh_key -o StrictHostKeyChecking=no' ubuntu@$k8smaster_private_ip:/etc/hosts /etc/hosts") | sort - | uniq - | sudo crontab - # in case of issues stream to >> /home/ubuntu/log.txt 2>&1" after ssh
+
+echo "$k8smaster_private_ip" >> masterip.txt
+echo "$ssh_key" 
 
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 sudo swapoff -a
@@ -23,7 +32,8 @@ sudo sysctl --system
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" -y
-sudo apt update -y && sudo apt -y install containerd curl wget vim git gnupg2 software-properties-common apt-transport-https ca-certificates
+sudo apt update -y && sudo DEBIAN_FRONTEND=noninteractive apt upgrade -y
+sudo DEBIAN_FRONTEND=noninteractive apt -y install containerd gnupg2 software-properties-common apt-transport-https ca-certificates
 
 sudo mkdir -p /etc/containerd
 sudo containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
@@ -40,17 +50,4 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 sudo systemctl enable --now kubelet
 
-sudo kubeadm init --control-plane-endpoint=k8smaster --cri-socket /run/containerd/containerd.sock
-
-mkdir -p $HOME/.kube
-sudo cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-curl https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.yaml -O
-kubectl apply -f calico.yaml
-
-
-# kubeadm token create --print-join-command
-# -/////////////////-
-# https://thenewstack.io/how-to-deploy-kubernetes-with-kubeadm-and-containerd/
-# https://www.linuxtechi.com/install-kubernetes-on-ubuntu-22-04/
+# kubeadm join k8smaster:6443

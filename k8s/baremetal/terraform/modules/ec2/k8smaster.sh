@@ -1,8 +1,7 @@
-hostname="k8snode"
+#!/bin/bash
+hostname="k8smaster"
 sudo hostnamectl set-hostname $hostname
-host $hostname | grep -m1 $hostname | awk -v hostname=$hostname '{print $4, hostname}' | ssh -i k8s.pem -o StrictHostKeyChecking=no ubuntu@172.31.28.224 'sudo tee -a /etc/hosts > /dev/null'
-
-echo "* * * * * rsync -havuz -e 'ssh -i /home/ubuntu/k8s.pem -o StrictHostKeyChecking=no' ubuntu@172.31.28.224:/etc/hosts /etc/hosts" | sudo tee -a /var/spool/cron/crontabs/root # in case of issues stream to >> /home/ubuntu/log.txt 2>&1" after ssh
+host $hostname | grep -m1 $hostname | awk -v hostname=$hostname '{print $4, hostname}' | sudo tee -a /etc/hosts > /dev/null
 
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 sudo swapoff -a
@@ -43,4 +42,17 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 sudo systemctl enable --now kubelet
 
-kubeadm join k8smaster:6443
+sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --control-plane-endpoint=k8smaster --cri-socket /run/containerd/containerd.sock
+
+mkdir -p $HOME/.kube
+sudo cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+curl https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.yaml -O
+kubectl apply -f calico.yaml
+
+
+# kubeadm token create --print-join-command
+# -/////////////////-
+# https://thenewstack.io/how-to-deploy-kubernetes-with-kubeadm-and-containerd/
+# https://www.linuxtechi.com/install-kubernetes-on-ubuntu-22-04/
