@@ -1,5 +1,7 @@
 #!/bin/bash
+# USER=root - read more about this
 hostname="k8smaster"
+dir="/home/ubuntu"
 sudo hostnamectl set-hostname $hostname
 host $hostname | grep -m1 $hostname | awk -v hostname=$hostname '{print $4, hostname}' | sudo tee -a /etc/hosts > /dev/null
 
@@ -44,15 +46,55 @@ sudo systemctl enable --now kubelet
 
 sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --control-plane-endpoint=k8smaster --cri-socket /run/containerd/containerd.sock
 
-mkdir -p $HOME/.kube
-sudo cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
+cd $dir
+sudo -H -u ubuntu mkdir -p $dir/.kube
+sudo cp -f /etc/kubernetes/admin.conf $dir/.kube/config
+sudo chown ubuntu:ubuntu $dir/.kube/config
 
-curl https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.yaml -O
-kubectl apply -f calico.yaml
+sudo -H -u ubuntu curl https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.yaml -O
+sudo -H -u ubuntu kubectl apply -f calico.yaml
 
+# sudo kubeadm token create --print-join-command
 
-# kubeadm token create --print-join-command
 # -/////////////////-
 # https://thenewstack.io/how-to-deploy-kubernetes-with-kubeadm-and-containerd/
 # https://www.linuxtechi.com/install-kubernetes-on-ubuntu-22-04/
+
+cat << EOF | kubectl create -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: busybox
+spec:
+  containers:
+  - name: busybox
+    image: radial/busyboxplus:curl
+    args:
+    - sleep
+    - "1000"
+EOF
+
+
+cat << EOF | kubectl create -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.15.4
+        ports:
+        - containerPort: 80
+EOF

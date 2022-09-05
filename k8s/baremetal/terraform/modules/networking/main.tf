@@ -28,6 +28,30 @@ resource "aws_security_group" "allow_ssh_pub" {
   }
 
   ingress {
+    description = "WEB port 80 for the internet"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "WEB port 443 for the internet"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "DNS for the internet"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     description = "Kubernetes API Server"
     from_port   = 6443
     to_port     = 6443
@@ -98,6 +122,30 @@ resource "aws_security_group" "allow_ssh_priv" {
     description = "SSH from the internet"
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "WEB port 80 for the internet"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "WEB port 443 for the internet"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "DNS for the internet"
+    from_port   = 53
+    to_port     = 53
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }

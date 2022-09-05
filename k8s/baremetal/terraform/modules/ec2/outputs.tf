@@ -7,5 +7,5 @@ output "k8smaster_private_ip" {
 }
 
 output "k8snode" {
-  value = aws_instance.k8snode.public_ip
+  value = join("", aws_instance.k8snode[*].id)
 }

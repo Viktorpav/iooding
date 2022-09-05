@@ -24,66 +24,7 @@ resource "aws_instance" "k8smaster" {
   subnet_id                   = var.vpc.public_subnets[0]
   vpc_security_group_ids      = [var.sg_k8smaster]
 
-  user_data = <<EOF
-#!/bin/bash
-hostname="k8smaster"
-sudo hostnamectl set-hostname $hostname
-host $hostname | grep -m1 $hostname | awk -v hostname=$hostname '{print $4, hostname}' | sudo tee -a /etc/hosts > /dev/null
-
-sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
-sudo swapoff -a
-
-sudo tee /etc/modules-load.d/containerd.conf <<EOF1
-overlay
-br_netfilter
-EOF1
-
-sudo modprobe overlay
-sudo modprobe br_netfilter
-
-cat <<EOF2 | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
-net.bridge.bridge-nf-call-ip6tables = 1
-net.bridge.bridge-nf-call-iptables = 1
-net.ipv4.ip_forward = 1
-EOF2
-
-sudo sysctl --system
-
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" -y
-sudo apt update -y && sudo DEBIAN_FRONTEND=noninteractive apt upgrade -y
-sudo DEBIAN_FRONTEND=noninteractive apt -y install containerd gnupg2 software-properties-common apt-transport-https ca-certificates
-
-sudo mkdir -p /etc/containerd
-sudo containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
-sudo sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
-
-sudo systemctl restart containerd
-sudo systemctl enable containerd
-
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-sudo apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main" -y
-
-sudo apt update -y && sudo apt -y install kubelet kubeadm kubectl 
-sudo apt-mark hold kubelet kubeadm kubectl
-
-sudo systemctl enable --now kubelet
-
-sudo kubeadm init --control-plane-endpoint=k8smaster --cri-socket /run/containerd/containerd.sock
-
-mkdir -p $HOME/.kube
-sudo cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-curl https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.yaml -O
-kubectl apply -f calico.yaml
-
-
-# kubeadm token create --print-join-command
-# -/////////////////-
-# https://thenewstack.io/how-to-deploy-kubernetes-with-kubeadm-and-containerd/
-# https://www.linuxtechi.com/install-kubernetes-on-ubuntu-22-04/
-EOF
+  user_data = templatefile("${path.module}/k8smaster.sh", {k8smaster_public_ip = ""})
 
   lifecycle {
     create_before_destroy = true
@@ -126,13 +67,15 @@ resource "aws_instance" "k8snode" {
   associate_public_ip_address = true
   instance_type               = "t3.medium"
   key_name                    = var.key_name
-  subnet_id                   = var.vpc.public_subnets[0]
+  subnet_id                   = var.vpc.public_subnets[1]
   vpc_security_group_ids      = [var.sg_k8snode]
 
-  user_data = templatefile("${path.module}/k8snode.sh", {k8smaster_private_ip = "${aws_instance.k8smaster.private_ip}"})
+  count                       = var.instances_per_subnet
+
+  user_data = templatefile("${path.module}/k8snode.sh", {k8smaster_private_ip = "${aws_instance.k8smaster.private_ip}", count_for_nodes = "${count.index}"} )
 
   tags = {
-    "Name" = "${var.namespace}-k8snode"
+    "Name" = "${var.namespace}-k8snode-${count.index}"
   }
 
   # Copies the ssh key file to home dir

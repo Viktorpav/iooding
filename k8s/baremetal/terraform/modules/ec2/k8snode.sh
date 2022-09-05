@@ -1,15 +1,10 @@
 #!/bin/bash
-hostname="k8snode"
+hostname="k8snode-${count_for_nodes}"
 ssh_key="/home/ubuntu/iooding-k8s-key.pem"
 k8smaster_private_ip=${k8smaster_private_ip}
 sudo hostnamectl set-hostname $hostname
 
 host $hostname | grep -m1 $hostname | awk -v hostname=$hostname '{print $4, hostname}' | ssh -i $ssh_key -o StrictHostKeyChecking=no ubuntu@$k8smaster_private_ip 'sudo tee -a /etc/hosts > /dev/null'
-
-(sudo crontab -l 2>/dev/null ; echo "* * * * * rsync -havuz -e 'ssh -i $ssh_key -o StrictHostKeyChecking=no' ubuntu@$k8smaster_private_ip:/etc/hosts /etc/hosts") | sort - | uniq - | sudo crontab - # in case of issues stream to >> /home/ubuntu/log.txt 2>&1" after ssh
-
-echo "$k8smaster_private_ip" >> masterip.txt
-echo "$ssh_key" 
 
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 sudo swapoff -a
@@ -50,4 +45,7 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 sudo systemctl enable --now kubelet
 
-# kubeadm join k8smaster:6443
+(sudo crontab -l 2>/dev/null ; echo "* * * * * rsync -havuz -e 'ssh -i $ssh_key -o StrictHostKeyChecking=no' ubuntu@$k8smaster_private_ip:/etc/hosts /etc/hosts") | sort - | uniq - | sudo crontab - # in case of issues stream to >> /home/ubuntu/log.txt 2>&1" after ssh
+
+sudo ssh -i $ssh_key -o StrictHostKeyChecking=no ubuntu@$k8smaster_private_ip 'sudo kubeadm token create --print-join-command' | sudo bash
+

@@ -25,3 +25,9 @@ variable "sg_k8smaster" {
 variable "sg_k8snode" {
   type = any
 }
+
+variable "instances_per_subnet" {
+  description = "Number of EC2 instances(nodes)"
+  type        = number
+  default     = 5
+}
