@@ -72,6 +72,8 @@ graph TD;
     - Run terraform apply after extract output and one more time terraform apply
 - [x] Setup EC2 server with running settings.py file 
 - [ ] Work on documentation and cleaning
+    - [ ] Add section for K8s section(how to provision with terraform)
+    - [ ] Provide some details and usecases of section K8s (future plans)
 - [ ] Implement certificate for the website
 - [ ] Check if Django setup.py needs some config for SSL/TLS certificate
     https://www.howtogeek.com/devops/how-to-create-and-use-self-signed-ssl-on-nginx/
@@ -90,3 +92,14 @@ graph TD;
 —————
 - [ ] Work on search engine for research in blog
 - [ ] Check if the Cloudfourmation would be more suitable for my usecase
+
+—————
+- [ ] Add sections with certificates(and post)
+- [x] Describe about deploying k8s barematel possibility
+
+—————
+- [no need] Store ec2 IP address in parameter store(pull ec2 address from aws ec2) in setting ALLOWED HOSTS
+- [x] Setup eip for private or public ec2 instance for connection
+
+- [x] Create a separate user with all rights to use Django app(beginning in maint/main_ssm.tf 
+- [x] SSH into ec2 instance and copy file with +x rights to execute bootstrap file

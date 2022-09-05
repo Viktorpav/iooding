@@ -6,7 +6,7 @@ variable "vpc" {
   type = any
 }
 
-variable key_name {
+variable "key_name" {
   type = string
 }
 

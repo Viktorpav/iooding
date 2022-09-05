@@ -12,7 +12,12 @@ __pycache__/
 *$py.class
 .DS_Store
 *.pem
+# Terraform for regular infrastructure
 terraform/.terraform/*
 terraform/*.tfstate
 terraform/*.tfstate.*
 terraform/credentials
+# Terrafrom K8s baremetal infrastructure
+k8s/baremetal/terraform/.terraform/*
+k8s/baremetal/terraform/*.tfstate
+k8s/baremetal/terraform/*.tfstate.*

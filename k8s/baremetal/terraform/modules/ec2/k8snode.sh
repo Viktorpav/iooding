@@ -1,5 +1,10 @@
-sudo hostnamectl set-hostname "k8smaster"
-host "k8smaster" | grep -m1 "k8smaster" | awk '{print $4}' | sed 's/$/ k8smaster/' | sudo tee -a /etc/hosts > /dev/null
+#!/bin/bash
+hostname="k8snode-${count_for_nodes}"
+ssh_key="/home/ubuntu/iooding-k8s-key.pem"
+k8smaster_private_ip=${k8smaster_private_ip}
+sudo hostnamectl set-hostname $hostname
+
+host $hostname | grep -m1 $hostname | awk -v hostname=$hostname '{print $4, hostname}' | ssh -i $ssh_key -o StrictHostKeyChecking=no ubuntu@$k8smaster_private_ip 'sudo tee -a /etc/hosts > /dev/null'
 
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 sudo swapoff -a
@@ -22,7 +27,8 @@ sudo sysctl --system
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" -y
-sudo apt update -y && sudo apt -y install containerd curl wget vim git gnupg2 software-properties-common apt-transport-https ca-certificates
+sudo apt update -y && sudo DEBIAN_FRONTEND=noninteractive apt upgrade -y
+sudo DEBIAN_FRONTEND=noninteractive apt -y install containerd gnupg2 software-properties-common apt-transport-https ca-certificates
 
 sudo mkdir -p /etc/containerd
 sudo containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
@@ -39,16 +45,7 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 sudo systemctl enable --now kubelet
 
-sudo kubeadm init --control-plane-endpoint=k8smaster --cri-socket /run/containerd/containerd.sock
+(sudo crontab -l 2>/dev/null ; echo "* * * * * rsync -havuz -e 'ssh -i $ssh_key -o StrictHostKeyChecking=no' ubuntu@$k8smaster_private_ip:/etc/hosts /etc/hosts") | sort - | uniq - | sudo crontab - # in case of issues stream to >> /home/ubuntu/log.txt 2>&1" after ssh
 
-mkdir -p $HOME/.kube
-sudo cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
+sudo ssh -i $ssh_key -o StrictHostKeyChecking=no ubuntu@$k8smaster_private_ip 'sudo kubeadm token create --print-join-command' | sudo bash
 
-curl https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.yaml -O
-kubectl apply -f calico.yaml
-
-# kubeadm join on worker nodes
-# -/////////////////-
-#https://thenewstack.io/how-to-deploy-kubernetes-with-kubeadm-and-containerd/
-#https://www.linuxtechi.com/install-kubernetes-on-ubuntu-22-04/
