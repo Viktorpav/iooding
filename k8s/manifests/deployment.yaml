@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iooding-blog
+  namespace: iooding
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: iooding-blog
+  template:
+    metadata:
+      labels:
+        app: iooding-blog
+    spec:
+      containers:
+        - name: blog
+          image: YOUR_DOCKER_HUB/iooding:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: ALLOWED_HOSTS
+              value: "blog.local,192.168.0.100"
+          volumeMounts:
+            - name: static
+              mountPath: /app/staticfiles
+      volumes:
+        - name: static
+          persistentVolumeClaim:
+            claimName: iooding-static

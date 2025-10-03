@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: iooding-blog
+  namespace: iooding
+spec:
+  selector:
+    app: iooding-blog
+  ports:
+    - port: 80
+      targetPort: 8000
