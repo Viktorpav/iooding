@@ -19,13 +19,15 @@ spec:
           ports:
             - containerPort: 8000
           env:
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: /root/.aws/credentials
             - name: AWS_PROFILE
-              value: "iooding"
+              value: iooding
           volumeMounts:
             - name: aws-creds
               mountPath: /root/.aws
+              readOnly: true
       volumes:
         - name: aws-creds
-          hostPath:
-            path: /Users/viktor/.aws
-            type: Directory
+          secret:
+            secretName: aws-credentials
