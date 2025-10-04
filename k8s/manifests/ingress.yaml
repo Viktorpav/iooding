@@ -1,18 +1,18 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: iooding-blog
+  name: iooding-ingress
   namespace: iooding
 spec:
   ingressClassName: nginx
   rules:
-    - host: blog.local
+    - host: iooding.local
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: iooding-blog
+                name: iooding-service
                 port:
                   number: 80

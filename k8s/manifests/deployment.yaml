@@ -14,17 +14,18 @@ spec:
         app: iooding-blog
     spec:
       containers:
-        - name: blog
-          image: YOUR_DOCKER_HUB/iooding:latest
+        - name: iooding
+          image: viktor2003/iooding:latest
           ports:
             - containerPort: 8000
           env:
-            - name: ALLOWED_HOSTS
-              value: "blog.local,192.168.0.100"
+            - name: AWS_PROFILE
+              value: "iooding"
           volumeMounts:
-            - name: static
-              mountPath: /app/staticfiles
+            - name: aws-creds
+              mountPath: /root/.aws
       volumes:
-        - name: static
-          persistentVolumeClaim:
-            claimName: iooding-static
+        - name: aws-creds
+          hostPath:
+            path: /Users/viktor/.aws
+            type: Directory

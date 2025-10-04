@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: iooding-blog
+  name: iooding-service
   namespace: iooding
 spec:
   selector:
