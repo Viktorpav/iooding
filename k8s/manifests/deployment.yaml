@@ -13,6 +13,19 @@ spec:
       labels:
         app: iooding-blog
     spec:
+      initContainers:
+        - name: migrate
+          image: viktor2003/iooding:latest
+          command: ["python", "manage.py", "migrate"]
+          env:
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: /root/.aws/credentials
+            - name: AWS_PROFILE
+              value: iooding
+          volumeMounts:
+            - name: aws-creds
+              mountPath: /root/.aws
+              readOnly: true
       containers:
         - name: iooding
           image: viktor2003/iooding:latest
