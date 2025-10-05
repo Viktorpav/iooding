@@ -18,29 +18,33 @@ spec:
           image: viktor2003/iooding:latest
           command: ["python", "manage.py", "migrate"]
           env:
-            - name: AWS_SHARED_CREDENTIALS_FILE
-              value: /root/.aws/credentials
-            - name: AWS_PROFILE
-              value: iooding
-          volumeMounts:
-            - name: aws-creds
-              mountPath: /root/.aws
-              readOnly: true
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: secret_access_key
+            - name: AWS_DEFAULT_REGION
+              value: eu-central-1
       containers:
         - name: iooding
           image: viktor2003/iooding:latest
           ports:
             - containerPort: 8000
           env:
-            - name: AWS_SHARED_CREDENTIALS_FILE
-              value: /root/.aws/credentials
-            - name: AWS_PROFILE
-              value: iooding
-          volumeMounts:
-            - name: aws-creds
-              mountPath: /root/.aws
-              readOnly: true
-      volumes:
-        - name: aws-creds
-          secret:
-            secretName: aws-credentials
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: secret_access_key
+            - name: AWS_DEFAULT_REGION
+              value: eu-central-1
