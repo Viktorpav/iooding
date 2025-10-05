@@ -1,22 +1,19 @@
-# Base image
-FROM python:3.12-slim
+FROM python:3.12-alpine
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     DJANGO_SETTINGS_MODULE=iooding.settings
 
-# Install dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install system dependencies using apk (Alpine package manager)
+RUN apk update && apk add --no-cache \
     gcc \
-    postgresql-client \
-    libpq-dev \
-    libjpeg-dev \
-    zlib1g-dev \
-    build-essential \
-    libpq-dev \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+    musl-dev \
+    postgresql-dev \
+    jpeg-dev \
+    zlib-dev \
+    libc-dev \
+    curl
 
 # Set working directory
 WORKDIR /app
@@ -31,5 +28,5 @@ COPY . .
 # Expose port for the app
 EXPOSE 8000
 
-# Use Gunicorn as entrypoint
-CMD ["gunicorn", "iooding.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+# Use Uvicorn as entrypoint
+CMD ["uvicorn", "iooding.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
