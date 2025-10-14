@@ -1,19 +1,12 @@
 FROM python:3.12-alpine
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    DJANGO_SETTINGS_MODULE=iooding.settings
-
 # Install system dependencies using apk (Alpine package manager)
-RUN apk update && apk add --no-cache \
+RUN apk add --no-cache \
     gcc \
     musl-dev \
     postgresql-dev \
     jpeg-dev \
-    zlib-dev \
-    libc-dev \
-    curl
+    zlib-dev
 
 # Set working directory
 WORKDIR /app

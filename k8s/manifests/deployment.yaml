@@ -14,6 +14,26 @@ spec:
         app: iooding-blog
     spec:
       initContainers:
+        - name: collectstatic
+          image: viktor2003/iooding:latest
+          command: ["python", "manage.py", "collectstatic", "--noinput"]
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: secret_access_key
+            - name: AWS_DEFAULT_REGION
+              value: eu-central-1
+          volumeMounts:
+            - name: static-files
+              mountPath: /app/staticfiles
+
         - name: migrate
           image: viktor2003/iooding:latest
           command: ["python", "manage.py", "migrate"]
@@ -30,6 +50,7 @@ spec:
                   key: secret_access_key
             - name: AWS_DEFAULT_REGION
               value: eu-central-1
+
       containers:
         - name: iooding
           image: viktor2003/iooding:latest
@@ -48,3 +69,10 @@ spec:
                   key: secret_access_key
             - name: AWS_DEFAULT_REGION
               value: eu-central-1
+          volumeMounts:
+            - name: static-files
+              mountPath: /app/staticfiles
+
+      volumes:
+        - name: static-files
+          emptyDir: {}
