@@ -64,6 +64,7 @@ spec:
                   key: secret_access_key
             - name: AWS_DEFAULT_REGION
               value: eu-central-1
+
       containers:
         - name: iooding
           image: viktor2003/iooding:latest
@@ -82,22 +83,10 @@ spec:
                   key: secret_access_key
             - name: AWS_DEFAULT_REGION
               value: eu-central-1
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "100m"
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 8000
-            initialDelaySeconds: 30
-            periodSeconds: 10
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 8000
-            initialDelaySeconds: 10
-            periodSeconds: 5
+          volumeMounts:
+            - name: static-files
+              mountPath: /app/staticfiles
+
+      volumes:
+        - name: static-files
+          emptyDir: {}
