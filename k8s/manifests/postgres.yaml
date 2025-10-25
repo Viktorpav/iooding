@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:14
+          image: postgres:14-bullseye
           ports:
             - containerPort: 5432
           env:
