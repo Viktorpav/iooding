@@ -30,6 +30,33 @@ spec:
                   key: secret_access_key
             - name: AWS_DEFAULT_REGION
               value: eu-central-1
+
+        - name: create-admin
+          image: viktor2003/iooding:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              python manage.py createsuperuser \
+                --noinput \
+                --username $DJANGO_ADMIN_USER \
+                --email admin@iooding.local
+              python manage.py changepassword $DJANGO_ADMIN_USER << EOF
+              $DJANGO_ADMIN_PASSWORD
+              $DJANGO_ADMIN_PASSWORD
+              EOF
+          env:
+            - name: DJANGO_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: iooding-admin-secret
+                  key: username
+            - name: DJANGO_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: iooding-admin-secret
+                  key: password
+
       containers:
         - name: iooding
           image: viktor2003/iooding:latest
