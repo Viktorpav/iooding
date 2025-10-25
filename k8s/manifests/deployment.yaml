@@ -14,33 +14,32 @@ spec:
         app: iooding-blog
     spec:
       initContainers:
-        - name: migrate
-          image: viktor2003/iooding:latest
-          command: ["python", "manage.py", "migrate"]
-          env:
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: aws-credentials
-                  key: access_key_id
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: aws-credentials
-                  key: secret_access_key
-            - name: AWS_DEFAULT_REGION
-              value: eu-central-1
-        - name: create-admin
+        - name: migrate-and-create-admin
           image: viktor2003/iooding:latest
           command:
-            - python
-            - manage.py
-            - createsuperuser
-            - --noinput
-            - --username
-            - $(DJANGO_SUPERUSER_USERNAME)
-            - --email
-            - admin@iooding.local
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "Running migrations..."
+              python manage.py migrate --noinput
+
+              echo "Ensuring superuser exists..."
+              python manage.py shell <<'PYEOF'
+              from django.contrib.auth import get_user_model
+              import os
+
+              User = get_user_model()
+              username = os.environ["DJANGO_SUPERUSER_USERNAME"]
+              password = os.environ["DJANGO_SUPERUSER_PASSWORD"]
+              email = "admin@iooding.local"
+
+              if not User.objects.filter(username=username).exists():
+                  User.objects.create_superuser(username=username, email=email, password=password)
+                  print(f"Created superuser {username}")
+              else:
+                  print(f"Superuser {username} already exists")
+              PYEOF
           env:
             - name: DJANGO_SUPERUSER_USERNAME
               valueFrom:
