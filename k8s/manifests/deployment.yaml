@@ -30,33 +30,40 @@ spec:
                   key: secret_access_key
             - name: AWS_DEFAULT_REGION
               value: eu-central-1
-
         - name: create-admin
           image: viktor2003/iooding:latest
           command:
-            - /bin/sh
-            - -c
-            - |
-              python manage.py createsuperuser \
-                --noinput \
-                --username $DJANGO_ADMIN_USER \
-                --email admin@iooding.local
-              python manage.py changepassword $DJANGO_ADMIN_USER << EOF
-              $DJANGO_ADMIN_PASSWORD
-              $DJANGO_ADMIN_PASSWORD
-              EOF
+            - python
+            - manage.py
+            - createsuperuser
+            - --noinput
+            - --username
+            - $(DJANGO_SUPERUSER_USERNAME)
+            - --email
+            - admin@iooding.local
           env:
-            - name: DJANGO_ADMIN_USER
+            - name: DJANGO_SUPERUSER_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: iooding-admin-secret
                   key: username
-            - name: DJANGO_ADMIN_PASSWORD
+            - name: DJANGO_SUPERUSER_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: iooding-admin-secret
                   key: password
-
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: secret_access_key
+            - name: AWS_DEFAULT_REGION
+              value: eu-central-1
       containers:
         - name: iooding
           image: viktor2003/iooding:latest
@@ -75,3 +82,22 @@ spec:
                   key: secret_access_key
             - name: AWS_DEFAULT_REGION
               value: eu-central-1
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
