@@ -23,20 +23,16 @@ spec:
               set -e
               echo "Running migrations..."
               python manage.py migrate --noinput
-
               echo "Collecting static files..."
               python manage.py collectstatic --noinput
-
               echo "Ensuring superuser exists..."
               python manage.py shell <<'PYEOF'
               from django.contrib.auth import get_user_model
               import os
-
               User = get_user_model()
               username = os.environ["DJANGO_SUPERUSER_USERNAME"]
               password = os.environ["DJANGO_SUPERUSER_PASSWORD"]
               email = "admin@iooding.local"
-
               if not User.objects.filter(username=username).exists():
                   User.objects.create_superuser(username=username, email=email, password=password)
                   print(f"Created superuser {username}")
@@ -66,7 +62,9 @@ spec:
                   key: secret_access_key
             - name: AWS_DEFAULT_REGION
               value: eu-central-1
-
+          volumeMounts:
+            - name: static-files
+              mountPath: /app/staticfiles
       containers:
         - name: iooding
           image: viktor2003/iooding:latest
@@ -88,7 +86,6 @@ spec:
           volumeMounts:
             - name: static-files
               mountPath: /app/staticfiles
-
       volumes:
         - name: static-files
           emptyDir: {}
