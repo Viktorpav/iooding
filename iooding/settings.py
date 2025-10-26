@@ -127,9 +127,11 @@ SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_DOMAIN = None
 CSRF_COOKIE_DOMAIN = None
 
-# Since this is a self-signed HTTPS setup under .local, keep Secure=False
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+SESSION_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SAMESITE = "None"
 
 # Make sure Django trusts HTTPS for CSRF validation
 CSRF_TRUSTED_ORIGINS = ["https://iooding.local"]
