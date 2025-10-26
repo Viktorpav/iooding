@@ -1,10 +1,15 @@
 from django import forms
-from ckeditor5.widgets import CKEditor5Widget
-from .models import Post  # replace with your model
+from .models import Post
 
-class PostForm(forms.ModelForm):
-    content = forms.CharField(widget=CKEditor5Widget(config_name='default'))
 
+class CommentForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = '__all__'
+        fields = ('name', 'email', 'body')
+        widgets = {
+            'body': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Enter your comment...'
+            }),
+        }
