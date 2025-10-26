@@ -34,7 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.sitemaps',
     'blog',
-    'ckeditor5',
+    'django_ckeditor_5',
     'ckeditor_uploader',
     'taggit',
 ]
@@ -120,13 +120,12 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # CKEditor configuration
-CKEDITOR5_CONFIGS = {
+CKEDITOR_5_CONFIGS = {
     'default': {
-        'toolbar': [
-            'heading', '|', 'bold', 'italic', 'link', 
-            'bulletedList', 'numberedList', 'blockQuote'
-        ],
-        'height': 400,
+        'toolbar': {
+            'items': ['heading', '|', 'bold', 'italic', 'link',
+                      'bulletedList', 'numberedList', 'blockQuote', 'imageUpload', ],
+        }
     }
 }
 
