@@ -5,4 +5,5 @@ psycopg2-binary==2.9.9
 Pillow==10.4.0
 django-taggit==6.1.0
 django-ckeditor==6.7.1
+django-redis
 whitenoise

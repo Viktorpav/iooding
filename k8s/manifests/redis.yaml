@@ -15,13 +15,13 @@ spec:
     spec:
       containers:
         - name: redis
-          image: bitnami/redis:7
+          image: quay.io/library/redis:7.0.11-alpine
           ports:
             - containerPort: 6379
           resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
             limits:
-              cpu: 250m
-              memory: 128Mi
+              memory: "256Mi"
+              cpu: "500m"
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
