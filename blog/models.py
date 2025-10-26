@@ -1,9 +1,8 @@
-# models
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
-from ckeditor_uploader.fields import RichTextUploadingField
+from django_ckeditor_5.fields import CKEditor5Field  # Changed import
 from taggit.managers import TaggableManager
 
 # creating model manager
@@ -14,32 +13,28 @@ class PublishedManager(models.Manager):
 # post model
 class Post(models.Model):
     STATUS_CHOICES = (
-    ('draft', 'Draft'),
-    ('published', 'Published'),
+        ('draft', 'Draft'),
+        ('published', 'Published'),
     )
-
     title = models.CharField(max_length=250)
     slug = models.SlugField(max_length=250, unique_for_date='publish')
-
     image = models.ImageField(upload_to='featured_image/%Y/%m/%d/', blank=True, null=True)
-
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_posts')
-    body = RichTextUploadingField()
-
+    body = CKEditor5Field('Text', config_name='extends')  # Changed field
     publish = models.DateTimeField(default=timezone.now)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
+    tags = TaggableManager()
 
     class Meta:
         ordering = ('-publish',)
-    
+
     def __str__(self):
         return self.title
 
-    objects = models.Manager() # The default manager.
-    published = PublishedManager() # Our custom manager.
+    objects = models.Manager()  # The default manager.
+    published = PublishedManager()  # Our custom manager.
 
     def get_absolute_url(self):
         return reverse('blog:post_detail', args=[self.slug])
@@ -47,16 +42,13 @@ class Post(models.Model):
     def get_comments(self):
         return self.comments.filter(parent=None).filter(active=True)
 
-    tags = TaggableManager()
-
 # comment model
 class Comment(models.Model):
-    post = models.ForeignKey(Post,on_delete=models.CASCADE, related_name="comments")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     name = models.CharField(max_length=50)
     email = models.EmailField()
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
     body = models.TextField()
-
     created = models.DateTimeField(auto_now_add=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
     active = models.BooleanField(default=True)

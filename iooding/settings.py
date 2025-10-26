@@ -35,7 +35,6 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
     'blog',
     'django_ckeditor_5',
-    'ckeditor_uploader',
     'taggit',
 ]
 
