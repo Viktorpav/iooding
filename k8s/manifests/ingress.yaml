@@ -4,11 +4,16 @@ metadata:
   name: iooding-ingress
   namespace: iooding
   annotations:
-    cert-manager.io/issuer: "selfsigned"
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+
+    # Sticky session config
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "iooding_affinity"
+    nginx.ingress.kubernetes.io/session-cookie-path: "/"
+    nginx.ingress.kubernetes.io/session-cookie-samesite: "Lax"
+    nginx.ingress.kubernetes.io/session-cookie-secure: "true"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "10800"
 spec:
   ingressClassName: nginx
   tls:
