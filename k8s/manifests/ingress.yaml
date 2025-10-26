@@ -5,12 +5,13 @@ metadata:
   namespace: iooding
   annotations:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/issuer: "selfsigned"
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
         - iooding.local
-      secretName: iooding-tls-secret
+      secretName: iooding-tls
   rules:
     - host: iooding.local
       http:
