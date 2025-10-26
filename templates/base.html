@@ -1,82 +1,81 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>Ding{% block title %}{% endblock title %}</title>
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-
-    <!-- static file -->
-    <link href="{% static 'css/style.css' %}" rel="stylesheet">
-    <script src="{% static 'js/main.js' %}"></script>
-
-    <!-- highlight js -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
-
-    <!-- javascript add -->
-    <script src="{% static 'js/main.js'%}"></script>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Ding{% block title %}{% endblock title %}</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <!-- static file -->
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+  <!-- highlight js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
 </head>
-<body>
 
+<body>
   <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
     <div class="container">
-      <a class="navbar-brand" href="/">Ding</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <a class="navbar-brand" href="{% url 'home' %}">Ding</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-              <li class="nav-item">
-                  <a class="nav-link {% if request.path == '/tag/linux/' %}active{% endif %}" aria-current="page" href="{{ request.scheme }}://{{ request.get_host }}/tag/linux/">Linux</a>
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'tag' and 'linux' in request.path %}active{% endif %}"
+              aria-current="page" href="{% url 'tag' slug='linux' %}">Linux</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'tag' and 'tips' in request.path %}active{% endif %}"
+              href="{% url 'tag' slug='tips' %}">Tips</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              Tutorial
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li>
+                <a class="dropdown-item {% if request.resolver_match.url_name == 'tag' and 'python' in request.path %}active{% endif %}"
+                  href="{% url 'tag' slug='python' %}">Python</a>
               </li>
-              <li class="nav-item">
-                  <a class="nav-link {% if request.path == '/tag/tips/' %}active{% endif %}" href="{{ request.scheme }}://{{ request.get_host }}/tag/tips/">Tips</a>
+              <li>
+                <a class="dropdown-item {% if request.resolver_match.url_name == 'tag' and 'django' in request.path %}active{% endif %}"
+                  href="{% url 'tag' slug='django' %}">Django</a>
               </li>
-
-              <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                      Tutorial
-                  </a>
-                  <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                      <li>
-                          <a class="dropdown-item {% if request.path == '/tag/python/' %}active{% endif %}" href="{{ request.scheme }}://{{ request.get_host }}/tag/python/">Python</a>
-                      </li>
-
-                      <li>
-                          <a class="dropdown-item {% if request.path == '/tag/django/' %}active{% endif %}" href="{{ request.scheme }}://{{ request.get_host }}/tag/django/">Django</a>
-                      </li>
-
-                  </ul>
-              </li>
-          </ul>
-        <form class="d-flex" action="/">
-            <input class="form-control mr-0" type="search" value="{{request.GET.q}}" name="q" placeholder="Search" aria-label="Search">
+            </ul>
+          </li>
+        </ul>
+        <form class="d-flex" action="{% url 'home' %}" method="get">
+          <input class="form-control me-2" type="search" value="{{ request.GET.q }}" name="q" placeholder="Search"
+            aria-label="Search">
+          <button class="btn btn-outline-primary" type="submit">Search</button>
         </form>
       </div>
     </div>
   </nav>
-
-    <main class="container my-3">
-
-        <h2 class="my-3">
-          {% if request.GET.q is not null %}
-            Search Results for "{{ request.GET.q }}"
-          {% endif %}
-        </h2>
-
-        {% block content %}
-
-        {% endblock content %}
-    </main>
-  <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-
+  <main class="container my-3">
+    {% if request.GET.q %}
+    <h2 class="my-3">
+      Search Results for "{{ request.GET.q }}"
+    </h2>
+    {% endif %}
+    {% block content %}
+    {% endblock content %}
+  </main>
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+    crossorigin="anonymous"></script>
+  <!-- javascript -->
+  <script src="{% static 'js/main.js' %}"></script>
 </body>
+
 </html>
