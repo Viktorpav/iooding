@@ -81,18 +81,23 @@ DATABASES = {
     }
 }
 
-# Use Redis for cache and sessions to support multiple replicas
+# Redis Configuration for Sessions and Cache
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/1",  # Simplified - no need for full cluster DNS
+        "LOCATION": "redis://redis:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
+        "KEY_PREFIX": "iooding",
     }
 }
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+
+# Use Redis for sessions with DB fallback
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 SESSION_CACHE_ALIAS = "default"
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_COOKIE_HTTPONLY = True
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -118,7 +123,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# CKEditor configuration
+# CKEditor 5 Configuration
 CKEDITOR_5_CONFIGS = {
     'default': {
         'toolbar': {
@@ -132,22 +137,22 @@ CKEDITOR_5_CONFIGS = {
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Do not let Django redirect to HTTPS (ingress handles that)
-SECURE_SSL_REDIRECT = False
+# Security settings for HTTPS
+SECURE_SSL_REDIRECT = False  # Ingress handles SSL termination
+SESSION_COOKIE_SECURE = True  # Only send cookie over HTTPS
+CSRF_COOKIE_SECURE = True  # Only send CSRF cookie over HTTPS
 
-# Always mark cookies secure (they’re sent via HTTPS)
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# FIXED: Use 'Lax' instead of 'None' for same-site cookies
+SESSION_COOKIE_SAMESITE = 'Lax'  # Changed from 'None'
+CSRF_COOKIE_SAMESITE = 'Lax'  # Changed from 'None'
 
-# Allow cross-site (needed for modern Chrome with HTTPS)
-SESSION_COOKIE_SAMESITE = "None"
-CSRF_COOKIE_SAMESITE = "None"
-
-# Ensure Django trusts your HTTPS origin
+# Trusted origins for CSRF
 CSRF_TRUSTED_ORIGINS = ["https://iooding.local"]
 
-# Do not override cookie domain unless you have multiple subdomains
-SESSION_COOKIE_DOMAIN = None
-CSRF_COOKIE_DOMAIN = None
+# Cookie settings
+SESSION_COOKIE_DOMAIN = None  # Let Django determine
+CSRF_COOKIE_DOMAIN = None  # Let Django determine
+SESSION_COOKIE_NAME = 'iooding_sessionid'  # Custom name to avoid conflicts
+CSRF_COOKIE_NAME = 'iooding_csrftoken'  # Custom name to avoid conflicts
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
