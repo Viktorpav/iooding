@@ -8,8 +8,11 @@ metadata:
     cert-manager.io/issuer: "selfsigned"
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    # ADD THIS - ensures ALL requests are treated as HTTPS
+
     nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
 spec:
   ingressClassName: nginx
   tls:

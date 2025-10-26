@@ -121,13 +121,13 @@ CKEDITOR5_CONFIGS = {
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# TEMPORARY - for testing only
+SESSION_COOKIE_DOMAIN = "iooding.local"
+CSRF_COOKIE_DOMAIN = "iooding.local"
+
+CSRF_TRUSTED_ORIGINS = ["https://iooding.local"]
+
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
-
-# CSRF - keep it simple  
-CSRF_COOKIE_SECURE = True
-CSRF_TRUSTED_ORIGINS = ['https://iooding.local']
 
 # Let ingress handle HTTPS redirects, not Django
 SECURE_SSL_REDIRECT = False
