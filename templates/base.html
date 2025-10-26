@@ -21,7 +21,7 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
     <div class="container">
-      <a class="navbar-brand" href="{% url 'home' %}">Ding</a>
+      <a class="navbar-brand" href="{% url 'blog:post_list' %}">Ding</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -29,12 +29,12 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'tag' and 'linux' in request.path %}active{% endif %}"
-              aria-current="page" href="{% url 'tag' slug='linux' %}">Linux</a>
+            <a class="nav-link {% if '/tag/linux/' in request.path %}active{% endif %}" aria-current="page"
+              href="{% url 'blog:post_tag' tag_slug='linux' %}">Linux</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'tag' and 'tips' in request.path %}active{% endif %}"
-              href="{% url 'tag' slug='tips' %}">Tips</a>
+            <a class="nav-link {% if '/tag/tips/' in request.path %}active{% endif %}"
+              href="{% url 'blog:post_tag' tag_slug='tips' %}">Tips</a>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
@@ -43,17 +43,17 @@
             </a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
               <li>
-                <a class="dropdown-item {% if request.resolver_match.url_name == 'tag' and 'python' in request.path %}active{% endif %}"
-                  href="{% url 'tag' slug='python' %}">Python</a>
+                <a class="dropdown-item {% if '/tag/python/' in request.path %}active{% endif %}"
+                  href="{% url 'blog:post_tag' tag_slug='python' %}">Python</a>
               </li>
               <li>
-                <a class="dropdown-item {% if request.resolver_match.url_name == 'tag' and 'django' in request.path %}active{% endif %}"
-                  href="{% url 'tag' slug='django' %}">Django</a>
+                <a class="dropdown-item {% if '/tag/django/' in request.path %}active{% endif %}"
+                  href="{% url 'blog:post_tag' tag_slug='django' %}">Django</a>
               </li>
             </ul>
           </li>
         </ul>
-        <form class="d-flex" action="{% url 'home' %}" method="get">
+        <form class="d-flex" action="{% url 'blog:post_list' %}" method="get">
           <input class="form-control me-2" type="search" value="{{ request.GET.q }}" name="q" placeholder="Search"
             aria-label="Search">
           <button class="btn btn-outline-primary" type="submit">Search</button>
