@@ -3,8 +3,14 @@ kind: Ingress
 metadata:
   name: iooding-ingress
   namespace: iooding
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - iooding.local
+      secretName: iooding-tls-secret
   rules:
     - host: iooding.local
       http:
