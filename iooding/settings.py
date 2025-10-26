@@ -117,36 +117,19 @@ CKEDITOR5_CONFIGS = {
     }
 }
 
-# Proxy settings for ingress-nginx (CRITICAL for Kubernetes)
+# Trust the ingress-nginx proxy
 USE_X_FORWARDED_HOST = True
-USE_X_FORWARDED_PORT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Session Configuration
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 1209600  # 2 weeks
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_SAMESITE = 'Lax'
+# Session - keep it simple
+SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = True  # Always True since ingress forces HTTPS
-SESSION_COOKIE_NAME = 'iooding_sessionid'
-SESSION_COOKIE_DOMAIN = None  # Let Django auto-detect
 
-# CSRF Configuration
-CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_HTTPONLY = False  # Must be False so JavaScript can read it
-CSRF_COOKIE_SECURE = True  # Always True since ingress forces HTTPS
-CSRF_COOKIE_NAME = 'iooding_csrftoken'
-CSRF_USE_SESSIONS = False
-CSRF_TRUSTED_ORIGINS = [
-    'https://iooding.local',  # Only HTTPS since ingress forces it
-]
+# CSRF - keep it simple  
+CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = ['https://iooding.local']
 
-# Security settings - Always on since you're using HTTPS
-SECURE_BROWSER_XSS_FILTER = True
-X_FRAME_OPTIONS = 'DENY'
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_SSL_REDIRECT = False  # Let ingress handle this, not Django
-SECURE_REFERRER_POLICY = 'same-origin'
+# Let ingress handle HTTPS redirects, not Django
+SECURE_SSL_REDIRECT = False
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
