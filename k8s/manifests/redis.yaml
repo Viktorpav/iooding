@@ -25,3 +25,10 @@ spec:
             limits:
               cpu: 250m
               memory: 128Mi
+          # simple persistence
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+      volumes:
+        - name: redis-data
+          emptyDir: {} # can later switch to PVC for production
