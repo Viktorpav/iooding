@@ -4,7 +4,7 @@ metadata:
   name: iooding-blog
   namespace: iooding
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: iooding-blog
