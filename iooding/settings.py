@@ -121,19 +121,22 @@ CKEDITOR5_CONFIGS = {
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Let ingress handle HTTPS redirects, not Django
+# Do not let Django redirect to HTTPS (ingress handles that)
 SECURE_SSL_REDIRECT = False
 
-SESSION_COOKIE_DOMAIN = None
-CSRF_COOKIE_DOMAIN = None
-
+# Always mark cookies secure (they’re sent via HTTPS)
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
+# Allow cross-site (needed for modern Chrome with HTTPS)
 SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"
 
-# Make sure Django trusts HTTPS for CSRF validation
+# Ensure Django trusts your HTTPS origin
 CSRF_TRUSTED_ORIGINS = ["https://iooding.local"]
+
+# Do not override cookie domain unless you have multiple subdomains
+SESSION_COOKIE_DOMAIN = None
+CSRF_COOKIE_DOMAIN = None
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

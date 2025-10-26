@@ -14,6 +14,8 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
     nginx.ingress.kubernetes.io/x-forwarded-proto: "https"
+
+    nginx.ingress.kubernetes.io/x-forwarded-prefix: "/"
 spec:
   ingressClassName: nginx
   tls:
