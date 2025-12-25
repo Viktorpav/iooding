@@ -1,26 +1,26 @@
 from pathlib import Path
 import os
 import boto3
+from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-ssm = boto3.client('ssm')
+# Try to get parameters from SSM if configured, otherwise rely on env vars
+def get_ssm_param(name, default=None):
+    try:
+        ssm = boto3.client('ssm', region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'))
+        return ssm.get_parameter(Name=name, WithDecryption=True)['Parameter']['Value']
+    except (BotoCoreError, ClientError, NoCredentialsError):
+        return default
 
 prefix = 'iooding'
 
-# Fetch required secrets directly
-SECRET_KEY = ssm.get_parameter(
-    Name=f'{prefix}_django_secret_key',
-    WithDecryption=True
-)['Parameter']['Value']
-
-DB_PASSWORD_PARAM = ssm.get_parameter(
-    Name=f'{prefix}_db_password',
-    WithDecryption=True
-)['Parameter']['Value']
+# Fetch required secrets - prioritize env vars, then SSM
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or get_ssm_param(f'{prefix}_django_secret_key') or 'django-insecure-local-dev-key'
+DB_PASSWORD = os.environ.get('DB_PASSWORD') or get_ssm_param(f'{prefix}_db_password') or 'postgres'
 
 DEBUG = os.environ.get("DEBUG", "False") == "True"
-ALLOWED_HOSTS = ['iooding.local', '192.168.0.100']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'iooding.local,192.168.0.101,localhost,127.0.0.1').split(',')
 SITE_ID = 1
 
 # Application definition
@@ -69,23 +69,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'iooding.wsgi.application'
 
-# Database - PostgreSQL in k8s
+# Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'iooding',
-        'USER': 'iooding',
-        'PASSWORD': DB_PASSWORD_PARAM,
-        'HOST': 'postgres',
-        'PORT': '5432',
+        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': os.environ.get('DB_NAME', 'iooding'),
+        'USER': os.environ.get('DB_USER', 'iooding'),
+        'PASSWORD': DB_PASSWORD,
+        'HOST': os.environ.get('DB_HOST', 'postgres'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
-# Redis Configuration for Sessions and Cache
+# Redis Configuration
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/1",
+        "LOCATION": os.environ.get('REDIS_URL', "redis://redis:6379/1"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
@@ -138,22 +138,25 @@ CKEDITOR_5_CONFIGS = {
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Security settings for HTTPS
-SECURE_SSL_REDIRECT = False  # Ingress handles SSL termination
-SESSION_COOKIE_SECURE = True  # Only send cookie over HTTPS
-CSRF_COOKIE_SECURE = True  # Only send CSRF cookie over HTTPS
+# Security settings
+# In production (DEBUG=False), we want these True.
+# In local (DEBUG=True), we might want them False if not using https locally.
+HTTPS_ENABLED = os.environ.get('HTTPS_ENABLED', 'False') == 'True'
 
-# FIXED: Use 'Lax' instead of 'None' for same-site cookies
-SESSION_COOKIE_SAMESITE = 'Lax'  # Changed from 'None'
-CSRF_COOKIE_SAMESITE = 'Lax'  # Changed from 'None'
+SECURE_SSL_REDIRECT = not DEBUG or HTTPS_ENABLED
+SESSION_COOKIE_SECURE = not DEBUG or HTTPS_ENABLED
+CSRF_COOKIE_SECURE = not DEBUG or HTTPS_ENABLED
+
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 # Trusted origins for CSRF
-CSRF_TRUSTED_ORIGINS = ["https://iooding.local"]
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', "https://iooding.local").split(',')
 
 # Cookie settings
-SESSION_COOKIE_DOMAIN = None  # Let Django determine
-CSRF_COOKIE_DOMAIN = None  # Let Django determine
-SESSION_COOKIE_NAME = 'iooding_sessionid'  # Custom name to avoid conflicts
-CSRF_COOKIE_NAME = 'iooding_csrftoken'  # Custom name to avoid conflicts
+SESSION_COOKIE_DOMAIN = None
+CSRF_COOKIE_DOMAIN = None
+SESSION_COOKIE_NAME = 'iooding_sessionid'
+CSRF_COOKIE_NAME = 'iooding_csrftoken'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
