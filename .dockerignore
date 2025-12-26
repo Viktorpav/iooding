@@ -27,4 +27,3 @@ Thumbs.db
 *~
 nginx/
 README.md
-k8s/manifests/aws-secret.yaml

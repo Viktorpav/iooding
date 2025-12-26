@@ -15,30 +15,8 @@ spec:
     spec:
       initContainers:
         - name: migrate-and-create-admin
-          image: viktor2003/iooding:v2
-          command:
-            - /bin/sh
-            - -c
-            - |
-              set -e
-              echo "Running migrations..."
-              python manage.py migrate --noinput
-              echo "Collecting static files..."
-              python manage.py collectstatic --noinput
-              echo "Ensuring superuser exists..."
-              python manage.py shell <<'PYEOF'
-              from django.contrib.auth import get_user_model
-              import os
-              User = get_user_model()
-              username = os.environ["DJANGO_SUPERUSER_USERNAME"]
-              password = os.environ["DJANGO_SUPERUSER_PASSWORD"]
-              email = "admin@iooding.local"
-              if not User.objects.filter(username=username).exists():
-                  User.objects.create_superuser(username=username, email=email, password=password)
-                  print(f"Created superuser {username}")
-              else:
-                  print(f"Superuser {username} already exists")
-              PYEOF
+          image: viktor2003/iooding:v3
+          command: ["/app/docker-entrypoint.sh", "init"]
           env:
             - name: DJANGO_SUPERUSER_USERNAME
               valueFrom:
@@ -67,7 +45,14 @@ spec:
               mountPath: /app/staticfiles
       containers:
         - name: iooding
-          image: viktor2003/iooding:v2
+          image: viktor2003/iooding:v3
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
           ports:
             - containerPort: 8000
           env:
