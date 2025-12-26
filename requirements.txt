@@ -1,6 +1,7 @@
 boto3
 Django==5.2.7
 uvicorn
+gunicorn
 psycopg2-binary==2.9.9
 Pillow==10.4.0
 django-taggit==6.1.0

@@ -15,11 +15,10 @@ spec:
     spec:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 100  # django user id (created by adduser -S default starts at 100 or higher, usually 100/101 in alpine. Setting specific ID is safer but let's assume default unless specified in dockerfile. Alpine 'adduser' defaults to next available system ID. System users < 999. Let's rely on name/image for now or verify ID? Better to stick to image user or generic high ID if we set it in dockerfile. In dockerfile we used 'django'. Let's avoid hardcoding ID in k8s unless we hardcode in Dockerfile. Actually, runAsNonRoot: true is enough if the image USER is set.)
-        # However, runAsNonRoot checks the image metadata. If we just say runAsNonRoot: true it should pass since USER django is set.
+        runAsUser: 100
       initContainers:
         - name: migrate-and-create-admin
-          image: viktor2003/iooding:v5
+          image: viktor2003/iooding:v6
           command: ["/app/docker-entrypoint.sh", "init"]
           env:
             - name: DJANGO_SUPERUSER_USERNAME
@@ -49,7 +48,7 @@ spec:
               mountPath: /app/staticfiles
       containers:
         - name: iooding
-          image: viktor2003/iooding:v5
+          image: viktor2003/iooding:v6
           resources:
             requests:
               memory: "128Mi"

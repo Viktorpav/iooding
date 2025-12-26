@@ -48,5 +48,5 @@ EXPOSE 8000
 USER django
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-# Use Uvicorn as default command
-CMD ["uvicorn", "iooding.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
+# Use Gunicorn with Uvicorn workers for production readiness
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "iooding.asgi:application", "--bind", "0.0.0.0:8000"]
