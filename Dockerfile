@@ -1,6 +1,9 @@
-FROM python:3.12-alpine
+# Builder stage
+FROM python:3.12-alpine as builder
 
-# Install system dependencies using apk (Alpine package manager)
+WORKDIR /app
+
+# Install build dependencies
 RUN apk add --no-cache \
     gcc \
     musl-dev \
@@ -8,14 +11,26 @@ RUN apk add --no-cache \
     jpeg-dev \
     zlib-dev
 
-# Set working directory
+# Install python dependencies to a temporary location
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# Runner stage
+FROM python:3.12-alpine
+
 WORKDIR /app
 
-# Copy Python requirements first for caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install runtime dependencies only
+RUN apk add --no-cache \
+    libpq \
+    jpeg \
+    zlib \
+    bash
 
-# Copy the rest of the project
+# Copy installed python dependencies from builder
+COPY --from=builder /install /usr/local
+
+# Copy application code
 COPY . .
 
 # Copy entrypoint script

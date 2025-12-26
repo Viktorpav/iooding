@@ -15,7 +15,7 @@ spec:
     spec:
       initContainers:
         - name: migrate-and-create-admin
-          image: viktor2003/iooding:v3
+          image: viktor2003/iooding:v4
           command: ["/app/docker-entrypoint.sh", "init"]
           env:
             - name: DJANGO_SUPERUSER_USERNAME
@@ -45,7 +45,7 @@ spec:
               mountPath: /app/staticfiles
       containers:
         - name: iooding
-          image: viktor2003/iooding:v3
+          image: viktor2003/iooding:v4
           resources:
             requests:
               memory: "128Mi"
@@ -71,6 +71,17 @@ spec:
           volumeMounts:
             - name: static-files
               mountPath: /app/staticfiles
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 5
       volumes:
         - name: static-files
           emptyDir: {}
