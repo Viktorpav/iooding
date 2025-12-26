@@ -49,4 +49,5 @@ USER django
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 # Use Gunicorn with Uvicorn workers for production readiness
-CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "iooding.asgi:application", "--bind", "0.0.0.0:8000"]
+# Reduced to 2 workers for stability in 256MB RAM environment
+CMD ["gunicorn", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "iooding.asgi:application", "--bind", "0.0.0.0:8000"]

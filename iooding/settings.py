@@ -131,6 +131,12 @@ CKEDITOR_5_CONFIGS = {
             'items': ['heading', '|', 'bold', 'italic', 'link',
                       'bulletedList', 'numberedList', 'blockQuote', 'imageUpload', ],
         }
+    },
+    'extends': {
+        'toolbar': {
+            'items': ['heading', '|', 'bold', 'italic', 'link',
+                      'bulletedList', 'numberedList', 'blockQuote', 'imageUpload', ],
+        }
     }
 }
 
