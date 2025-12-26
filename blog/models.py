@@ -39,6 +39,16 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse('blog:post_detail', args=[self.slug])
 
+    @property
+    def read_time(self):
+        # Average reading speed is ~200 words per minute
+        # We strip tags from body to get actual text content
+        import re
+        text = re.sub('<[^<]+?>', '', self.body)
+        word_count = len(text.split())
+        read_time = round(word_count / 200)
+        return max(1, read_time)
+
     def get_comments(self):
         return self.comments.filter(parent=None).filter(active=True)
 

@@ -7,29 +7,34 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Ding{% block title %}{% endblock title %}</title>
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
   <!-- static file -->
   <link href="{% static 'css/style.css' %}" rel="stylesheet">
   <!-- highlight js -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/atom-one-dark.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script>
+  <script>hljs.highlightAll();</script>
 </head>
 
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+  <nav class="navbar navbar-expand-lg navbar-light">
     <div class="container">
-      <a class="navbar-brand" href="{% url 'blog:post_list' %}">Ding</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <a class="navbar-brand fw-bold" href="{% url 'blog:post_list' %}">Ding</a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+        aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link {% if '/tag/linux/' in request.path %}active{% endif %}" aria-current="page"
+            <a class="nav-link {% if '/tag/linux/' in request.path %}active{% endif %}"
               href="{% url 'blog:post_tag' tag_slug='linux' %}">Linux</a>
           </li>
           <li class="nav-item">
@@ -41,7 +46,7 @@
               aria-expanded="false">
               Tutorial
             </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <ul class="dropdown-menu border-0 shadow-sm" aria-labelledby="navbarDropdown">
               <li>
                 <a class="dropdown-item {% if '/tag/python/' in request.path %}active{% endif %}"
                   href="{% url 'blog:post_tag' tag_slug='python' %}">Python</a>
@@ -54,22 +59,28 @@
           </li>
         </ul>
         <form class="d-flex" action="{% url 'blog:post_list' %}" method="get">
-          <input class="form-control me-2" type="search" value="{{ request.GET.q }}" name="q" placeholder="Search"
-            aria-label="Search">
+          <input class="form-control me-2 border-0 bg-light" type="search" value="{{ request.GET.q }}" name="q"
+            placeholder="Search" aria-label="Search">
           <button class="btn btn-outline-primary" type="submit">Search</button>
         </form>
       </div>
     </div>
   </nav>
-  <main class="container my-3">
+
+  <main class="container my-5">
     {% if request.GET.q %}
-    <h2 class="my-3">
+    <h2 class="mb-4">
       Search Results for "{{ request.GET.q }}"
     </h2>
     {% endif %}
     {% block content %}
     {% endblock content %}
   </main>
+
+  <footer class="container">
+    <p>&copy; {% now "Y" %} Ding. All rights reserved.</p>
+  </footer>
+
   <!-- Bootstrap Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"

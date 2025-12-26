@@ -1,33 +1,38 @@
-<div class="border-0 border-start border-2 ps-2" id="{{comment.id}}">
-
-    <div class="mt-3">
-        <strong>{{comment.name}}</strong>
-        {% if  comment.parent.name%} to <strong>{{comment.parent.name}}</strong>{% endif %}
-        <small class="text-muted">&middot {{ comment.created | date:"j M Y, H:i" }}</small>  <!-- date:"j M Y, H:i" -->
-    </div>
-    <div class="border p-2 rounded">
-        <p>{{comment.body}}</p>
-        <button class="btn btn-primary btn-sm" onclick="handleReply({{ comment.id }})">Reply</button>
-
-        <div id="reply-form-container-{{comment.id}}" style="display:none">
-
-            <form method="post" action="{% url 'blog:reply' %}" class="mt-3">
-                {% csrf_token %}
-                <input type="hidden" name="post_id" value="{{post.id}}">
-                <input type="hidden" name="parent" value="{{comment.id}}">
-                <input type="hidden" name="post_url" value="{{post.get_absolute_url}}">
-
-
-                {{comment_form.as_p}}
-
-                <div>
-                    <button type="button" onclick="handleCancel({{comment.id}})" class="btn btn-light border btn-sm">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Submit</button>
-                </div>
-            </form>
+<div class="mb-4" id="{{comment.id}}">
+    <div class="border-start border-3 ps-3 border-primary border-opacity-25">
+        <div class="mb-2">
+            <span class="fw-bold">{{comment.name}}</span>
+            {% if comment.parent.name %} <span class="text-muted mx-1">&rarr;</span> <span
+                class="fw-bold">{{comment.parent.name}}</span>{% endif %}
+            <small class="text-muted ms-2">&middot; {{ comment.created | date:"j M Y" }}</small>
         </div>
+        <div class="bg-light bg-opacity-50 p-3 rounded mb-2">
+            <p class="mb-2">{{comment.body}}</p>
+            <button class="btn btn-link btn-sm p-0 text-decoration-none fw-bold"
+                onclick="handleReply({{ comment.id }})">Reply</button>
+
+            <div id="reply-form-container-{{comment.id}}" style="display:none" class="mt-3">
+                <form method="post" action="{% url 'blog:reply' %}" class="bg-white p-3 rounded shadow-sm border">
+                    {% csrf_token %}
+                    <input type="hidden" name="post_id" value="{{post.id}}">
+                    <input type="hidden" name="parent" value="{{comment.id}}">
+                    <input type="hidden" name="post_url" value="{{post.get_absolute_url}}">
+
+                    {{comment_form.as_p}}
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                        <button type="button" onclick="handleCancel({{comment.id}})"
+                            class="btn btn-outline-secondary btn-sm">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% for comment in comment.get_comments %}
+        <div class="mt-3">
+            {% include 'comment.html' with comment=comment %}
+        </div>
+        {% endfor %}
     </div>
-    {% for comment in comment.get_comments %}
-    {% include 'comment.html' with comment=comment %}
-    {% endfor %}
 </div>

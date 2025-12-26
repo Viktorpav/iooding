@@ -48,7 +48,7 @@ spec:
               mountPath: /app/staticfiles
       containers:
         - name: iooding
-          image: viktor2003/iooding:v6
+          image: viktor2003/iooding:v7
           resources:
             requests:
               memory: "128Mi"
