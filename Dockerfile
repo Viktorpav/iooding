@@ -1,5 +1,5 @@
 # Builder stage
-FROM python:3.12-alpine as builder
+FROM python:3.12-alpine AS builder
 
 WORKDIR /app
 
@@ -20,6 +20,9 @@ FROM python:3.12-alpine
 
 WORKDIR /app
 
+# Create a non-root user
+RUN addgroup -S django && adduser -S django -G django
+
 # Install runtime dependencies only
 RUN apk add --no-cache \
     libpq \
@@ -33,12 +36,16 @@ COPY --from=builder /install /usr/local
 # Copy application code
 COPY . .
 
-# Copy entrypoint script
+# Copy entrypoint script and set permissions
 COPY docker-entrypoint.sh /app/
-RUN chmod +x /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh && \
+    chown -R django:django /app
 
 # Expose port for the app
 EXPOSE 8000
+
+# Switch to non-root user
+USER django
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 # Use Uvicorn as default command
