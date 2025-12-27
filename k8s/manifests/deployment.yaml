@@ -16,6 +16,26 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 100
+      # Fast eviction tolerations - pods will be evicted after 30s if node becomes unreachable
+      tolerations:
+        - key: "node.kubernetes.io/not-ready"
+          operator: "Exists"
+          effect: "NoExecute"
+          tolerationSeconds: 30
+        - key: "node.kubernetes.io/unreachable"
+          operator: "Exists"
+          effect: "NoExecute"
+          tolerationSeconds: 30
+      # Spread pods across nodes when possible
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: iooding-blog
+                topologyKey: kubernetes.io/hostname
       initContainers:
         - name: migrate-and-create-admin
           image: viktor2003/iooding:v8
