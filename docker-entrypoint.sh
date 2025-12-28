@@ -1,13 +1,10 @@
 #!/bin/sh
 set -e
 
-# Function to run initialization tasks
-run_init() {
+# Function to run database migrations
+run_migrate() {
     echo "Running migrations..."
     python manage.py migrate --noinput
-    
-    echo "Collecting static files..."
-    python manage.py collectstatic --noinput
     
     if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then
         echo "Ensuring superuser exists..."
@@ -27,9 +24,20 @@ pyEOF
     fi
 }
 
-# If the first argument is 'init', run initialization
-if [ "$1" = 'init' ]; then
-    run_init
+# Function to collect static files
+run_static() {
+    echo "Collecting static files..."
+    python manage.py collectstatic --noinput
+}
+
+# Command dispatch
+if [ "$1" = 'migrate' ]; then
+    run_migrate
+    exit 0
+fi
+
+if [ "$1" = 'static' ]; then
+    run_static
     exit 0
 fi
 

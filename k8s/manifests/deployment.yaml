@@ -38,8 +38,8 @@ spec:
                 topologyKey: kubernetes.io/hostname
       initContainers:
         - name: migrate-and-create-admin
-          image: viktor2003/iooding:v8
-          command: ["/app/docker-entrypoint.sh", "init"]
+          image: viktor2003/iooding:v9
+          command: ["/app/docker-entrypoint.sh", "static"]
           env:
             - name: DJANGO_SUPERUSER_USERNAME
               valueFrom:
@@ -68,7 +68,7 @@ spec:
               mountPath: /app/staticfiles
       containers:
         - name: iooding
-          image: viktor2003/iooding:v8
+          image: viktor2003/iooding:v9
           resources:
             requests:
               memory: "128Mi"
