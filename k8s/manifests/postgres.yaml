@@ -24,6 +24,8 @@ spec:
           operator: "Exists"
           effect: "NoExecute"
           tolerationSeconds: 30
+      nodeSelector:
+        kubernetes.io/hostname: worker-1
       containers:
         - name: postgres
           image: postgres:14-bullseye
@@ -39,3 +41,15 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: password
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: "manual"
+        resources:
+          requests:
+            storage: 5Gi

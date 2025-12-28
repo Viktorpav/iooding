@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: setup-postgres-dir
+  namespace: iooding
+spec:
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker-1
+      containers:
+        - name: setup
+          image: busybox
+          command: ["sh", "-c", "mkdir -p /mnt/postgres-data && chmod 777 /mnt/postgres-data && ls -la /mnt"]
+          volumeMounts:
+            - name: host-root
+              mountPath: /mnt
+      restartPolicy: Never
+      volumes:
+        - name: host-root
+          hostPath:
+            path: /mnt
+            type: DirectoryOrCreate
+  backoffLimit: 1
