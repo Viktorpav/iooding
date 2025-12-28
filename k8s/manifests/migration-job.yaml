@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: iooding-migration
+  name: iooding-migration-v10
   namespace: iooding
   annotations:
     argocd.argoproj.io/hook: Sync
@@ -33,11 +33,6 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: password
-            - name: DJANGO_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: iooding-django-secret
-                  key: secret_key
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
