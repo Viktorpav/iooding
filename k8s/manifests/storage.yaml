@@ -62,3 +62,31 @@ spec:
     requests:
       storage: 5Gi
   volumeName: media-pv
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: iooding-storage-setup
+  namespace: iooding
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker-1
+      containers:
+        - name: setup
+          image: busybox
+          command: ["sh", "-c", "mkdir -p /mnt/postgres-data /mnt/iooding-media && chown 999:999 /mnt/postgres-data && chmod 777 /mnt/iooding-media"]
+          volumeMounts:
+            - name: host-root
+              mountPath: /mnt
+      restartPolicy: Never
+      volumes:
+        - name: host-root
+          hostPath:
+            path: /mnt
+            type: Directory
+  backoffLimit: 1
