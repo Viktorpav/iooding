@@ -71,6 +71,8 @@ spec:
           volumeMounts:
             - name: static-files
               mountPath: /app/staticfiles
+            - name: media-storage
+              mountPath: /app/media
       containers:
         - name: iooding
           image: viktor2003/iooding:v9
@@ -110,6 +112,8 @@ spec:
           volumeMounts:
             - name: static-files
               mountPath: /app/staticfiles
+            - name: media-storage
+              mountPath: /app/media
           livenessProbe:
             tcpSocket:
               port: 8000
@@ -127,3 +131,6 @@ spec:
       volumes:
         - name: static-files
           emptyDir: {}
+        - name: media-storage
+          persistentVolumeClaim:
+            claimName: media-pvc
