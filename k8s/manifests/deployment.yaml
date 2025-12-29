@@ -26,6 +26,7 @@ spec:
           operator: "Exists"
           effect: "NoExecute"
           tolerationSeconds: 30
+      priorityClassName: iooding-critical
       # Spread pods across nodes when possible
       affinity:
         podAntiAffinity:
@@ -39,7 +40,7 @@ spec:
       initContainers:
         - name: migrate-and-create-admin
           image: viktor2003/iooding:v9
-          command: ["/app/docker-entrypoint.sh", "static"]
+          command: ["sh", "-c", "/app/docker-entrypoint.sh migrate && /app/docker-entrypoint.sh static"]
           env:
             - name: DJANGO_SUPERUSER_USERNAME
               valueFrom:
@@ -62,20 +63,21 @@ spec:
                   name: aws-credentials
                   key: secret_access_key
             - name: AWS_DEFAULT_REGION
-              value: eu-central-1
+              value: "eu-central-1"
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: postgres-secret
                   key: password
+            - name: DB_HOST
+              value: "postgres"
           volumeMounts:
-            - name: static-files
-              mountPath: /app/staticfiles
             - name: media-storage
               mountPath: /app/media
       containers:
         - name: iooding
           image: viktor2003/iooding:v9
+          imagePullPolicy: Always
           resources:
             requests:
               memory: "128Mi"
