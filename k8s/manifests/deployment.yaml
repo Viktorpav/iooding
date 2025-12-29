@@ -4,7 +4,7 @@ metadata:
   name: iooding-blog
   namespace: iooding
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: iooding-blog
@@ -81,9 +81,9 @@ spec:
           resources:
             requests:
               memory: "128Mi"
-              cpu: "100m"
+              cpu: "50m"
             limits:
-              memory: "256Mi"
+              memory: "384Mi"
               cpu: "500m"
           ports:
             - containerPort: 8000
