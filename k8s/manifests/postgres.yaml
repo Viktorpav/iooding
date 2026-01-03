@@ -1,3 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: iooding
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -14,7 +27,6 @@ spec:
       labels:
         app: postgres
     spec:
-      priorityClassName: iooding-critical
       # Fast eviction tolerations
       tolerations:
         - key: "node.kubernetes.io/not-ready"
