@@ -20,7 +20,9 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or get_ssm_param(f'{prefix}_dja
 DB_PASSWORD = os.environ.get('DB_PASSWORD') or get_ssm_param(f'{prefix}_db_password') or 'postgres'
 
 DEBUG = os.environ.get("DEBUG", "False") == "True"
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'iooding.local,192.168.0.101,localhost,127.0.0.1').split(',')
+# In a container/K8s environment, the Ingress (Nginx) handles domain security.
+# Using '*' allows K8s health checks and various internal IPs to work without complex scripts.
+ALLOWED_HOSTS = ['*']
 SITE_ID = 1
 
 # Application definition
