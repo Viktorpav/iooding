@@ -44,16 +44,16 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 100
-      # Fast eviction tolerations - pods will be evicted after 30s if node becomes unreachable
+      # Fast eviction tolerations - pods will be evicted after 10s if node becomes unreachable
       tolerations:
         - key: "node.kubernetes.io/not-ready"
           operator: "Exists"
           effect: "NoExecute"
-          tolerationSeconds: 30
+          tolerationSeconds: 10
         - key: "node.kubernetes.io/unreachable"
           operator: "Exists"
           effect: "NoExecute"
-          tolerationSeconds: 30
+          tolerationSeconds: 10
       # Spread pods across nodes when possible
       affinity:
         podAntiAffinity:
