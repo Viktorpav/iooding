@@ -5,6 +5,7 @@ from .models import Post, Comment
 from .forms import CommentForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Count
+from django.http import HttpResponse
 
 
 def post_list(request, tag_slug=None):
@@ -95,3 +96,8 @@ def reply_page(request):
             return redirect(post_url + '#' + str(reply.id))
     
     return redirect("/")
+
+
+def health_check(request):
+    """Simplified health check for K8s probes"""
+    return HttpResponse("ok", content_type="text/plain")

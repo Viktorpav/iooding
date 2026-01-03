@@ -5,6 +5,7 @@ metadata:
   namespace: iooding
 spec:
   replicas: 2
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: iooding-blog
@@ -120,19 +121,19 @@ spec:
               mountPath: /app/staticfiles
             - name: media-storage
               mountPath: /app/media
+            - name: tmp-volume
+              mountPath: /tmp
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health/
               port: 8000
-            initialDelaySeconds: 30
+            initialDelaySeconds: 15
             periodSeconds: 10
           readinessProbe:
             httpGet:
-              path: /
+              path: /health/
               port: 8000
-              httpHeaders:
-                - name: Host
-                  value: iooding.local
-            initialDelaySeconds: 15
+            initialDelaySeconds: 5
             periodSeconds: 5
       volumes:
         - name: static-files
@@ -140,3 +141,6 @@ spec:
         - name: media-storage
           persistentVolumeClaim:
             claimName: media-pvc
+        - name: tmp-volume
+          emptyDir:
+            medium: Memory
