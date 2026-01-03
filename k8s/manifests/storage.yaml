@@ -12,8 +12,8 @@ metadata:
   namespace: iooding
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   storageClassName: longhorn
   resources:
     requests:
-      storage: 5Gi
+      storage: 1Gi

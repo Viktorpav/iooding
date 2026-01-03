@@ -71,12 +71,11 @@ spec:
     - metadata:
         name: postgres-data
         labels:
-          # Enable automatic backups
-          recurring-job.longhorn.io/source: enabled
-          recurring-job-group.longhorn.io/backup: enabled
+          # Enable automatic backups (only for database)
+          recurring-job-group.longhorn.io/important: enabled
       spec:
         accessModes: ["ReadWriteOnce"]
         storageClassName: "longhorn"
         resources:
           requests:
-            storage: 5Gi
+            storage: 1Gi
