@@ -114,6 +114,9 @@ spec:
       labels:
         app: iooding-blog
     spec:
+      # Fast pod deletion on node failure
+      terminationGracePeriodSeconds: 10
+      
       securityContext:
         runAsNonRoot: true
         runAsUser: 100

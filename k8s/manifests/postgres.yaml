@@ -27,6 +27,9 @@ spec:
       labels:
         app: postgres
     spec:
+      # Fast pod deletion on node failure
+      terminationGracePeriodSeconds: 10
+      
       # Fast eviction tolerations
       tolerations:
         - key: "node.kubernetes.io/not-ready"
@@ -79,6 +82,29 @@ spec:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
               subPath: pgdata
+          
+          # Aggressive health checks for fast failure detection
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U iooding -d iooding
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U iooding -d iooding
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
   volumeClaimTemplates:
     - metadata:
         name: postgres-data
