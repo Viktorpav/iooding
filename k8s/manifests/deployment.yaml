@@ -97,7 +97,7 @@ spec:
                   name: postgres-secret
                   key: password
             - name: ALLOWED_HOSTS
-              value: "iooding.local,192.168.0.101,localhost,127.0.0.1"
+              value: "*"
             - name: DB_HOST
               value: "postgres"
             - name: REDIS_URL
