@@ -83,6 +83,16 @@ spec:
               mountPath: /var/lib/postgresql/data
               subPath: pgdata
           
+          # Give DB up to 5 minutes to recover/replay logs before liveness probe kicks in
+          startupProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U iooding -d iooding
+            failureThreshold: 30
+            periodSeconds: 10
+
           # Aggressive health checks for fast failure detection
           livenessProbe:
             exec:
