@@ -193,7 +193,7 @@ spec:
             - name: DEBUG
               value: "True"
             - name: HTTPS_ENABLED
-              value: "True"
+              value: "False"
             - name: CSRF_TRUSTED_ORIGINS
               value: "https://iooding.local"
             - name: AWS_ACCESS_KEY_ID
