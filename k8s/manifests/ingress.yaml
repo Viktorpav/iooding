@@ -13,6 +13,7 @@ metadata:
   name: iooding-ingress
   namespace: iooding
   annotations:
+    cert-manager.io/issuer: "iooding-ca-issuer"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
@@ -25,12 +26,13 @@ metadata:
     nginx.ingress.kubernetes.io/session-cookie-secure: "true"
     nginx.ingress.kubernetes.io/session-cookie-max-age: "10800"
     nginx.ingress.kubernetes.io/proxy-body-size: "20m"
-    # Security Headers
+    # Best practice security headers
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      more_set_headers "X-Frame-Options: DENY";
-      more_set_headers "X-Content-Type-Options: nosniff";
-      more_set_headers "X-XSS-Protection: 1; mode=block";
-      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload";
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+      add_header X-Frame-Options "DENY" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Content-Security-Policy "frame-ancestors 'none';" always;
 spec:
   ingressClassName: nginx
   tls:
@@ -57,6 +59,12 @@ metadata:
   namespace: longhorn-system
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+      add_header X-Frame-Options "DENY" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Content-Security-Policy "frame-ancestors 'none';" always;
 spec:
   ingressClassName: nginx
   rules:
