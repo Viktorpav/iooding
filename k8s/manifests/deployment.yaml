@@ -139,11 +139,13 @@ spec:
       ########################################
       affinity:
         podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchLabels:
-                  app: iooding-blog
-              topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: iooding-blog
+                topologyKey: kubernetes.io/hostname
 
       ########################################
       # Init: wait for database ONLY
