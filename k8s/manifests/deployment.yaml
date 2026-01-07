@@ -70,6 +70,13 @@ spec:
                   key: secret_access_key
             - name: AWS_DEFAULT_REGION
               value: eu-central-1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
           volumeMounts:
             - name: media-storage
               mountPath: /app/media
