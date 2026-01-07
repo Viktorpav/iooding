@@ -1,19 +1,10 @@
-apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: selfsigned
-  namespace: iooding
-spec:
-  selfSigned: {}
-
----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: iooding-ingress
   namespace: iooding
   annotations:
-    cert-manager.io/issuer: "iooding-ca-issuer"
+    cert-manager.io/cluster-issuer: "iooding-ca-issuer"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
@@ -58,6 +49,7 @@ metadata:
   name: longhorn-ui
   namespace: longhorn-system
   annotations:
+    cert-manager.io/cluster-issuer: "iooding-ca-issuer"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     nginx.ingress.kubernetes.io/configuration-snippet: |
       add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
@@ -67,6 +59,10 @@ metadata:
       add_header Content-Security-Policy "frame-ancestors 'none';" always;
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - longhorn.local
+      secretName: longhorn-tls
   rules:
     - host: longhorn.local
       http:

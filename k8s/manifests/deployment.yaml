@@ -105,6 +105,11 @@ metadata:
   namespace: iooding
 spec:
   replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   revisionHistoryLimit: 3
   selector:
     matchLabels:
@@ -121,6 +126,16 @@ spec:
         runAsNonRoot: true
         runAsUser: 100
 
+      # Speed up DNS resolution and reduce lookup overhead
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "1"
+          - name: timeout
+            value: "2"
+          - name: attempts
+            value: "3"
+
       ########################################
       # Fast failover tolerations
       ########################################
@@ -133,19 +148,6 @@ spec:
           operator: "Exists"
           effect: "NoExecute"
           tolerationSeconds: 10
-
-      ########################################
-      # Pod anti-affinity (spread across workers)
-      ########################################
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app: iooding-blog
-                topologyKey: kubernetes.io/hostname
 
       ########################################
       # Init: wait for database ONLY

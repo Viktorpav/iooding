@@ -80,6 +80,9 @@ DATABASES = {
         'PASSWORD': DB_PASSWORD,
         'HOST': os.environ.get('DB_HOST', 'postgres'),
         'PORT': os.environ.get('DB_PORT', '5432'),
+        'OPTIONS': {
+            'connect_timeout': 5,
+        }
     }
 }
 
