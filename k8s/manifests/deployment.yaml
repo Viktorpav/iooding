@@ -73,10 +73,10 @@ spec:
           resources:
             requests:
               cpu: 50m
-              memory: 128Mi
+              memory: 256Mi
             limits:
               cpu: 500m
-              memory: 384Mi
+              memory: 512Mi
           volumeMounts:
             - name: media-storage
               mountPath: /app/media
@@ -157,7 +157,7 @@ spec:
           tolerationSeconds: 10
 
       ########################################
-      # Init: wait for database ONLY
+      # Init: wait for database
       ########################################
       initContainers:
         - name: wait-for-db
@@ -225,6 +225,11 @@ spec:
               mountPath: /app/media
             - name: tmp-volume
               mountPath: /tmp
+
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]  # Give Ingress time to remove pod from target group
 
           livenessProbe:
             httpGet:

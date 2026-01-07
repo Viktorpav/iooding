@@ -36,6 +36,8 @@ spec:
           operator: "Exists"
           effect: "NoExecute"
           tolerationSeconds: 10
+      # Fast pod deletion on node failure
+      terminationGracePeriodSeconds: 10
       containers:
         - name: redis
           image: docker.io/redis:7-alpine
@@ -48,6 +50,16 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "200m"
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 2
+            periodSeconds: 5
           volumeMounts:
             - name: redis-data
               mountPath: /data
