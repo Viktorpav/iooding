@@ -31,9 +31,21 @@ spec:
   template:
     spec:
       restartPolicy: OnFailure
+      initContainers:
+        - name: wait-for-db
+          image: alpine:latest
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z postgres 5432; do
+                echo "waiting for database"
+                sleep 2
+              done
       containers:
         - name: migrate
           image: viktor2003/iooding:v9
+          imagePullPolicy: IfNotPresent
           command:
             - sh
             - -c
@@ -70,6 +82,11 @@ spec:
                   key: secret_access_key
             - name: AWS_DEFAULT_REGION
               value: eu-central-1
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: django_secret_key
           resources:
             requests:
               cpu: 50m
@@ -219,6 +236,11 @@ spec:
                   key: secret_access_key
             - name: AWS_DEFAULT_REGION
               value: eu-central-1
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: django_secret_key
 
           volumeMounts:
             - name: media-storage
