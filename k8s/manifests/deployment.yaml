@@ -177,7 +177,7 @@ spec:
       containers:
         - name: iooding
           image: viktor2003/iooding:v9
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
 

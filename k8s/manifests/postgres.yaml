@@ -57,6 +57,7 @@ spec:
       containers:
         - name: postgres
           image: postgres:14-bullseye
+          imagePullPolicy: IfNotPresent
           args:
             - -c
             - shared_buffers=128MB
