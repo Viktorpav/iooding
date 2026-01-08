@@ -20,3 +20,15 @@ spec:
           image: redis:7-alpine
           ports:
             - containerPort: 6379
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+        labels:
+          recurring-job-group.longhorn.io/important: enabled
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: longhorn
+        resources:
+          requests:
+            storage: 1GB
