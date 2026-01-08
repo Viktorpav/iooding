@@ -22,10 +22,13 @@ spec:
   selector:
     matchLabels:
       app: postgres
+  podManagementPolicy: Parallel
   template:
     metadata:
       labels:
         app: postgres
+      annotations:
+        longhorn.io/disable-replica-rebuild: "true" 
     spec:
       # Fast pod deletion on node failure
       terminationGracePeriodSeconds: 10
@@ -100,36 +103,27 @@ spec:
 
           # Give DB up to 5 minutes to recover/replay logs before liveness probe kicks in
           startupProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - pg_isready -U iooding -d iooding
-            failureThreshold: 30
-            periodSeconds: 10
+            tcpSocket:
+              port: 5432
+            periodSeconds: 5
+            failureThreshold: 10
 
           # Aggressive health checks for fast failure detection
           livenessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - pg_isready -U iooding -d iooding
-            initialDelaySeconds: 30
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 20
             periodSeconds: 5
-            timeoutSeconds: 3
+            timeoutSeconds: 2
             failureThreshold: 3
           
           readinessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - pg_isready -U iooding -d iooding
+            tcpSocket:
+              port: 5432
             initialDelaySeconds: 5
             periodSeconds: 5
-            timeoutSeconds: 3
-            failureThreshold: 3
+            timeoutSeconds: 2
+  failureThreshold: 3
   volumeClaimTemplates:
     - metadata:
         name: postgres-data
