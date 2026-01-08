@@ -125,17 +125,17 @@ spec:
             timeoutSeconds: 2
             failureThreshold: 3
 
-volumeClaimTemplates:
-  - metadata:
-      name: postgres-data
-      labels:
-        # Enable automatic backups (only for database)
-        recurring-job-group.longhorn.io/important: enabled
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      storageClassName: "longhorn"
-      resources:
-        requests:
-          storage: 1Gi
-      volumeAttributes:
-        numberOfReplicas: "1"
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+        labels:
+          # Enable automatic backups (only for database)
+          recurring-job-group.longhorn.io/important: enabled
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: "longhorn"
+        resources:
+          requests:
+            storage: 1Gi
+        volumeAttributes:
+          numberOfReplicas: "1"
