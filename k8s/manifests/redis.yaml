@@ -73,3 +73,5 @@ spec:
         resources:
           requests:
             storage: 256Mi
+        volumeAttributes:
+          numberOfReplicas: "1"
