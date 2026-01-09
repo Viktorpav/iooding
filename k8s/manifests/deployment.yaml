@@ -97,13 +97,6 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
-          volumeMounts:
-            - name: media-storage
-              mountPath: /app/media
-      volumes:
-        - name: media-storage
-          persistentVolumeClaim:
-            claimName: media-pvc
 
 ---
 ########################################
@@ -143,18 +136,25 @@ spec:
         app: iooding-blog
     spec:
       terminationGracePeriodSeconds: 10
-      
-      nodeSelector:
-        node-role.kubernetes.io/storage: "true"
 
       ########################################
       # Fast failover tolerations
       ########################################
       tolerations:
+        - key: "stateless-only"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+
         - key: "node.kubernetes.io/not-ready"
           operator: "Exists"
           effect: "NoExecute"
           tolerationSeconds: 10
+
         - key: "node.kubernetes.io/unreachable"
           operator: "Exists"
           effect: "NoExecute"
