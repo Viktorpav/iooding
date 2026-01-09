@@ -22,7 +22,6 @@ spec:
   selector:
     matchLabels:
       app: postgres
-  podManagementPolicy: Parallel
   template:
     metadata:
       labels:
@@ -100,14 +99,14 @@ spec:
           lifecycle:
             preStop:
               exec:
-                command: ["/bin/sh", "-c", "pg_ctl stop -m fast"]
+                command: ["sh", "-c", "kill -TERM 1"]
 
           # Give DB up to 5 minutes to recover/replay logs before liveness probe kicks in
           startupProbe:
             tcpSocket:
               port: 5432
             periodSeconds: 5
-            failureThreshold: 10
+            failureThreshold: 30
 
           # Aggressive health checks for fast failure detection
           livenessProbe:
