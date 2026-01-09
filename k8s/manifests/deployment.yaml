@@ -141,15 +141,6 @@ spec:
       # Fast failover tolerations
       ########################################
       tolerations:
-        - key: "stateless-only"
-          operator: "Equal"
-          value: "true"
-          effect: "NoSchedule"
-
-        - key: "node-role.kubernetes.io/control-plane"
-          operator: "Exists"
-          effect: "NoSchedule"
-
         - key: "node.kubernetes.io/not-ready"
           operator: "Exists"
           effect: "NoExecute"
