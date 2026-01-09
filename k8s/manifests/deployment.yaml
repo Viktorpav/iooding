@@ -8,7 +8,7 @@ metadata:
   namespace: iooding
   labels:
     app: iooding-blog
-    recurring-job-group.longhorn.io/backup: enabled å
+    recurring-job-group.longhorn.io/backup: enabled
 spec:
   accessModes:
     - ReadWriteOnce  # Changed from ReadWriteMany
