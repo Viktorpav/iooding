@@ -11,7 +11,7 @@ metadata:
     recurring-job-group.longhorn.io/backup: enabled
 spec:
   accessModes:
-    - ReadWriteOnce  # Changed from ReadWriteMany
+    - ReadWriteOnce
   storageClassName: longhorn
   resources:
     requests:
