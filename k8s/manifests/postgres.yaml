@@ -137,5 +137,3 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        volumeAttributes:
-          numberOfReplicas: "1"
