@@ -6,9 +6,12 @@ kind: PersistentVolumeClaim
 metadata:
   name: media-pvc
   namespace: iooding
+  labels:
+    app: iooding-blog
+    recurring-job-group.longhorn.io/backup: enabled å
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce  # Changed from ReadWriteMany
   storageClassName: longhorn
   resources:
     requests:
@@ -128,13 +131,9 @@ metadata:
   name: iooding-blog
   namespace: iooding
 spec:
-  replicas: 1
+  replicas: 1  # Only 1 replica needed for RWO
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  revisionHistoryLimit: 3
+    type: Recreate  # Changed from RollingUpdate (RWO can't do rolling)
   selector:
     matchLabels:
       app: iooding-blog
@@ -143,22 +142,18 @@ spec:
       labels:
         app: iooding-blog
     spec:
-      # Fast pod deletion on node failure
-      terminationGracePeriodSeconds: 10
+      terminationGracePeriodSeconds: 30  # Increased from 10
       
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 100
-
-      # Speed up DNS resolution and reduce lookup overhead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
-          - name: timeout
-            value: "2"
-          - name: attempts
-            value: "3"
+      # Node affinity: prefer node with existing volume
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: iooding-blog
+                topologyKey: kubernetes.io/hostname
 
       ########################################
       # Fast failover tolerations
@@ -172,7 +167,17 @@ spec:
           operator: "Exists"
           effect: "NoExecute"
           tolerationSeconds: 10
-
+      
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 100
+        fsGroup: 100
+      
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "1"
+      
       ########################################
       # Init: wait for database
       ########################################
@@ -187,6 +192,7 @@ spec:
                 echo "waiting for database"
                 sleep 2
               done
+              echo "PostgreSQL ready!"
 
       ########################################
       # Application container
@@ -200,11 +206,11 @@ spec:
 
           resources:
             requests:
-              cpu: 50m
-              memory: 128Mi
+              cpu: 100m
+              memory: 256Mi
             limits:
               cpu: 500m
-              memory: 384Mi
+              memory: 512Mi
 
           env:
             - name: DB_PASSWORD
@@ -278,3 +284,7 @@ spec:
         - name: tmp-volume
           emptyDir:
             medium: Memory
+            sizeLimit: 128Mi
+        - name: cache-volume
+          emptyDir:
+            sizeLimit: 256Mi
