@@ -32,7 +32,8 @@ spec:
     spec:
       # Fast pod deletion on node failure
       terminationGracePeriodSeconds: 10
-      
+      nodeSelector:
+        node-role.kubernetes.io/storage: "true"
       # Fast eviction tolerations
       tolerations:
         - key: "node.kubernetes.io/not-ready"
@@ -133,7 +134,7 @@ spec:
           recurring-job-group.longhorn.io/important: enabled
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: "longhorn"
+        storageClassName: "longhorn-storage"
         resources:
           requests:
             storage: 1Gi

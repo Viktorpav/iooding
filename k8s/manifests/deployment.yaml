@@ -12,7 +12,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: longhorn
+  storageClassName: longhorn-storage
   resources:
     requests:
       storage: 1Gi
@@ -142,18 +142,10 @@ spec:
       labels:
         app: iooding-blog
     spec:
-      terminationGracePeriodSeconds: 30  # Increased from 10
+      terminationGracePeriodSeconds: 10
       
-      # Node affinity: prefer node with existing volume
-      affinity:
-        podAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app: iooding-blog
-                topologyKey: kubernetes.io/hostname
+      nodeSelector:
+        node-role.kubernetes.io/storage: "true"
 
       ########################################
       # Fast failover tolerations
@@ -172,11 +164,6 @@ spec:
         runAsNonRoot: true
         runAsUser: 100
         fsGroup: 100
-      
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
       
       ########################################
       # Init: wait for database
@@ -285,6 +272,3 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 128Mi
-        - name: cache-volume
-          emptyDir:
-            sizeLimit: 256Mi
