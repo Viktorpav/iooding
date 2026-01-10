@@ -27,7 +27,7 @@ spec:
       labels:
         app: postgres
       annotations:
-        longhorn.io/disable-replica-rebuild: "true" 
+        longhorn.io/disable-replica-rebuild: "true"
     spec:
       # Fast pod deletion on node failure
       terminationGracePeriodSeconds: 10
@@ -96,7 +96,7 @@ spec:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
               subPath: pgdata
-          
+
           lifecycle:
             preStop:
               exec:
@@ -117,7 +117,7 @@ spec:
             periodSeconds: 5
             timeoutSeconds: 2
             failureThreshold: 3
-          
+
           readinessProbe:
             tcpSocket:
               port: 5432

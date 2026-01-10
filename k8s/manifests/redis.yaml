@@ -28,15 +28,19 @@ spec:
         app: redis
     spec:
       tolerations:
-        - key: "node.kubernetes.io/not-ready"
-          operator: "Exists"
-          effect: "NoExecute"
+        - key: stateless-only
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+        - key: node.kubernetes.io/unreachable
+          operator: Exists
+          effect: NoExecute
           tolerationSeconds: 10
-        - key: "node.kubernetes.io/unreachable"
-          operator: "Exists"
-          effect: "NoExecute"
+        - key: node.kubernetes.io/not-ready
+          operator: Exists
+          effect: NoExecute
           tolerationSeconds: 10
-      terminationGracePeriodSeconds: 5
+      terminationGracePeriodSeconds: 10
       containers:
         - name: redis
           image: docker.io/redis:7-alpine

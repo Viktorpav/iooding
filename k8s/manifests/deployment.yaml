@@ -29,22 +29,14 @@ metadata:
   annotations:
     argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   backoffLimit: 3
   template:
     spec:
+      nodeSelector:
+        node-role.kubernetes.io/storage: "true"
       restartPolicy: OnFailure
-      initContainers:
-        - name: wait-for-db
-          image: alpine:latest
-          command:
-            - sh
-            - -c
-            - |
-              until nc -z postgres 5432; do
-                echo "waiting for database"
-                sleep 2
-              done
       containers:
         - name: migrate
           image: viktor2003/iooding:v9
@@ -123,10 +115,12 @@ kind: Deployment
 metadata:
   name: iooding-blog
   namespace: iooding
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
-  replicas: 1  # Only 1 replica needed for RWO
+  replicas: 1 # Only 1 replica needed for RWO
   strategy:
-    type: Recreate  # Changed from RollingUpdate (RWO can't do rolling)
+    type: Recreate # Changed from RollingUpdate (RWO can't do rolling)
   selector:
     matchLabels:
       app: iooding-blog
@@ -152,12 +146,12 @@ spec:
           operator: "Exists"
           effect: "NoExecute"
           tolerationSeconds: 10
-      
+
       securityContext:
         runAsNonRoot: true
         runAsUser: 100
         fsGroup: 100
-      
+
       ########################################
       # Init: wait for database
       ########################################
@@ -170,7 +164,7 @@ spec:
             - |
               until nc -z postgres 5432; do
                 echo "waiting for database"
-                sleep 2
+                sleep 1
               done
               echo "PostgreSQL ready!"
 
@@ -234,25 +228,34 @@ spec:
             - name: tmp-volume
               mountPath: /tmp
 
-          lifecycle:
-            preStop:
-              exec:
-                command: ["/bin/sh", "-c", "sleep 5"]  # Give Ingress time to remove pod from target group
+          # Health checks
+          startupProbe:
+            httpGet:
+              path: /health/
+              port: 8000
+            failureThreshold: 30
+            periodSeconds: 2
 
           livenessProbe:
             httpGet:
               path: /health/
               port: 8000
-            initialDelaySeconds: 10
             periodSeconds: 5
-            failureThreshold: 2
+            timeoutSeconds: 5
+            failureThreshold: 3
 
           readinessProbe:
             httpGet:
               path: /health/
               port: 8000
-            initialDelaySeconds: 5
             periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 2
+
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"] # Give Ingress time to remove pod from target group
 
       ########################################
       # Volumes
