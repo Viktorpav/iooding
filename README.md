@@ -1,6 +1,8 @@
-# iooding
+# iooding — Distributed Blog on Kubernetes
 
-The idea to create a skillet of my life-try like a blog, where people and I can store my ideas or things which interesting to post.
+A modern **Django-based blogging platform** running on personal **Kubernetes cluster** across 2 MacBook Pros, with persistent PostgreSQL database, Redis caching, media storage, and automatic HTTPS.
+
+**Vision**: A personal blog skillet where ideas are stored, shared, and preserved — deployed with enterprise-grade reliability.
 
 ![5faa54eadf114799975224a7c64b25ec](https://user-images.githubusercontent.com/32811955/180644693-d3732ff6-92e0-4653-bd58-8eb8f97c2088.png)
 
