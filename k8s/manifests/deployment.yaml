@@ -135,6 +135,8 @@ spec:
       labels:
         app: iooding-blog
     spec:
+      nodeSelector:
+        node-role.kubernetes.io/storage: "true"
       terminationGracePeriodSeconds: 10
 
       ########################################
