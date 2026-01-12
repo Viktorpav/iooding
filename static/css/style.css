@@ -492,6 +492,7 @@ a:hover {
     color: var(--text);
 }
 
+/* Unified Send/Stop Button */
 #ai-send-btn {
     background: var(--accent);
     color: white;
@@ -499,11 +500,12 @@ a:hover {
     width: 44px;
     height: 44px;
     border-radius: 18px;
+    /* Squircle */
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 #ai-send-btn:hover {
@@ -511,19 +513,21 @@ a:hover {
     box-shadow: 0 8px 15px rgba(0, 122, 255, 0.3);
 }
 
-/* Markdown styling inside AI messages */
-.ai-msg .msg-content pre {
-    background: #0d1117;
-    border-radius: 12px;
-    padding: 15px;
-    margin: 10px 0;
-    font-size: 0.85rem;
+#ai-send-btn.stop-mode {
+    background: #ff3b30;
+    /* Red for stop */
+    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+}
+
+#ai-send-btn.stop-mode:hover {
+    background: #d70015;
 }
 
 /* User Message Actions */
 .msg-actions {
     display: flex;
     justify-content: flex-end;
+    /* Right aligned */
     gap: 8px;
     margin-top: 6px;
     opacity: 0;
@@ -538,7 +542,7 @@ a:hover {
     align-self: flex-end;
 }
 
-/* Show actions on hover */
+/* Ensure actions are visible on hover */
 .user-wrapper:hover .msg-actions,
 .ai-msg:hover .msg-actions {
     opacity: 1;
@@ -551,7 +555,8 @@ a:hover {
     cursor: pointer;
     padding: 4px 8px;
     border-radius: 6px;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
+    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -560,8 +565,9 @@ a:hover {
 
 .ai-msg .action-btn {
     background: rgba(0, 0, 0, 0.05);
+    /* Softer for light mode bubble */
     color: var(--text);
-    opacity: 0.7;
+    opacity: 0.6;
 }
 
 .action-btn:hover {
@@ -572,32 +578,4 @@ a:hover {
 .ai-msg .action-btn:hover {
     background: rgba(0, 0, 0, 0.1);
     color: var(--primary);
-}
-
-/* Stop Generation Button */
-#ai-stop-btn {
-    display: none;
-    /* Hidden by default */
-    background: #ff3b30;
-    color: white;
-    border: none;
-    width: 44px;
-    height: 44px;
-    border-radius: 18px;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-left: 8px;
-}
-
-#ai-stop-btn:hover {
-    transform: scale(1.05);
-    background: #d43329;
-    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
-}
-
-#ai-stop-btn.active {
-    display: flex;
-    /* Shown when active */
 }

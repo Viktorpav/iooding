@@ -145,6 +145,16 @@ function addAssistantMessageUI(content) {
     contentDiv.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
 }
 
+// Initial state handler for the unified button
+function handleSendClick() {
+    const btn = document.getElementById('ai-send-btn');
+    if (btn.classList.contains('stop-mode')) {
+        stopGeneration();
+    } else {
+        sendMessage();
+    }
+}
+
 function stopGeneration() {
     if (abortController) {
         abortController.abort();
@@ -159,15 +169,19 @@ function stopGeneration() {
     }
 }
 
-function toggleStopButton(show) {
-    const sendBtn = document.getElementById('ai-send-btn');
-    const stopBtn = document.getElementById('ai-stop-btn');
-    if (show) {
-        sendBtn.style.display = 'none';
-        stopBtn.classList.add('active');
+function toggleStopButton(active) {
+    const btn = document.getElementById('ai-send-btn');
+    const sendIcon = btn.querySelector('.send-icon');
+    const stopIcon = btn.querySelector('.stop-icon');
+
+    if (active) {
+        btn.classList.add('stop-mode');
+        sendIcon.style.display = 'none';
+        stopIcon.style.display = 'block';
     } else {
-        sendBtn.style.display = 'flex';
-        stopBtn.classList.remove('active');
+        btn.classList.remove('stop-mode');
+        sendIcon.style.display = 'block';
+        stopIcon.style.display = 'none';
     }
 }
 
