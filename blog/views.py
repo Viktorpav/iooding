@@ -103,44 +103,40 @@ def health_check(request):
     """Simplified health check for K8s probes"""
     return HttpResponse("ok", content_type="text/plain")
 
-# --- Optimized AI Agent (Direct Streaming) ---
-# Removed RAG context for lower overhead and faster TTFB (Time To First Byte)
-# as requested by the user.
+# --- Optimized AI Agent (Async Direct Streaming) ---
+# Supports proper async generation to avoid blocking and ensure live output via Uvicorn
 
-ollama_client = ollama.Client(host='http://192.168.0.18:11434')
+# Use AsyncClient for non-blocking I/O
+async_ollama_client = ollama.AsyncClient(host='http://192.168.0.18:11434')
 
 @csrf_exempt
-def chat_api(request):
+async def chat_api(request):
     if request.method == "POST":
         try:
-            data = json.loads(request.body)
+            # Need to decode body manually in async view if content-type isn't standard form data
+            body_bytes = request.body
+            data = json.loads(body_bytes)
             messages = data.get("messages", [])
+            
             # If no history, use the current message
             if not messages:
                 user_msg = data.get("message", "")
                 if user_msg:
                     messages = [{'role': 'user', 'content': user_msg}]
 
-            def stream_response():
+            async def stream_response():
                 try:
-                    stream = ollama_client.chat(
+                    # Async iteration over the response stream
+                    async for chunk in await async_ollama_client.chat(
                         model='qwen3-coder',
                         messages=messages,
                         stream=True,
-                    )
-                    
-                    for chunk in stream:
+                    ):
                         # 1. Handle "Thinking" (Reasoning)
-                        # Note: Ollama python client structure might vary slightly, 
-                        # but usually it's in chunk['message']
-                        
                         content = chunk.get('message', {}).get('content', '')
                         
-                        # Handle legacy deepseek/qwen thinking tags if they appear in content
-                        # (Some models output <think>...</think> in content)
                         if '<think>' in content:
                             yield f"data: {json.dumps({'thinking': 'Started thinking...'})}\n\n"
-                            # Strip the tag for cleaner content if needed, or send as thinking
                             content = content.replace('<think>', '')
                         
                         if content:
@@ -148,24 +144,33 @@ def chat_api(request):
                         
                         # 2. Handle Metrics (Final chunk)
                         if chunk.get('done'):
+                            total_duration = chunk.get('total_duration', 0) / 1e9
+                            eval_count = chunk.get('eval_count', 0)
+                            # Protect against division by zero if duration is extremely small/missing
+                            eval_duration_raw = chunk.get('eval_duration', 0)
+                            if eval_duration_raw > 0:
+                                eval_duration = eval_duration_raw / 1e9
+                            else:
+                                eval_duration = 0.001 # fallback to avoid zero division
+
                             metrics = {
-                                'total_duration': chunk.get('total_duration', 0) / 1e9,
-                                'eval_count': chunk.get('eval_count', 0),
-                                'eval_duration': chunk.get('eval_duration', 1) / 1e9
+                                'total_duration': total_duration,
+                                'eval_count': eval_count,
+                                'eval_duration': eval_duration
                             }
                             yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
                             
                 except Exception as e:
-                    print(f"Ollama Error: {e}")
+                    print(f"Ollama Async Error: {e}")
                     yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
             response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
-            # Critical headers for Nginx to disable buffering
             response['X-Accel-Buffering'] = 'no'
             response['Cache-Control'] = 'no-cache'
             return response
             
         except Exception as e:
+             # Regular HttpResponse is fine for error blocks
              return HttpResponse(json.dumps({'error': str(e)}), status=500, content_type="application/json")
              
     return HttpResponse("Method not allowed", status=405)
