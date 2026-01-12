@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. Handle "Double Enter" for sending (Requested Revert)
     userInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (e.key === 'Enter') {
             const currentTime = new Date().getTime();
             if (currentTime - lastEnterTime < 600) { // Double tap threshold
                 e.preventDefault();
