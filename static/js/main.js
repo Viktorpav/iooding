@@ -3,6 +3,7 @@ let chatHistory = [];
 let lastEnterTime = 0;
 let abortController = null;
 let isGenerating = false;
+let currentAiDiv = null; // Track current AI response element
 const MAX_HISTORY = 50;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -100,6 +101,11 @@ function copyText(text) {
 }
 
 function editMessage(text) {
+    // Stop any ongoing generation first
+    if (isGenerating) {
+        cancelCurrentGeneration();
+    }
+
     const input = document.getElementById('ai-user-input');
     input.value = text;
     input.focus();
@@ -163,6 +169,32 @@ function addAssistantMessageUI(content) {
     contentDiv.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
 }
 
+// --- Cancel current generation silently (for edit flow) ---
+function cancelCurrentGeneration() {
+    if (abortController) {
+        abortController.abort();
+        abortController = null;
+    }
+
+    // Remove the incomplete AI response if it exists
+    if (currentAiDiv && currentAiDiv.parentNode) {
+        const contentDiv = currentAiDiv.querySelector('.msg-content');
+        const hasContent = contentDiv && contentDiv.textContent.trim() &&
+            !contentDiv.querySelector('.generating-placeholder');
+
+        if (!hasContent) {
+            // Remove empty/placeholder response
+            currentAiDiv.remove();
+        } else {
+            // Mark as cancelled but keep content
+            contentDiv.insertAdjacentHTML('beforeend', ' <span style="opacity:0.5; font-size:0.75em;">(cancelled)</span>');
+        }
+    }
+
+    currentAiDiv = null;
+    setGeneratingState(false);
+}
+
 // --- Unified Send/Stop Button ---
 function handleSendClick() {
     if (isGenerating) {
@@ -177,18 +209,24 @@ function stopGeneration() {
         abortController.abort();
         abortController = null;
     }
-    setGeneratingState(false);
 
-    const messagesDiv = document.getElementById('chat-messages');
-    const lastMsg = messagesDiv.lastElementChild;
-    if (lastMsg && lastMsg.querySelector('.msg-content')) {
-        lastMsg.querySelector('.msg-content').insertAdjacentHTML('beforeend', ' <span style="opacity:0.5; font-size:0.75em;">(stopped)</span>');
+    // Mark as stopped (not cancelled)
+    if (currentAiDiv) {
+        const contentDiv = currentAiDiv.querySelector('.msg-content');
+        if (contentDiv) {
+            contentDiv.insertAdjacentHTML('beforeend', ' <span style="opacity:0.5; font-size:0.75em;">(stopped)</span>');
+        }
     }
+
+    currentAiDiv = null;
+    setGeneratingState(false);
 }
 
 function setGeneratingState(active) {
     isGenerating = active;
     const btn = document.getElementById('ai-send-btn');
+    if (!btn) return;
+
     const sendIcon = btn.querySelector('.send-icon');
     const stopIcon = btn.querySelector('.stop-icon');
 
@@ -210,7 +248,14 @@ async function sendMessage() {
     const statsMini = document.getElementById('ai-stats-realtime');
     const text = input.value.trim();
 
-    if (!text || isGenerating) return;
+    if (!text) return;
+
+    // If already generating, cancel first then proceed
+    if (isGenerating) {
+        cancelCurrentGeneration();
+        // Small delay to ensure cleanup
+        await new Promise(resolve => setTimeout(resolve, 50));
+    }
 
     addUserMessageUI(text);
 
@@ -224,6 +269,7 @@ async function sendMessage() {
 
     const aiDiv = document.createElement('div');
     aiDiv.className = 'ai-msg';
+    currentAiDiv = aiDiv; // Track this response
 
     const thinkingBox = document.createElement('details');
     thinkingBox.className = 'thinking-box';
@@ -280,6 +326,7 @@ async function sendMessage() {
                     if (data.error) {
                         contentDiv.innerHTML = `<div style="color: #ff3b30;">[Error]: ${data.error}</div>`;
                         setGeneratingState(false);
+                        currentAiDiv = null;
                         return;
                     }
 
@@ -314,12 +361,15 @@ async function sendMessage() {
             }
         }
 
-        aiDiv.appendChild(createActionButtons(fullContent, false));
-        saveHistory(text, fullContent);
+        // Only save if we have content
+        if (fullContent) {
+            aiDiv.appendChild(createActionButtons(fullContent, false));
+            saveHistory(text, fullContent);
+        }
 
     } catch (error) {
         if (error.name === 'AbortError') {
-            console.log('Generation stopped by user');
+            console.log('Generation stopped/cancelled');
             if (fullContent) {
                 aiDiv.appendChild(createActionButtons(fullContent, false));
                 saveHistory(text, fullContent);
@@ -331,11 +381,14 @@ async function sendMessage() {
     } finally {
         setGeneratingState(false);
         abortController = null;
+        currentAiDiv = null;
     }
 }
 
 // --- History Management ---
 function saveHistory(userText, assistantText) {
+    if (!userText || !assistantText) return;
+
     chatHistory.push({ role: 'user', content: userText });
     chatHistory.push({ role: 'assistant', content: assistantText });
 
