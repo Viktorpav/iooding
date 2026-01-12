@@ -83,8 +83,22 @@ DATABASES = {
         'OPTIONS': {
             'connect_timeout': 5,
         }
+    },
+    'ai': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('AI_DB_NAME', 'iooding_ai'),
+        'USER': os.environ.get('AI_DB_USER', 'iooding'),
+        'PASSWORD': os.environ.get('AI_DB_PASSWORD', DB_PASSWORD),
+        'HOST': os.environ.get('AI_DB_HOST', 'postgres-ai'),
+        'PORT': os.environ.get('AI_DB_PORT', '5432'),
+        'OPTIONS': {
+            'connect_timeout': 5,
+        }
     }
 }
+
+DATABASE_ROUTERS = ['blog.db_routers.AIRouter']
+
 
 # Redis Configuration
 CACHES = {

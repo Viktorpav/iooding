@@ -39,7 +39,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: viktor2003/iooding:v12
+          image: viktor2003/iooding:v13
           imagePullPolicy: IfNotPresent
           command:
             - sh
@@ -82,6 +82,13 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: django_secret_key
+            - name: AI_DB_HOST
+              value: postgres-ai
+            - name: AI_DB_NAME
+              value: iooding_ai
+            - name: AI_DB_USER
+              value: iooding
+
           resources:
             requests:
               cpu: 50m
@@ -173,7 +180,7 @@ spec:
       ########################################
       containers:
         - name: iooding
-          image: viktor2003/iooding:v12
+          image: viktor2003/iooding:v13
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
@@ -221,6 +228,13 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: django_secret_key
+            - name: AI_DB_HOST
+              value: postgres-ai
+            - name: AI_DB_NAME
+              value: iooding_ai
+            - name: AI_DB_USER
+              value: iooding
+
 
           volumeMounts:
             - name: media-storage

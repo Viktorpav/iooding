@@ -75,10 +75,11 @@ class Comment(models.Model):
         return Comment.objects.filter(parent=self).filter(active=True)
 
 class PostChunk(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='chunks')
+    # Decoupled for cross-database support
+    post_id = models.IntegerField(db_index=True)
     content = models.TextField()
     # 768 is common for nomic-embed-text; use 1024/1536 for larger models
     embedding = VectorField(dimensions=768) 
 
     def __str__(self):
-        return f"Chunk of {self.post.title}"
+        return f"Chunk of Post ID {self.post_id}"

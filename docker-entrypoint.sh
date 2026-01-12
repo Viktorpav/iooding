@@ -3,8 +3,11 @@ set -e
 
 # Function to run database migrations
 run_migrate() {
-    echo "Running migrations..."
+    echo "Running default DB migrations..."
     python manage.py migrate --noinput
+    echo "Running AI DB migrations..."
+    python manage.py migrate --database=ai --noinput
+
     
     if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then
         echo "Ensuring superuser exists..."
