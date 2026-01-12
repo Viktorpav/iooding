@@ -48,6 +48,6 @@ EXPOSE 8000
 USER django
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-# Use Gunicorn with Uvicorn workers for production readiness
-# Set to 1 worker per pod to save RAM (HA achieved via 2 replicas)
-CMD ["gunicorn", "-w", "1", "-k", "uvicorn.workers.UvicornWorker", "iooding.asgi:application", "--bind", "0.0.0.0:8000"]
+# --log-level critical to reduce noise, access log processing handled by ingress/sidecars
+# Use straight uvicorn for better streaming support without gunicorn buffering layers
+CMD ["uvicorn", "iooding.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
