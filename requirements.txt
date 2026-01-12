@@ -10,8 +10,6 @@ django-redis
 whitenoise
 
 # AI & Vector Support
-pgvector==0.3.6      # Adds Vector support to your existing Postgres
-ollama==0.4.7        # Official Python client for Ollama
-langchain==0.3.14    # For RAG orchestration (optional but recommended)
-sentence-transformers # To generate embeddings locally if needed
-django-environ       # Better environment variable management
+pgvector==0.3.6
+ollama==0.4.7
+django-environ
