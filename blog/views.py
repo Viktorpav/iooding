@@ -6,6 +6,10 @@ from .forms import CommentForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Count
 from django.http import HttpResponse
+import json, ollama
+from django.http import StreamingHttpResponse
+from pgvector.django import CosineDistance
+from .models import PostChunk
 
 
 def post_list(request, tag_slug=None):
@@ -101,3 +105,44 @@ def reply_page(request):
 def health_check(request):
     """Simplified health check for K8s probes"""
     return HttpResponse("ok", content_type="text/plain")
+
+# 1. Helper: Find relevant context from your blog
+def get_blog_context(query_text):
+    # Convert user query to embedding using Ollama
+    query_embedding = ollama.embeddings(model='nomic-embed-text', prompt=query_text)['embedding']
+    
+    # Semantic search in Postgres
+    relevant_chunks = PostChunk.objects.annotate(
+        distance=CosineDistance('embedding', query_embedding)
+    ).order_by('distance')[:3]
+    
+    return "\n".join([c.content for c in relevant_chunks])
+
+# 2. The AI Agent View (Streaming)
+def chat_api(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        user_query = data.get("message", "")
+        
+        # Get context from your database!
+        context = get_blog_context(user_query)
+        
+        system_prompt = f"""
+        You are Ding Assistant. Use this blog context to answer:
+        {context}
+        If the answer isn't in the context, use your general knowledge but mention it's not from the blog.
+        """
+
+        def stream_response():
+            stream = ollama.chat(
+                model='nemotron-3-nano:30b',
+                messages=[
+                    {'role': 'system', 'content': system_prompt},
+                    {'role': 'user', 'content': user_query}
+                ],
+                stream=True,
+            )
+            for chunk in stream:
+                yield f"data: {json.dumps({'content': chunk['message']['content']})}\n\n"
+
+        return StreamingHttpResponse(stream_response(), content_type='text/event-stream')

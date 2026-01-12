@@ -158,3 +158,101 @@ a:hover {
         color: var(--text) !important;
     }
 }
+
+/* AI Widget Styling */
+#ai-widget-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Floating Toggle Button */
+#ai-toggle-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#ai-toggle-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Chat Window */
+#ai-chat-window {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    width: 350px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    /* Glassmorphism */
+    background-color: rgba(var(--surface), 0.95);
+    /* Fallback */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+}
+
+/* Messages Area */
+#chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    font-size: 0.95rem;
+}
+
+/* Message Bubbles */
+.user-msg {
+    background-color: var(--primary);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 18px 18px 4px 18px;
+    margin-bottom: 8px;
+    max-width: 85%;
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.ai-msg {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 18px 18px 18px 4px;
+    margin-bottom: 8px;
+    max-width: 85%;
+}
+
+/* Input Area */
+#ai-user-input {
+    resize: none;
+    border-radius: 12px;
+    font-size: 0.9rem;
+}
+
+#ai-user-input:focus {
+    box-shadow: none;
+    background-color: var(--bg);
+}
+
+/* Dark Mode Overrides */
+@media (prefers-color-scheme: dark) {
+    #ai-chat-window {
+        background-color: rgba(30, 30, 30, 0.85);
+    }
+
+    #ai-user-input {
+        background-color: #2c2c2e;
+        color: white;
+    }
+}

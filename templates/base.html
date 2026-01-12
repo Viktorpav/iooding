@@ -65,6 +65,41 @@
         </form>
       </div>
     </div>
+    <div id="ai-widget-container">
+      <button id="ai-toggle-btn" class="shadow-lg" onclick="toggleChat()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+      </button>
+
+      <div id="ai-chat-window" class="card shadow-lg" style="display: none;">
+        <div class="chat-header d-flex justify-content-between align-items-center p-3 border-bottom">
+          <span class="fw-bold">Ding Assistant</span>
+          <button onclick="toggleChat()" class="btn-close btn-sm" aria-label="Close"></button>
+        </div>
+
+        <div id="chat-messages" class="p-3">
+          <div class="ai-message text-muted small mb-3">
+            Hello! I can help you find articles or answer Python/Django questions.
+          </div>
+        </div>
+
+        <div class="chat-input-area p-3 border-top">
+          <div class="input-group">
+            <textarea id="ai-user-input" class="form-control border-0 bg-light" rows="1"
+              placeholder="Ask something..."></textarea>
+            <button class="btn btn-primary btn-sm rounded-3 ms-2" onclick="sendMessage()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </nav>
 
   <main class="container my-5">
