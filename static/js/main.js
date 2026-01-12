@@ -162,39 +162,42 @@ async function sendMessage() {
             buffer = lines.pop(); // Keep the last partial line in buffer
 
             for (const line of lines) {
-                if (line.trim().startsWith('data: ')) {
-                    try {
-                        const data = JSON.parse(line.substring(6));
+                const trimmedLine = line.trim();
+                if (!trimmedLine || !trimmedLine.startsWith('data: ')) continue;
 
-                        if (data.error) {
-                            contentDiv.innerHTML = `<div style="color: #ff3b30;">[System Error]: ${data.error}</div>`;
-                            return;
-                        }
+                try {
+                    const jsonStr = trimmedLine.substring(6);
+                    const data = JSON.parse(jsonStr);
 
-                        if (data.thinking) {
-                            thinkingBox.style.display = 'block';
-                            fullThinking += data.thinking;
-                            thinkingBox.querySelector('.thinking-content').textContent = fullThinking;
-                        }
-
-                        if (data.content) {
-                            fullContent += data.content;
-                            // Update live output
-                            contentDiv.innerHTML = marked.parse(fullContent);
-                            contentDiv.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
-                        }
-
-                        if (data.done && data.metrics) {
-                            const m = data.metrics;
-                            const speed = (m.eval_count / m.eval_duration).toFixed(1);
-                            metricsDiv.innerHTML = `<span>${m.eval_count} tokens</span> • <span>${speed} t/s</span> • <span>${m.total_duration.toFixed(2)}s</span>`;
-                            statsMini.textContent = `${speed} t/s`;
-                        }
-
-                        scrollToBottom();
-                    } catch (e) {
-                        console.error("JSON parse error on line:", line, e);
+                    if (data.error) {
+                        contentDiv.innerHTML = `<div style="color: #ff3b30;">[System Error]: ${data.error}</div>`;
+                        return;
                     }
+
+                    if (data.thinking) {
+                        thinkingBox.style.display = 'block';
+                        fullThinking += data.thinking;
+                        thinkingBox.querySelector('.thinking-content').textContent = fullThinking;
+                    }
+
+                    if (data.content) {
+                        fullContent += data.content;
+                        // Use requestAnimationFrame for smoother UI updates if heavy
+                        contentDiv.innerHTML = marked.parse(fullContent);
+                        // Highlight only periodically or at the end to save resources, but fine for now
+                        contentDiv.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
+                    }
+
+                    if (data.done && data.metrics) {
+                        const m = data.metrics;
+                        const speed = (m.eval_count / (m.eval_duration || 0.001)).toFixed(1);
+                        metricsDiv.innerHTML = `<span>${m.eval_count} tokens</span> • <span>${speed} t/s</span> • <span>${m.total_duration.toFixed(2)}s</span>`;
+                        statsMini.textContent = `${speed} t/s`;
+                    }
+
+                    scrollToBottom();
+                } catch (e) {
+                    console.warn("JSON parse error:", e);
                 }
             }
         }
