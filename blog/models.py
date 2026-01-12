@@ -5,9 +5,9 @@ from django.urls import reverse
 from django_ckeditor_5.fields import CKEditor5Field  # Changed import
 from taggit.managers import TaggableManager
 from pgvector.django import VectorField
-from .models import Post
 
 # creating model manager
+
 class PublishedManager(models.Manager):
     def get_queryset(self):
         return super(PublishedManager, self).get_queryset().filter(status='published')
