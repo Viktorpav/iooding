@@ -1,47 +1,54 @@
-<div id="ai-widget-container">
-    <button id="ai-toggle-btn" class="shadow-lg" onclick="toggleChat()" aria-label="Toggle Chat">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-        </svg>
-    </button>
+{% load static %}
+<div id="ai-sidebar-trigger" onclick="toggleChat()">
+    <div class="glow-wrap"></div>
+    <img src="{% static 'ai_logo.png' %}" alt="AI Agent" class="ai-agent-logo">
+</div>
 
-    <div id="ai-chat-window" class="glass-container shadow-2xl" style="display: none;">
-        <div class="chat-header">
-            <div class="d-flex align-items-center gap-2">
-                <div class="status-indicator online"></div>
-                <span class="fw-bold fs-6">Ding Assistant</span>
+<div id="ai-sidebar" class="glass-sidebar" style="display: none;">
+    <div class="sidebar-header">
+        <div class="agent-info">
+            <div class="logo-mini-wrap">
+                <img src="{% static 'ai_logo.png' %}" alt="AI" class="logo-mini">
             </div>
-            <button onclick="toggleChat()" class="btn-close-custom" aria-label="Close">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-
-        <div id="chat-messages" class="chat-body">
-            <div class="ai-msg">
-                <div class="msg-content">Hello! I'm your AI assistant. How can I help you with the blog today?</div>
+            <div>
+                <h3 class="m-0 fs-5 fw-bold">Qwen Coder</h3>
+                <div class="status-wrap">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Thinking Agent</span>
+                </div>
             </div>
         </div>
+        <button class="btn-close-sidebar" onclick="toggleChat()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 6L6 18M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
 
-        <div class="chat-footer">
-            <div class="input-wrapper">
-                <textarea id="ai-user-input" rows="1" placeholder="Type a message..." autocomplete="off"></textarea>
-                <button id="ai-send-btn" onclick="sendMessage()" aria-label="Send">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M14 5l7 7m0 0l-7 7m7-7H3" />
+    <div id="chat-messages" class="chat-viewport">
+        <div class="ai-msg welcome-msg">
+            <div class="msg-content">
+                <p>Greetings. I am the <strong>Qwen Technical Agent</strong>, enhanced with your blog's context and
+                    high-performance vector retrieval. How can I assist your development today?</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar-footer">
+        <div class="input-container-advanced">
+            <textarea id="ai-user-input" rows="1" placeholder="Describe your technical challenge..."
+                autocomplete="off"></textarea>
+            <div class="input-actions">
+                <span class="tokens-info">Qwen-2.5-Coder</span>
+                <button id="ai-send-btn" onclick="sendMessage()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"></path>
                     </svg>
                 </button>
             </div>
-            <div class="footer-note">Press Enter to send</div>
         </div>
     </div>
 </div>
 
-<!-- Load Marked for Markdown Parsing -->
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>

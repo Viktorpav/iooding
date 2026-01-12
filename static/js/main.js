@@ -1,42 +1,27 @@
-// --- AI Chat Widget Logic ---
+// --- AI Sidebar Logic ---
+let chatHistory = [];
 
 function toggleChat() {
-    const window = document.getElementById('ai-chat-window');
-    const isVisible = window.style.display !== 'none';
+    const sidebar = document.getElementById('ai-sidebar');
+    const trigger = document.getElementById('ai-sidebar-trigger');
 
-    if (!isVisible) {
-        window.style.display = 'flex';
-        // Pop in animation
-        window.style.opacity = '0';
-        window.style.transform = 'scale(0.8) translateY(20px)';
-        window.style.pointerEvents = 'none';
+    sidebar.classList.toggle('active');
 
-        requestAnimationFrame(() => {
-            window.style.transition = 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)';
-            window.style.opacity = '1';
-            window.style.transform = 'scale(1) translateY(0)';
-            window.style.pointerEvents = 'all';
-        });
+    if (sidebar.classList.contains('active')) {
+        sidebar.style.display = 'flex';
+        trigger.style.opacity = '0';
+        trigger.style.pointerEvents = 'none';
     } else {
-        window.style.opacity = '0';
-        window.style.transform = 'scale(0.8) translateY(20px)';
-        window.style.pointerEvents = 'none';
         setTimeout(() => {
-            window.style.display = 'none';
-        }, 400);
+            if (!sidebar.classList.contains('active')) {
+                sidebar.style.display = 'none';
+            }
+        }, 600);
+        trigger.style.opacity = '1';
+        trigger.style.pointerEvents = 'all';
     }
 }
 
-// Auto-resize textarea
-const aiInput = document.getElementById('ai-user-input');
-if (aiInput) {
-    aiInput.addEventListener('input', function () {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-    });
-}
-
-// Send Message
 async function sendMessage() {
     const input = document.getElementById('ai-user-input');
     const messagesDiv = document.getElementById('chat-messages');
@@ -44,7 +29,7 @@ async function sendMessage() {
 
     if (!text) return;
 
-    // 1. Add User Message
+    // Add User Message
     const userDiv = document.createElement('div');
     userDiv.className = 'user-msg';
     userDiv.textContent = text;
@@ -55,12 +40,12 @@ async function sendMessage() {
     input.style.height = 'auto';
     scrollToBottom();
 
-    // 2. Prepare AI Message Container
+    // Prepare AI Message Container
     const aiDiv = document.createElement('div');
     aiDiv.className = 'ai-msg';
     const contentDiv = document.createElement('div');
     contentDiv.className = 'msg-content';
-    contentDiv.innerHTML = '<span class="loading-dots">...</span>';
+    contentDiv.innerHTML = '<span class="loading-dots">Thinking...</span>';
     aiDiv.appendChild(contentDiv);
     messagesDiv.appendChild(aiDiv);
     scrollToBottom();
@@ -72,17 +57,23 @@ async function sendMessage() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken') // Django CSRF
+                'X-CSRFToken': getCookie('csrftoken')
             },
-            body: JSON.stringify({ message: text })
+            body: JSON.stringify({
+                message: text,
+                messages: chatHistory
+            })
         });
 
-        if (!response.ok) throw new Error('Failed to connect');
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Server connection failed: ${response.status}`);
+        }
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
 
-        contentDiv.innerHTML = ''; // Clear loading
+        contentDiv.innerHTML = '';
 
         while (true) {
             const { value, done } = await reader.read();
@@ -93,32 +84,39 @@ async function sendMessage() {
 
             for (const line of lines) {
                 if (line.startsWith('data: ')) {
-                    try {
-                        const data = JSON.parse(line.substring(6));
-                        if (data.content) {
-                            fullContent += data.content;
-                            // Update HTML using Marked
-                            contentDiv.innerHTML = marked.parse(fullContent);
+                    const data = JSON.parse(line.substring(6));
 
-                            // Highlight code blocks
-                            contentDiv.querySelectorAll('pre code').forEach((block) => {
-                                hljs.highlightElement(block);
-                            });
+                    if (data.error) {
+                        contentDiv.innerHTML = `<div style="color: #ff3b30;">Ollama Error: ${data.error}</div>`;
+                        return;
+                    }
 
-                            scrollToBottom();
-                        }
-                    } catch (e) { console.error("Parse error", e); }
+                    if (data.content) {
+                        fullContent += data.content;
+                        contentDiv.innerHTML = marked.parse(fullContent);
+                        // Re-highlight
+                        contentDiv.querySelectorAll('pre code').forEach((block) => {
+                            hljs.highlightElement(block);
+                        });
+                        scrollToBottom();
+                    }
                 }
             }
         }
 
+        // Store in history
+        chatHistory.push({ role: 'user', 'content': text });
+        chatHistory.push({ role: 'assistant', 'content': fullContent });
+
     } catch (error) {
-        console.error(error);
-        contentDiv.innerHTML = `<span style="color: #ff3b30;">Error: ${error.message}</span>`;
+        console.error('Chat Error:', error);
+        contentDiv.innerHTML = `<div style="color: #ff3b30;">Unable to connect to Qwen Agent. Please ensure the qwen2.5-coder:32b model is available in Ollama.</div>`;
     }
 }
 
+
 function scrollToBottom() {
+
     const messagesDiv = document.getElementById('chat-messages');
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }

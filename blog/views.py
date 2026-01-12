@@ -147,7 +147,7 @@ def chat_api(request):
         def stream_response():
             try:
                 stream = ollama.chat(
-                    model='nemotron-3-nano:30b',
+                    model='qwen3-coder:30b',
                     messages=messages,
                     stream=True,
                 )
@@ -155,11 +155,10 @@ def chat_api(request):
                     content = chunk['message']['content']
                     data_packet = {'content': content}
                     
-                    # If this is the final chunk, it might have metrics
                     if chunk.get('done'):
                         data_packet['done'] = True
                         data_packet['metrics'] = {
-                            'total_duration': chunk.get('total_duration', 0) / 1e9, # seconds
+                            'total_duration': chunk.get('total_duration', 0) / 1e9,
                             'eval_count': chunk.get('eval_count', 0),
                             'eval_duration': chunk.get('eval_duration', 1) / 1e9
                         }
@@ -167,6 +166,8 @@ def chat_api(request):
                     yield f"data: {json.dumps(data_packet)}\n\n"
                     
             except Exception as e:
+                # Critical: Log the error and send to client
+                print(f"Ollama Error: {e}")
                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
         return StreamingHttpResponse(stream_response(), content_type='text/event-stream')
