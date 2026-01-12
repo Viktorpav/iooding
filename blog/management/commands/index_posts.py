@@ -12,7 +12,8 @@ class Command(BaseCommand):
         # In a real app, you'd chunk large posts. Here we take the body text.
         # Ensure your model supports the dimensions (768 for nomic-embed-text)
         
-        client = ollama.Client(host='http://192.168.0.18:11434')
+        from blog.ai_utils import get_ollama_client
+        client = get_ollama_client()
         
         for post in Post.published.all():
             # Basic text extraction (removing HTML tags roughly or using just body)

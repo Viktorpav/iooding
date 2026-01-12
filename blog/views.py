@@ -6,8 +6,9 @@ from .forms import CommentForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Count
 from django.http import HttpResponse, StreamingHttpResponse
-import json, ollama
+import json
 from django.views.decorators.csrf import csrf_exempt
+from blog.ai_utils import get_ollama_client, generate_rag_context
 
 def post_list(request, tag_slug=None):
     posts = Post.published.all()
@@ -104,71 +105,40 @@ def health_check(request):
     return HttpResponse("ok", content_type="text/plain")
 
 # --- Optimized AI Agent (Async Direct Streaming) ---
-# Supports proper async generation to avoid blocking and ensure live output via Uvicorn
-
-# Use AsyncClient for non-blocking I/O
-async_ollama_client = ollama.AsyncClient(host='http://192.168.0.18:11434')
 
 @csrf_exempt
 async def chat_api(request):
     if request.method == "POST":
         try:
-            # Need to decode body manually in async view if content-type isn't standard form data
             body_bytes = request.body
             data = json.loads(body_bytes)
             messages = data.get("messages", [])
             
-            # If no history, use the current message
             if not messages:
                 user_msg = data.get("message", "")
                 if user_msg:
                     messages = [{'role': 'user', 'content': user_msg}]
 
-            # RAG: Retrieve context if needed
-            from blog.models import PostChunk
-            from pgvector.django import CosineDistance
-            
+            # Use shared client factory
+            client = get_ollama_client(async_client=True)
+
+            # RAG Logic extracted to utility
             user_msg_content = ""
-            # Extract user message for context search
             for m in reversed(messages):
                 if m['role'] == 'user':
                     user_msg_content = m['content']
                     break
             
-            context_text = ""
             if user_msg_content:
-                try:
-                    # Sync call within async wrapper or simple blocking-compatible call (asyncpg is better but keeping simple)
-                    # For strict async, we'd use sync_to_async, but for this demo, standard ORM access is acceptable 
-                    # as long as we don't block the event loop for too long.
-                    # Getting embedding:
-                    embedding = await async_ollama_client.embeddings(model='nomic-embed-text', prompt=user_msg_content)
-                    query_vec = embedding['embedding']
-                    
-                    # Finding closest chunks (Sync DB call, wrap in sync_to_async in production)
-                    from asgiref.sync import sync_to_async
-                    
-                    @sync_to_async
-                    def get_context():
-                        chunks = PostChunk.objects.annotate(
-                            distance=CosineDistance('embedding', query_vec)
-                        ).order_by('distance')[:3]
-                        return "\n\n".join([c.content for c in chunks])
-                        
-                    context_text = await get_context()
-                except Exception as e:
-                    print(f"RAG Error: {e}")
-
-            # Inject Context into System Prompt
-            if context_text:
-                system_prompt = f"You are a helpful assistant. Use the following context to answer:\n\n{context_text}"
-                # Insert system prompt at start
-                messages.insert(0, {'role': 'system', 'content': system_prompt})
+                context_text = await generate_rag_context(user_msg_content, client)
+                if context_text:
+                    system_prompt = f"You are a helpful assistant. Use the following context to answer:\n\n{context_text}"
+                    messages.insert(0, {'role': 'system', 'content': system_prompt})
 
             async def stream_response():
                 try:
                     # Async iteration over the response stream
-                    async for chunk in await async_ollama_client.chat(
+                    async for chunk in await client.chat(
                         model='qwen3-coder',
                         messages=messages,
                         stream=True,
@@ -187,12 +157,11 @@ async def chat_api(request):
                         if chunk.get('done'):
                             total_duration = chunk.get('total_duration', 0) / 1e9
                             eval_count = chunk.get('eval_count', 0)
-                            # Protect against division by zero if duration is extremely small/missing
                             eval_duration_raw = chunk.get('eval_duration', 0)
                             if eval_duration_raw > 0:
                                 eval_duration = eval_duration_raw / 1e9
                             else:
-                                eval_duration = 0.001 # fallback to avoid zero division
+                                eval_duration = 0.001 
 
                             metrics = {
                                 'total_duration': total_duration,
@@ -202,8 +171,13 @@ async def chat_api(request):
                             yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
                             
                 except Exception as e:
-                    print(f"Ollama Async Error: {e}")
-                    yield f"data: {json.dumps({'error': str(e)})}\n\n"
+                    # Handle concurrency/overload errors gracefully
+                    err_msg = str(e)
+                    if "connection" in err_msg.lower():
+                        yield f"data: {json.dumps({'error': 'Server busy, please try again.'})}\n\n"
+                    else:
+                        print(f"Ollama Async Error: {e}")
+                        yield f"data: {json.dumps({'error': err_msg})}\n\n"
 
             response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
             response['X-Accel-Buffering'] = 'no'
@@ -211,7 +185,6 @@ async def chat_api(request):
             return response
             
         except Exception as e:
-             # Regular HttpResponse is fine for error blocks
              return HttpResponse(json.dumps({'error': str(e)}), status=500, content_type="application/json")
              
     return HttpResponse("Method not allowed", status=405)

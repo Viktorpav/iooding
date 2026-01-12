@@ -18,6 +18,7 @@ prefix = 'iooding'
 # Fetch required secrets - prioritize env vars, then SSM
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or get_ssm_param(f'{prefix}_django_secret_key') or 'django-insecure-local-dev-key'
 DB_PASSWORD = os.environ.get('DB_PASSWORD') or get_ssm_param(f'{prefix}_db_password') or 'postgres'
+OLLAMA_HOST = os.environ.get('OLLAMA_HOST', 'http://192.168.0.18:11434')
 
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 # In a container/K8s environment, the Ingress (Nginx) handles domain security.
