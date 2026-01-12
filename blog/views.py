@@ -124,6 +124,47 @@ async def chat_api(request):
                 if user_msg:
                     messages = [{'role': 'user', 'content': user_msg}]
 
+            # RAG: Retrieve context if needed
+            from blog.models import PostChunk
+            from pgvector.django import CosineDistance
+            
+            user_msg_content = ""
+            # Extract user message for context search
+            for m in reversed(messages):
+                if m['role'] == 'user':
+                    user_msg_content = m['content']
+                    break
+            
+            context_text = ""
+            if user_msg_content:
+                try:
+                    # Sync call within async wrapper or simple blocking-compatible call (asyncpg is better but keeping simple)
+                    # For strict async, we'd use sync_to_async, but for this demo, standard ORM access is acceptable 
+                    # as long as we don't block the event loop for too long.
+                    # Getting embedding:
+                    embedding = await async_ollama_client.embeddings(model='nomic-embed-text', prompt=user_msg_content)
+                    query_vec = embedding['embedding']
+                    
+                    # Finding closest chunks (Sync DB call, wrap in sync_to_async in production)
+                    from asgiref.sync import sync_to_async
+                    
+                    @sync_to_async
+                    def get_context():
+                        chunks = PostChunk.objects.annotate(
+                            distance=CosineDistance('embedding', query_vec)
+                        ).order_by('distance')[:3]
+                        return "\n\n".join([c.content for c in chunks])
+                        
+                    context_text = await get_context()
+                except Exception as e:
+                    print(f"RAG Error: {e}")
+
+            # Inject Context into System Prompt
+            if context_text:
+                system_prompt = f"You are a helpful assistant. Use the following context to answer:\n\n{context_text}"
+                # Insert system prompt at start
+                messages.insert(0, {'role': 'system', 'content': system_prompt})
+
             async def stream_response():
                 try:
                     # Async iteration over the response stream

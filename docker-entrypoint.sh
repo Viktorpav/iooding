@@ -7,6 +7,8 @@ run_migrate() {
     python manage.py migrate --noinput
     echo "Running AI DB migrations..."
     python manage.py migrate --database=ai --noinput
+    echo "Indexing blog posts for RAG..."
+    python manage.py index_posts || echo "Indexing failed (possibly no Ollama connection), skipping..."
 
     
     if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then
