@@ -24,7 +24,7 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: iooding-migration-v22
+  name: iooding-migration
   namespace: iooding
   annotations:
     argocd.argoproj.io/hook: Sync
