@@ -1,12 +1,12 @@
 // --- AI Sidebar System Logic: Advanced Developer Interface ---
 let chatHistory = [];
 let lastEnterTime = 0;
-let abortController = null; // Controller for stopping generation
+let abortController = null;
+let isGenerating = false;
+const MAX_HISTORY = 50;
 
-// Setup event listeners for the specific requested interactions
 document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('ai-user-input');
-    const messagesDiv = document.getElementById('chat-messages');
 
     // 1. Recover cached input text
     const cachedInput = localStorage.getItem('ai_user_input_cache');
@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderHistory(chatHistory);
         } catch (e) {
             console.error("Failed to load chat history", e);
+            chatHistory = [];
         }
     }
 
@@ -38,9 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             const currentTime = new Date().getTime();
-            if (currentTime - lastEnterTime < 600) { // Double tap threshold
+            if (currentTime - lastEnterTime < 600) {
                 e.preventDefault();
-                sendMessage();
+                handleSendClick();
                 lastEnterTime = 0;
             } else {
                 lastEnterTime = currentTime;
@@ -48,21 +49,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    scrollToBottom();
+    scrollToBottom(true);
 });
 
+// --- Layout Integration ---
 function toggleChat() {
     const sidebar = document.getElementById('ai-sidebar');
     const trigger = document.getElementById('ai-edge-trigger');
     sidebar.classList.toggle('active');
+    document.body.classList.toggle('ai-active');
+
     if (sidebar.classList.contains('active')) {
         trigger.classList.add('hidden');
-        scrollToBottom();
+        scrollToBottom(true);
+        document.getElementById('ai-user-input').focus();
     } else {
         trigger.classList.remove('hidden');
     }
 }
 
+// --- Smart Scrolling (prevents jump during editing) ---
+function scrollToBottom(force = false) {
+    const viewport = document.getElementById('chat-messages');
+    if (!viewport) return;
+
+    const isAtBottom = viewport.scrollTop + viewport.clientHeight >= viewport.scrollHeight - 80;
+
+    if (force || isAtBottom) {
+        viewport.scrollTop = viewport.scrollHeight;
+    }
+}
+
+// --- History Rendering ---
 function renderHistory(history) {
     const messagesDiv = document.getElementById('chat-messages');
     history.forEach(msg => {
@@ -74,9 +92,10 @@ function renderHistory(history) {
     });
 }
 
+// --- Clipboard Actions ---
 function copyText(text) {
     navigator.clipboard.writeText(text).then(() => {
-        // Optional: Show copied feedback
+        // Could show a toast notification here
     });
 }
 
@@ -84,38 +103,38 @@ function editMessage(text) {
     const input = document.getElementById('ai-user-input');
     input.value = text;
     input.focus();
-    // Trigger resize
     input.style.height = 'auto';
     input.style.height = (input.scrollHeight) + 'px';
+    localStorage.setItem('ai_user_input_cache', text);
 }
 
+// --- Action Buttons ---
 function createActionButtons(text, isUser) {
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'msg-actions';
 
-    // Copy Button
     const copyBtn = document.createElement('button');
     copyBtn.className = 'action-btn';
-    copyBtn.innerHTML = `<span>Copy</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
-    copyBtn.onclick = () => copyText(text);
+    copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+    copyBtn.title = 'Copy';
+    copyBtn.onclick = (e) => { e.stopPropagation(); copyText(text); };
     actionsDiv.appendChild(copyBtn);
 
-    // Edit Button (Only for user)
     if (isUser) {
         const editBtn = document.createElement('button');
         editBtn.className = 'action-btn';
-        editBtn.innerHTML = `<span>Edit</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
-        editBtn.onclick = () => editMessage(text);
+        editBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
+        editBtn.title = 'Edit';
+        editBtn.onclick = (e) => { e.stopPropagation(); editMessage(text); };
         actionsDiv.appendChild(editBtn);
     }
 
     return actionsDiv;
 }
 
+// --- Message UI ---
 function addUserMessageUI(text) {
     const messagesDiv = document.getElementById('chat-messages');
-
-    // Wrapper for alignment and actions
     const wrapper = document.createElement('div');
     wrapper.className = 'user-wrapper';
 
@@ -125,7 +144,6 @@ function addUserMessageUI(text) {
 
     wrapper.appendChild(userDiv);
     wrapper.appendChild(createActionButtons(text, true));
-
     messagesDiv.appendChild(wrapper);
 }
 
@@ -140,15 +158,14 @@ function addAssistantMessageUI(content) {
 
     aiDiv.appendChild(contentDiv);
     aiDiv.appendChild(createActionButtons(content, false));
-
     messagesDiv.appendChild(aiDiv);
+
     contentDiv.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
 }
 
-// Initial state handler for the unified button
+// --- Unified Send/Stop Button ---
 function handleSendClick() {
-    const btn = document.getElementById('ai-send-btn');
-    if (btn.classList.contains('stop-mode')) {
+    if (isGenerating) {
         stopGeneration();
     } else {
         sendMessage();
@@ -159,54 +176,52 @@ function stopGeneration() {
     if (abortController) {
         abortController.abort();
         abortController = null;
-        toggleStopButton(false);
-        // Add a small indicator that it was stopped
-        const messagesDiv = document.getElementById('chat-messages');
-        const lastMsg = messagesDiv.lastElementChild;
-        if (lastMsg && lastMsg.querySelector('.msg-content')) {
-            lastMsg.querySelector('.msg-content').insertAdjacentHTML('beforeend', ' <span style="opacity:0.5; font-size:0.8em;">(Stopped)</span>');
-        }
+    }
+    setGeneratingState(false);
+
+    const messagesDiv = document.getElementById('chat-messages');
+    const lastMsg = messagesDiv.lastElementChild;
+    if (lastMsg && lastMsg.querySelector('.msg-content')) {
+        lastMsg.querySelector('.msg-content').insertAdjacentHTML('beforeend', ' <span style="opacity:0.5; font-size:0.75em;">(stopped)</span>');
     }
 }
 
-function toggleStopButton(active) {
+function setGeneratingState(active) {
+    isGenerating = active;
     const btn = document.getElementById('ai-send-btn');
     const sendIcon = btn.querySelector('.send-icon');
     const stopIcon = btn.querySelector('.stop-icon');
 
     if (active) {
         btn.classList.add('stop-mode');
-        sendIcon.style.display = 'none';
-        stopIcon.style.display = 'block';
+        if (sendIcon) sendIcon.style.display = 'none';
+        if (stopIcon) stopIcon.style.display = 'block';
     } else {
         btn.classList.remove('stop-mode');
-        sendIcon.style.display = 'block';
-        stopIcon.style.display = 'none';
+        if (sendIcon) sendIcon.style.display = 'block';
+        if (stopIcon) stopIcon.style.display = 'none';
     }
 }
 
+// --- Main Send Logic ---
 async function sendMessage() {
     const input = document.getElementById('ai-user-input');
     const messagesDiv = document.getElementById('chat-messages');
     const statsMini = document.getElementById('ai-stats-realtime');
     const text = input.value.trim();
 
-    if (!text) return;
+    if (!text || isGenerating) return;
 
-    // Add User Message
     addUserMessageUI(text);
 
-    // Reset input and clear input cache (keeping history)
     input.value = '';
     input.style.height = 'auto';
     localStorage.removeItem('ai_user_input_cache');
-    scrollToBottom();
+    scrollToBottom(true);
 
-    // Init AbortController
     abortController = new AbortController();
-    toggleStopButton(true);
+    setGeneratingState(true);
 
-    // Prepare AI Message Container with Thinking support
     const aiDiv = document.createElement('div');
     aiDiv.className = 'ai-msg';
 
@@ -217,7 +232,7 @@ async function sendMessage() {
 
     const contentDiv = document.createElement('div');
     contentDiv.className = 'msg-content';
-    contentDiv.innerHTML = '<em>Generating response...</em>';
+    contentDiv.innerHTML = '<em class="generating-placeholder">Generating...</em>';
 
     const metricsDiv = document.createElement('div');
     metricsDiv.className = 'msg-metrics';
@@ -226,7 +241,7 @@ async function sendMessage() {
     aiDiv.appendChild(contentDiv);
     aiDiv.appendChild(metricsDiv);
     messagesDiv.appendChild(aiDiv);
-    scrollToBottom();
+    scrollToBottom(true);
 
     let fullContent = "";
     let fullThinking = "";
@@ -243,11 +258,9 @@ async function sendMessage() {
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
+        let buffer = '';
 
         contentDiv.innerHTML = '';
-
-        // Buffer to handle partial JSON chunks
-        let buffer = '';
 
         while (true) {
             const { value, done } = await reader.read();
@@ -255,19 +268,18 @@ async function sendMessage() {
 
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split('\n');
-            buffer = lines.pop(); // Keep the last partial line in buffer
+            buffer = lines.pop();
 
             for (const line of lines) {
                 const trimmedLine = line.trim();
                 if (!trimmedLine || !trimmedLine.startsWith('data: ')) continue;
 
                 try {
-                    const jsonStr = trimmedLine.substring(6);
-                    const data = JSON.parse(jsonStr);
+                    const data = JSON.parse(trimmedLine.substring(6));
 
                     if (data.error) {
-                        contentDiv.innerHTML = `<div style="color: #ff3b30;">[System Error]: ${data.error}</div>`;
-                        toggleStopButton(false);
+                        contentDiv.innerHTML = `<div style="color: #ff3b30;">[Error]: ${data.error}</div>`;
+                        setGeneratingState(false);
                         return;
                     }
 
@@ -279,23 +291,16 @@ async function sendMessage() {
 
                     if (data.content) {
                         fullContent += data.content;
-                        // Use requestAnimationFrame for smoother UI updates if heavy
                         contentDiv.innerHTML = marked.parse(fullContent);
-                        // Highlight only periodically or at the end to save resources, but fine for now
                         contentDiv.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
                     }
 
                     if (data.done && data.metrics) {
                         const m = data.metrics;
-                        // Better metric validation to avoid 1000t/s on 1 token
-                        let speed = 0;
+                        let speed = "—";
                         if (m.eval_count > 1 && m.eval_duration > 0.1) {
                             speed = (m.eval_count / m.eval_duration).toFixed(1);
-                        } else {
-                            // Estimated falling back to token stream speed if server metrics are weird
-                            speed = "—";
                         }
-
                         if (speed !== "—") {
                             metricsDiv.innerHTML = `<span>${m.eval_count} tokens</span> • <span>${speed} t/s</span> • <span>${m.total_duration.toFixed(2)}s</span>`;
                             statsMini.textContent = `${speed} t/s`;
@@ -309,35 +314,51 @@ async function sendMessage() {
             }
         }
 
-        // Add action buttons to the finalized message
         aiDiv.appendChild(createActionButtons(fullContent, false));
-
-        // Finalize History
-        chatHistory.push({ role: 'user', content: text });
-        chatHistory.push({ role: 'assistant', content: fullContent });
-        localStorage.setItem('ai_chat_history', JSON.stringify(chatHistory));
+        saveHistory(text, fullContent);
 
     } catch (error) {
         if (error.name === 'AbortError') {
             console.log('Generation stopped by user');
-            // Save partial state
             if (fullContent) {
-                chatHistory.push({ role: 'user', content: text });
-                chatHistory.push({ role: 'assistant', content: fullContent });
-                localStorage.setItem('ai_chat_history', JSON.stringify(chatHistory));
                 aiDiv.appendChild(createActionButtons(fullContent, false));
+                saveHistory(text, fullContent);
             }
         } else {
             console.error('Chat Error:', error);
-            contentDiv.innerHTML = `<div style="color: #ff3b30;">Connection failed. Check host availability.</div>`;
+            contentDiv.innerHTML = `<div style="color: #ff3b30;">Connection failed.</div>`;
         }
     } finally {
-        toggleStopButton(false);
+        setGeneratingState(false);
         abortController = null;
     }
 }
 
-function scrollToBottom() {
-    const viewport = document.getElementById('chat-messages');
-    viewport.scrollTop = viewport.scrollHeight;
+// --- History Management ---
+function saveHistory(userText, assistantText) {
+    chatHistory.push({ role: 'user', content: userText });
+    chatHistory.push({ role: 'assistant', content: assistantText });
+
+    // Keep history within limit
+    if (chatHistory.length > MAX_HISTORY) {
+        chatHistory = chatHistory.slice(chatHistory.length - MAX_HISTORY);
+    }
+
+    try {
+        localStorage.setItem('ai_chat_history', JSON.stringify(chatHistory));
+    } catch (e) {
+        console.warn('localStorage limit reached, trimming history');
+        chatHistory = chatHistory.slice(-20);
+        localStorage.setItem('ai_chat_history', JSON.stringify(chatHistory));
+    }
+}
+
+function clearHistory() {
+    chatHistory = [];
+    localStorage.removeItem('ai_chat_history');
+    const messagesDiv = document.getElementById('chat-messages');
+    // Keep the welcome message
+    const welcome = messagesDiv.querySelector('.system-msg');
+    messagesDiv.innerHTML = '';
+    if (welcome) messagesDiv.appendChild(welcome);
 }

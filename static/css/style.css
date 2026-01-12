@@ -579,3 +579,76 @@ a:hover {
     background: rgba(0, 0, 0, 0.1);
     color: var(--primary);
 }
+
+/* --- Sidebar Layout Integration --- */
+body {
+    transition: padding-right 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    overflow-x: hidden;
+}
+
+body.ai-active {
+    padding-right: 30%;
+}
+
+/* Adjust navbar when sidebar is active */
+body.ai-active .navbar {
+    transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    width: 70%;
+}
+
+/* Main content transition */
+body.ai-active main.container {
+    transition: margin-right 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Footer adjustments */
+body.ai-active footer.container {
+    transition: padding-right 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    padding-right: 30%;
+}
+
+/* Generating placeholder animation */
+.generating-placeholder {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 1200px) {
+    #ai-sidebar {
+        width: 40%;
+    }
+
+    body.ai-active {
+        padding-right: 40%;
+    }
+
+    body.ai-active .navbar {
+        width: 60%;
+    }
+}
+
+@media (max-width: 768px) {
+    #ai-sidebar {
+        width: 100%;
+    }
+
+    body.ai-active {
+        padding-right: 0;
+    }
+
+    body.ai-active .navbar {
+        width: 100%;
+    }
+}
