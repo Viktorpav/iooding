@@ -194,4 +194,6 @@ def chat_api(request):
                 print(f"Ollama Error: {e}")
                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
-        return StreamingHttpResponse(stream_response(), content_type='text/event-stream')
+        response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
+        response['X-Accel-Buffering'] = 'no'
+        return response

@@ -1,35 +1,54 @@
 // --- AI Sidebar System Logic: Advanced Developer Interface ---
 let chatHistory = [];
+let lastEnterTime = 0;
 
 // Setup event listeners for the specific requested interactions
 document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('ai-user-input');
+    const messagesDiv = document.getElementById('chat-messages');
 
-    // 1. Recover cached input text if any
+    // 1. Recover cached input text
     const cachedInput = localStorage.getItem('ai_user_input_cache');
     if (cachedInput) {
         userInput.value = cachedInput;
-        // Adjust height for cached content
         userInput.style.height = 'auto';
         userInput.style.height = (userInput.scrollHeight) + 'px';
     }
 
-    // 2. Auto-resize textarea & Cache on change
+    // 2. Recover Chat History
+    const savedHistory = localStorage.getItem('ai_chat_history');
+    if (savedHistory) {
+        try {
+            chatHistory = JSON.parse(savedHistory);
+            renderHistory(chatHistory);
+        } catch (e) {
+            console.error("Failed to load chat history", e);
+        }
+    }
+
+    // 3. Auto-resize textarea & Cache on change
     userInput.addEventListener('input', function () {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
         localStorage.setItem('ai_user_input_cache', this.value);
     });
 
-    // 3. Simple Enter to send (Standard UX as requested to revert)
+    // 4. Handle "Double Enter" for sending (Requested Revert)
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
+            const currentTime = new Date().getTime();
+            if (currentTime - lastEnterTime < 600) { // Double tap threshold
+                e.preventDefault();
+                sendMessage();
+                lastEnterTime = 0;
+            } else {
+                lastEnterTime = currentTime;
+            }
         }
     });
 
-    // Try to recover chat history from session if needed (optional enhancement)
+    // Handle scroll to bottom on resize or initial load
+    scrollToBottom();
 });
 
 function toggleChat() {
@@ -38,9 +57,41 @@ function toggleChat() {
     sidebar.classList.toggle('active');
     if (sidebar.classList.contains('active')) {
         trigger.classList.add('hidden');
+        scrollToBottom();
     } else {
         trigger.classList.remove('hidden');
     }
+}
+
+function renderHistory(history) {
+    const messagesDiv = document.getElementById('chat-messages');
+    history.forEach(msg => {
+        if (msg.role === 'user') {
+            addUserMessageUI(msg.content);
+        } else if (msg.role === 'assistant') {
+            addAssistantMessageUI(msg.content);
+        }
+    });
+}
+
+function addUserMessageUI(text) {
+    const messagesDiv = document.getElementById('chat-messages');
+    const userDiv = document.createElement('div');
+    userDiv.className = 'user-msg';
+    userDiv.textContent = text;
+    messagesDiv.appendChild(userDiv);
+}
+
+function addAssistantMessageUI(content) {
+    const messagesDiv = document.getElementById('chat-messages');
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'ai-msg';
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'msg-content';
+    contentDiv.innerHTML = marked.parse(content);
+    aiDiv.appendChild(contentDiv);
+    messagesDiv.appendChild(aiDiv);
+    contentDiv.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
 }
 
 async function sendMessage() {
@@ -52,12 +103,9 @@ async function sendMessage() {
     if (!text) return;
 
     // Add User Message
-    const userDiv = document.createElement('div');
-    userDiv.className = 'user-msg';
-    userDiv.textContent = text;
-    messagesDiv.appendChild(userDiv);
+    addUserMessageUI(text);
 
-    // Reset input and clear cache
+    // Reset input and clear input cache (keeping history)
     input.value = '';
     input.style.height = 'auto';
     localStorage.removeItem('ai_user_input_cache');
@@ -74,7 +122,7 @@ async function sendMessage() {
 
     const contentDiv = document.createElement('div');
     contentDiv.className = 'msg-content';
-    contentDiv.innerHTML = '<em>Agent busy...</em>'; // More professional placeholder
+    contentDiv.innerHTML = '<em>Generating response...</em>';
 
     const metricsDiv = document.createElement('div');
     metricsDiv.className = 'msg-metrics';
@@ -102,52 +150,63 @@ async function sendMessage() {
 
         contentDiv.innerHTML = '';
 
+        // Buffer to handle partial JSON chunks
+        let buffer = '';
+
         while (true) {
             const { value, done } = await reader.read();
             if (done) break;
 
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // Keep the last partial line in buffer
 
             for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    const data = JSON.parse(line.substring(6));
+                if (line.trim().startsWith('data: ')) {
+                    try {
+                        const data = JSON.parse(line.substring(6));
 
-                    if (data.error) {
-                        contentDiv.innerHTML = `<div style="color: #ff3b30;">[System Overload]: ${data.error}</div>`;
-                        return;
+                        if (data.error) {
+                            contentDiv.innerHTML = `<div style="color: #ff3b30;">[System Error]: ${data.error}</div>`;
+                            return;
+                        }
+
+                        if (data.thinking) {
+                            thinkingBox.style.display = 'block';
+                            fullThinking += data.thinking;
+                            thinkingBox.querySelector('.thinking-content').textContent = fullThinking;
+                        }
+
+                        if (data.content) {
+                            fullContent += data.content;
+                            // Update live output
+                            contentDiv.innerHTML = marked.parse(fullContent);
+                            contentDiv.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
+                        }
+
+                        if (data.done && data.metrics) {
+                            const m = data.metrics;
+                            const speed = (m.eval_count / m.eval_duration).toFixed(1);
+                            metricsDiv.innerHTML = `<span>${m.eval_count} tokens</span> • <span>${speed} t/s</span> • <span>${m.total_duration.toFixed(2)}s</span>`;
+                            statsMini.textContent = `${speed} t/s`;
+                        }
+
+                        scrollToBottom();
+                    } catch (e) {
+                        console.error("JSON parse error on line:", line, e);
                     }
-
-                    if (data.thinking) {
-                        thinkingBox.style.display = 'block';
-                        fullThinking += data.thinking;
-                        thinkingBox.querySelector('.thinking-content').textContent = fullThinking;
-                    }
-
-                    if (data.content) {
-                        fullContent += data.content;
-                        contentDiv.innerHTML = marked.parse(fullContent);
-                        contentDiv.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
-                    }
-
-                    if (data.done && data.metrics) {
-                        const m = data.metrics;
-                        const speed = (m.eval_count / m.eval_duration).toFixed(1);
-                        metricsDiv.innerHTML = `<span>${m.eval_count} tokens</span> • <span>${speed} t/s</span> • <span>${m.total_duration.toFixed(2)}s</span>`;
-                        statsMini.textContent = `${speed} t/s`;
-                    }
-
-                    scrollToBottom();
                 }
             }
         }
 
+        // Finalize History
         chatHistory.push({ role: 'user', content: text });
         chatHistory.push({ role: 'assistant', content: fullContent });
+        localStorage.setItem('ai_chat_history', JSON.stringify(chatHistory));
 
     } catch (error) {
         console.error('Chat Error:', error);
-        contentDiv.innerHTML = `<div style="color: #ff3b30;">Transmission failure. Potential host sync issue with 192.168.0.18.</div>`;
+        contentDiv.innerHTML = `<div style="color: #ff3b30;">Connection failed. Check host availability.</div>`;
     }
 }
 
