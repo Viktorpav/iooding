@@ -479,15 +479,17 @@ a:hover {
 }
 
 .stats-mini {
-    font-size: 0.6rem;
-    font-family: monospace;
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
     color: var(--accent);
+    font-weight: 600;
 }
 
 .keyboard-hint {
-    font-size: 0.6rem;
-    opacity: 0.4;
+    font-size: 0.7rem;
+    opacity: 0.6;
     font-family: 'Inter', sans-serif;
+    color: var(--text);
 }
 
 #ai-send-btn {

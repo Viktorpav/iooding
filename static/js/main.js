@@ -12,14 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
         this.style.height = (this.scrollHeight) + 'px';
     });
 
-    // Handle "Double Enter" for sending
+    // Handle "Double Enter" for sending (Developer-friendly timing)
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             const currentTime = new Date().getTime();
-            if (currentTime - lastEnterTime < 400) { // Quick double tap
+            if (currentTime - lastEnterTime < 600) { // Increased threshold
                 e.preventDefault();
                 sendMessage();
-                lastEnterTime = 0; // Reset
+                lastEnterTime = 0;
             } else {
                 lastEnterTime = currentTime;
             }
