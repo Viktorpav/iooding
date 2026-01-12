@@ -1,30 +1,35 @@
 // --- AI Sidebar System Logic: Advanced Developer Interface ---
 let chatHistory = [];
-let lastEnterTime = 0;
 
 // Setup event listeners for the specific requested interactions
 document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('ai-user-input');
 
-    // Auto-resize textarea
+    // 1. Recover cached input text if any
+    const cachedInput = localStorage.getItem('ai_user_input_cache');
+    if (cachedInput) {
+        userInput.value = cachedInput;
+        // Adjust height for cached content
+        userInput.style.height = 'auto';
+        userInput.style.height = (userInput.scrollHeight) + 'px';
+    }
+
+    // 2. Auto-resize textarea & Cache on change
     userInput.addEventListener('input', function () {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
+        localStorage.setItem('ai_user_input_cache', this.value);
     });
 
-    // Handle "Double Enter" for sending (Developer-friendly timing)
+    // 3. Simple Enter to send (Standard UX as requested to revert)
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
-            const currentTime = new Date().getTime();
-            if (currentTime - lastEnterTime < 600) { // Increased threshold
-                e.preventDefault();
-                sendMessage();
-                lastEnterTime = 0;
-            } else {
-                lastEnterTime = currentTime;
-            }
+            e.preventDefault();
+            sendMessage();
         }
     });
+
+    // Try to recover chat history from session if needed (optional enhancement)
 });
 
 function toggleChat() {
@@ -52,16 +57,16 @@ async function sendMessage() {
     userDiv.textContent = text;
     messagesDiv.appendChild(userDiv);
 
-    // Reset input
+    // Reset input and clear cache
     input.value = '';
     input.style.height = 'auto';
+    localStorage.removeItem('ai_user_input_cache');
     scrollToBottom();
 
     // Prepare AI Message Container with Thinking support
     const aiDiv = document.createElement('div');
     aiDiv.className = 'ai-msg';
 
-    // Optional Thinking Block (hidden until needed)
     const thinkingBox = document.createElement('details');
     thinkingBox.className = 'thinking-box';
     thinkingBox.style.display = 'none';
@@ -69,7 +74,7 @@ async function sendMessage() {
 
     const contentDiv = document.createElement('div');
     contentDiv.className = 'msg-content';
-    contentDiv.innerHTML = '<em>Initialising synthesis...</em>';
+    contentDiv.innerHTML = '<em>Agent busy...</em>'; // More professional placeholder
 
     const metricsDiv = document.createElement('div');
     metricsDiv.className = 'msg-metrics';
@@ -109,25 +114,22 @@ async function sendMessage() {
                     const data = JSON.parse(line.substring(6));
 
                     if (data.error) {
-                        contentDiv.innerHTML = `<div style="color: #ff3b30;">[Error]: ${data.error}</div>`;
+                        contentDiv.innerHTML = `<div style="color: #ff3b30;">[System Overload]: ${data.error}</div>`;
                         return;
                     }
 
-                    // Handle Thinking (if provided by model)
                     if (data.thinking) {
                         thinkingBox.style.display = 'block';
                         fullThinking += data.thinking;
                         thinkingBox.querySelector('.thinking-content').textContent = fullThinking;
                     }
 
-                    // Handle Content
                     if (data.content) {
                         fullContent += data.content;
                         contentDiv.innerHTML = marked.parse(fullContent);
                         contentDiv.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
                     }
 
-                    // Handle Final Metrics
                     if (data.done && data.metrics) {
                         const m = data.metrics;
                         const speed = (m.eval_count / m.eval_duration).toFixed(1);
@@ -145,7 +147,7 @@ async function sendMessage() {
 
     } catch (error) {
         console.error('Chat Error:', error);
-        contentDiv.innerHTML = `<div style="color: #ff3b30;">Connection offline. Ensure host 192.168.0.18 is reachable.</div>`;
+        contentDiv.innerHTML = `<div style="color: #ff3b30;">Transmission failure. Potential host sync issue with 192.168.0.18.</div>`;
     }
 }
 
