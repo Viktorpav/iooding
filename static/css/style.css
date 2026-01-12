@@ -225,7 +225,7 @@ a:hover {
     position: fixed;
     top: 0;
     right: 0;
-    width: 28%;
+    width: 30%;
     height: 100vh;
     background: var(--side-bg);
     backdrop-filter: blur(40px) saturate(180%);
@@ -349,7 +349,7 @@ a:hover {
 
 .user-msg,
 .ai-msg {
-    max-width: 90%;
+    max-width: 95%;
     padding: 18px 22px;
     border-radius: 22px;
     font-size: 0.95rem;
@@ -361,12 +361,14 @@ a:hover {
     background: var(--accent);
     color: white;
     box-shadow: 0 10px 20px rgba(0, 122, 255, 0.2);
+    border-bottom-right-radius: 4px;
 }
 
 .ai-msg {
     align-self: flex-start;
     background: rgba(0, 0, 0, 0.03);
     border: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom-left-radius: 4px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -376,10 +378,52 @@ a:hover {
     }
 }
 
+/* Msg Decorators & Metrics */
+.msg-metrics {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    opacity: 0.5;
+    display: flex;
+    gap: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .msg-metrics {
+        border-top-color: rgba(255, 255, 255, 0.05);
+    }
+}
+
+/* Thinking Detail */
+.thinking-box {
+    background: rgba(99, 102, 241, 0.05);
+    border-left: 2px solid #6366f1;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+}
+
+.thinking-box summary {
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6366f1;
+    outline: none;
+}
+
+.thinking-content {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    opacity: 0.8;
+    white-space: pre-wrap;
+}
+
 /* Footer & Input */
 .sidebar-footer {
     padding: 30px;
-    background: rgba(0, 0, 0, 0.01);
 }
 
 .input-advanced-wrap {
@@ -422,13 +466,28 @@ a:hover {
     align-items: center;
 }
 
+.model-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
 .model-tag {
     font-size: 0.65rem;
-    background: rgba(0, 0, 0, 0.05);
-    padding: 4px 10px;
-    border-radius: 8px;
     font-family: monospace;
     opacity: 0.5;
+}
+
+.stats-mini {
+    font-size: 0.6rem;
+    font-family: monospace;
+    color: var(--accent);
+}
+
+.keyboard-hint {
+    font-size: 0.6rem;
+    opacity: 0.4;
+    font-family: 'Inter', sans-serif;
 }
 
 #ai-send-btn {
@@ -456,4 +515,5 @@ a:hover {
     border-radius: 12px;
     padding: 15px;
     margin: 10px 0;
+    font-size: 0.85rem;
 }

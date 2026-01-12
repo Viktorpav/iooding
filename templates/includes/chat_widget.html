@@ -18,7 +18,7 @@
                     <img src="{% static 'ai_logo.png' %}" alt="AI Agent" class="header-logo">
                     <div class="header-text">
                         <span class="agent-name">Qwen Coder</span>
-                        <span class="agent-status"><span class="pulse"></span> Online | Agentic Mode</span>
+                        <span class="agent-status"><span class="pulse"></span> Online</span>
                     </div>
                 </div>
                 <button class="close-trigger" onclick="toggleChat()">
@@ -32,17 +32,21 @@
                 <!-- Welcome Message -->
                 <div class="ai-msg system-msg">
                     <div class="msg-content">
-                        <p>Welcome to the <strong>iooding-AI</strong> interface. I am powered by
-                            <strong>Qwen3-Coder</strong> and deep blog context. How can I help you today?</p>
+                        <p>Interface initialized. Powering <strong>Qwen3-Coder</strong> on high-performance inference
+                            node. <br><small>Tip: Press Enter twice to send.</small></p>
                     </div>
                 </div>
             </div>
 
             <div class="sidebar-footer">
                 <div class="input-advanced-wrap">
-                    <textarea id="ai-user-input" placeholder="Type your technical query..." rows="1"></textarea>
+                    <textarea id="ai-user-input" placeholder="Double Enter to send..." rows="1"></textarea>
                     <div class="footer-actions">
-                        <span class="model-tag">v3-coder</span>
+                        <div class="model-info">
+                            <span class="model-tag">qwen3-coder:30b</span>
+                            <span id="ai-stats-realtime" class="stats-mini"></span>
+                        </div>
+                        <div class="keyboard-hint">Shift+Enter for newline</div>
                         <button id="ai-send-btn" onclick="sendMessage()">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">

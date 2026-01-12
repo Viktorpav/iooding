@@ -159,9 +159,25 @@ def chat_api(request):
                     messages=messages,
                     stream=True,
                 )
+                
+                is_thinking = False
                 for chunk in stream:
                     content = chunk['message']['content']
-                    data_packet = {'content': content}
+                    data_packet = {}
+                    
+                    # Logic to handle <think> blocks if the model supports it
+                    if '<think>' in content:
+                        is_thinking = True
+                        content = content.replace('<think>', '')
+                    
+                    if '</think>' in content:
+                        is_thinking = False
+                        content = content.replace('</think>', '')
+                    
+                    if is_thinking:
+                        data_packet['thinking'] = content
+                    else:
+                        data_packet['content'] = content
                     
                     if chunk.get('done'):
                         data_packet['done'] = True
@@ -171,10 +187,10 @@ def chat_api(request):
                             'eval_duration': chunk.get('eval_duration', 1) / 1e9
                         }
                     
-                    yield f"data: {json.dumps(data_packet)}\n\n"
+                    if data_packet.get('content') or data_packet.get('thinking') or data_packet.get('done'):
+                        yield f"data: {json.dumps(data_packet)}\n\n"
                     
             except Exception as e:
-                # Critical: Log the error and send to client
                 print(f"Ollama Error: {e}")
                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
