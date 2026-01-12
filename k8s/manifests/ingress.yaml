@@ -10,6 +10,7 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
 
     nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
 spec:
   ingressClassName: nginx
   tls:
