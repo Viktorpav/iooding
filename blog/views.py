@@ -10,7 +10,7 @@ import json, ollama
 from django.http import StreamingHttpResponse
 from pgvector.django import CosineDistance
 from .models import PostChunk
-
+from django.views.decorators.csrf import csrf_exempt
 
 def post_list(request, tag_slug=None):
     posts = Post.published.all()
@@ -107,18 +107,26 @@ def health_check(request):
     return HttpResponse("ok", content_type="text/plain")
 
 # 1. Helper: Find relevant context from your blog
+# Initialize Ollama client for the specific host
+ollama_client = ollama.Client(host='http://192.168.0.18:11434')
+
 def get_blog_context(query_text):
     # Convert user query to embedding using Ollama
-    query_embedding = ollama.embeddings(model='nomic-embed-text', prompt=query_text)['embedding']
-    
-    # Semantic search in Postgres
-    relevant_chunks = PostChunk.objects.annotate(
-        distance=CosineDistance('embedding', query_embedding)
-    ).order_by('distance')[:3]
-    
-    return "\n".join([c.content for c in relevant_chunks])
+    try:
+        query_embedding = ollama_client.embeddings(model='nomic-embed-text', prompt=query_text)['embedding']
+        
+        # Semantic search in Postgres
+        relevant_chunks = PostChunk.objects.annotate(
+            distance=CosineDistance('embedding', query_embedding)
+        ).order_by('distance')[:3]
+        
+        return "\n".join([c.content for c in relevant_chunks])
+    except Exception as e:
+        print(f"Embedding Context Error: {e}")
+        return ""
 
 # 2. The AI Agent View (Streaming)
+@csrf_exempt
 def chat_api(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -146,8 +154,8 @@ def chat_api(request):
 
         def stream_response():
             try:
-                stream = ollama.chat(
-                    model='qwen3-coder:30b',
+                stream = ollama_client.chat(
+                    model='qwen3-coder',
                     messages=messages,
                     stream=True,
                 )

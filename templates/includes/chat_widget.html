@@ -1,54 +1,59 @@
 {% load static %}
-<div id="ai-sidebar-trigger" onclick="toggleChat()">
-    <div class="glow-wrap"></div>
-    <img src="{% static 'ai_logo.png' %}" alt="AI Agent" class="ai-agent-logo">
-</div>
+<!-- Advanced AI Integration: Sidebar System -->
+<div id="ai-system-container">
+    <!-- The Edge Trigger -->
+    <div id="ai-edge-trigger" onclick="toggleChat()">
+        <div class="trigger-glow"></div>
+        <div class="trigger-content">
+            <img src="{% static 'ai_logo.png' %}" alt="AI" class="trigger-logo">
+            <span class="trigger-text">AI ASSISTANT</span>
+        </div>
+    </div>
 
-<div id="ai-sidebar" class="glass-sidebar" style="display: none;">
-    <div class="sidebar-header">
-        <div class="agent-info">
-            <div class="logo-mini-wrap">
-                <img src="{% static 'ai_logo.png' %}" alt="AI" class="logo-mini">
-            </div>
-            <div>
-                <h3 class="m-0 fs-5 fw-bold">Qwen Coder</h3>
-                <div class="status-wrap">
-                    <span class="status-dot"></span>
-                    <span class="status-text">Thinking Agent</span>
+    <!-- The Sidebar Panel -->
+    <div id="ai-sidebar" class="premium-glass">
+        <div class="sidebar-inner">
+            <div class="sidebar-header">
+                <div class="agent-brand">
+                    <img src="{% static 'ai_logo.png' %}" alt="AI Agent" class="header-logo">
+                    <div class="header-text">
+                        <span class="agent-name">Qwen Coder</span>
+                        <span class="agent-status"><span class="pulse"></span> Online | Agentic Mode</span>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <button class="btn-close-sidebar" onclick="toggleChat()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 6L6 18M6 6l12 12"></path>
-            </svg>
-        </button>
-    </div>
-
-    <div id="chat-messages" class="chat-viewport">
-        <div class="ai-msg welcome-msg">
-            <div class="msg-content">
-                <p>Greetings. I am the <strong>Qwen Technical Agent</strong>, enhanced with your blog's context and
-                    high-performance vector retrieval. How can I assist your development today?</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="sidebar-footer">
-        <div class="input-container-advanced">
-            <textarea id="ai-user-input" rows="1" placeholder="Describe your technical challenge..."
-                autocomplete="off"></textarea>
-            <div class="input-actions">
-                <span class="tokens-info">Qwen-2.5-Coder</span>
-                <button id="ai-send-btn" onclick="sendMessage()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"></path>
+                <button class="close-trigger" onclick="toggleChat()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 18l-6-6 6-6" />
                     </svg>
                 </button>
             </div>
+
+            <div id="chat-messages" class="chat-viewport">
+                <!-- Welcome Message -->
+                <div class="ai-msg system-msg">
+                    <div class="msg-content">
+                        <p>Welcome to the <strong>iooding-AI</strong> interface. I am powered by
+                            <strong>Qwen3-Coder</strong> and deep blog context. How can I help you today?</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="input-advanced-wrap">
+                    <textarea id="ai-user-input" placeholder="Type your technical query..." rows="1"></textarea>
+                    <div class="footer-actions">
+                        <span class="model-tag">v3-coder</span>
+                        <button id="ai-send-btn" onclick="sendMessage()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>

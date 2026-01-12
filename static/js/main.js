@@ -1,24 +1,16 @@
-// --- AI Sidebar Logic ---
+// --- AI Sidebar System Logic ---
 let chatHistory = [];
 
 function toggleChat() {
     const sidebar = document.getElementById('ai-sidebar');
-    const trigger = document.getElementById('ai-sidebar-trigger');
+    const trigger = document.getElementById('ai-edge-trigger');
 
     sidebar.classList.toggle('active');
 
     if (sidebar.classList.contains('active')) {
-        sidebar.style.display = 'flex';
-        trigger.style.opacity = '0';
-        trigger.style.pointerEvents = 'none';
+        trigger.classList.add('hidden');
     } else {
-        setTimeout(() => {
-            if (!sidebar.classList.contains('active')) {
-                sidebar.style.display = 'none';
-            }
-        }, 600);
-        trigger.style.opacity = '1';
-        trigger.style.pointerEvents = 'all';
+        trigger.classList.remove('hidden');
     }
 }
 
@@ -45,7 +37,7 @@ async function sendMessage() {
     aiDiv.className = 'ai-msg';
     const contentDiv = document.createElement('div');
     contentDiv.className = 'msg-content';
-    contentDiv.innerHTML = '<span class="loading-dots">Thinking...</span>';
+    contentDiv.innerHTML = '<span class="status-thinking">Thinking...</span>';
     aiDiv.appendChild(contentDiv);
     messagesDiv.appendChild(aiDiv);
     scrollToBottom();
@@ -56,8 +48,7 @@ async function sendMessage() {
         const response = await fetch('/api/chat/', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 message: text,
@@ -65,10 +56,7 @@ async function sendMessage() {
             })
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Server connection failed: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Server connection failed: ${response.status}`);
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -87,7 +75,7 @@ async function sendMessage() {
                     const data = JSON.parse(line.substring(6));
 
                     if (data.error) {
-                        contentDiv.innerHTML = `<div style="color: #ff3b30;">Ollama Error: ${data.error}</div>`;
+                        contentDiv.innerHTML = `<div style="color: #ff3b30; font-weight: bold;">[Agent Error]: ${data.error}</div>`;
                         return;
                     }
 
@@ -110,9 +98,10 @@ async function sendMessage() {
 
     } catch (error) {
         console.error('Chat Error:', error);
-        contentDiv.innerHTML = `<div style="color: #ff3b30;">Unable to connect to Qwen Agent. Please ensure the qwen2.5-coder:32b model is available in Ollama.</div>`;
+        contentDiv.innerHTML = `<div style="color: #ff3b30;">Connection Failed. Please ensure Ollama is running at 192.168.0.18 and qwen3-coder is pulled.</div>`;
     }
 }
+
 
 
 function scrollToBottom() {
