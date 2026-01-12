@@ -123,26 +123,50 @@ def chat_api(request):
     if request.method == "POST":
         data = json.loads(request.body)
         user_query = data.get("message", "")
+        # Support full message history if provided
+        history = data.get("messages", [])
         
-        # Get context from your database!
+        # Get context from database
         context = get_blog_context(user_query)
         
         system_prompt = f"""
-        You are Ding Assistant. Use this blog context to answer:
+        You are Ding Assistant, a helpful and technical AI for this blog.
+        Base your answers on the following blog context as much as possible:
         {context}
-        If the answer isn't in the context, use your general knowledge but mention it's not from the blog.
+        
+        If the information isn't in the context, answer from your general knowledge but clarify it.
+        Be concise, friendly, and use markdown for code or emphasis.
         """
 
+        messages = [{'role': 'system', 'content': system_prompt}]
+        if history:
+            messages.extend(history)
+        else:
+            messages.append({'role': 'user', 'content': user_query})
+
         def stream_response():
-            stream = ollama.chat(
-                model='nemotron-3-nano:30b',
-                messages=[
-                    {'role': 'system', 'content': system_prompt},
-                    {'role': 'user', 'content': user_query}
-                ],
-                stream=True,
-            )
-            for chunk in stream:
-                yield f"data: {json.dumps({'content': chunk['message']['content']})}\n\n"
+            try:
+                stream = ollama.chat(
+                    model='nemotron-3-nano:30b',
+                    messages=messages,
+                    stream=True,
+                )
+                for chunk in stream:
+                    content = chunk['message']['content']
+                    data_packet = {'content': content}
+                    
+                    # If this is the final chunk, it might have metrics
+                    if chunk.get('done'):
+                        data_packet['done'] = True
+                        data_packet['metrics'] = {
+                            'total_duration': chunk.get('total_duration', 0) / 1e9, # seconds
+                            'eval_count': chunk.get('eval_count', 0),
+                            'eval_duration': chunk.get('eval_duration', 1) / 1e9
+                        }
+                    
+                    yield f"data: {json.dumps(data_packet)}\n\n"
+                    
+            except Exception as e:
+                yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
         return StreamingHttpResponse(stream_response(), content_type='text/event-stream')

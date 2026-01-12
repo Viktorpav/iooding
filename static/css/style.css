@@ -159,7 +159,7 @@ a:hover {
     }
 }
 
-/* AI Widget Styling */
+/* AI Widget Styling - Modern Glass Aesthetic */
 #ai-widget-container {
     position: fixed;
     bottom: 24px;
@@ -170,89 +170,219 @@ a:hover {
 
 /* Floating Toggle Button */
 #ai-toggle-btn {
-    width: 56px;
-    height: 56px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
-    background-color: var(--primary);
+    background: linear-gradient(135deg, var(--primary), #5856d6);
     color: white;
     border: none;
     cursor: pointer;
-    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 8px 32px rgba(0, 122, 255, 0.3);
 }
 
 #ai-toggle-btn:hover {
-    transform: scale(1.1);
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 12px 40px rgba(0, 122, 255, 0.4);
 }
 
-/* Chat Window */
+/* Glass Container */
 #ai-chat-window {
     position: absolute;
-    bottom: 70px;
+    bottom: 80px;
     right: 0;
-    width: 350px;
-    height: 500px;
+    width: 380px;
+    height: 600px;
+    max-height: 80vh;
     display: flex;
     flex-direction: column;
-    /* Glassmorphism */
-    background-color: rgba(var(--surface), 0.95);
-    /* Fallback */
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 24px;
+    overflow: hidden;
+    transform-origin: bottom right;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
-/* Messages Area */
-#chat-messages {
+@media (prefers-color-scheme: dark) {
+    #ai-chat-window {
+        background: rgba(28, 28, 30, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Chat Header */
+.chat-header {
+    padding: 18px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #34c759;
+    box-shadow: 0 0 10px rgba(52, 199, 89, 0.5);
+}
+
+.btn-close-custom {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    padding: 4px;
+}
+
+.btn-close-custom:hover {
+    opacity: 1;
+}
+
+/* Chat Body */
+.chat-body {
     flex: 1;
     overflow-y: auto;
-    font-size: 0.95rem;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
+}
+
+/* Scrollbar */
+.chat-body::-webkit-scrollbar {
+    width: 5px;
+}
+
+.chat-body::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
 }
 
 /* Message Bubbles */
-.user-msg {
-    background-color: var(--primary);
-    color: white;
-    padding: 8px 12px;
-    border-radius: 18px 18px 4px 18px;
-    margin-bottom: 8px;
+.user-msg,
+.ai-msg {
     max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.user-msg {
     align-self: flex-end;
-    margin-left: auto;
+    background: var(--primary);
+    color: white;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 15px rgba(0, 122, 255, 0.2);
 }
 
 .ai-msg {
-    background-color: var(--surface);
-    border: 1px solid var(--border);
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.5);
     color: var(--text);
-    padding: 8px 12px;
-    border-radius: 18px 18px 18px 4px;
-    margin-bottom: 8px;
-    max-width: 85%;
+    border-bottom-left-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Input Area */
-#ai-user-input {
-    resize: none;
-    border-radius: 12px;
-    font-size: 0.9rem;
-}
-
-#ai-user-input:focus {
-    box-shadow: none;
-    background-color: var(--bg);
-}
-
-/* Dark Mode Overrides */
 @media (prefers-color-scheme: dark) {
-    #ai-chat-window {
-        background-color: rgba(30, 30, 30, 0.85);
+    .ai-msg {
+        background: rgba(255, 255, 255, 0.05);
     }
+}
 
-    #ai-user-input {
-        background-color: #2c2c2e;
-        color: white;
+/* Chat Footer */
+.chat-footer {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.input-wrapper {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: border-color 0.2s;
+}
+
+@media (prefers-color-scheme: dark) {
+    .input-wrapper {
+        background: rgba(255, 255, 255, 0.05);
     }
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--primary);
+}
+
+#ai-user-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 4px 0;
+    max-height: 120px;
+    resize: none;
+}
+
+#ai-send-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#ai-send-btn:hover {
+    transform: scale(1.05);
+    background: #0066d6;
+}
+
+.footer-note {
+    font-size: 0.7rem;
+    color: var(--text);
+    opacity: 0.4;
+    margin-top: 8px;
+    text-align: center;
+}
+
+/* Markdown styling inside AI messages */
+.ai-msg .msg-content pre {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 8px 0;
+}
+
+@media (prefers-color-scheme: dark) {
+    .ai-msg .msg-content pre {
+        background: rgba(0, 0, 0, 0.3);
+    }
+}
+
+.ai-msg .msg-content p:last-child {
+    margin-bottom: 0;
 }

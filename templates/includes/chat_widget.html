@@ -1,0 +1,47 @@
+<div id="ai-widget-container">
+    <button id="ai-toggle-btn" class="shadow-lg" onclick="toggleChat()" aria-label="Toggle Chat">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+    </button>
+
+    <div id="ai-chat-window" class="glass-container shadow-2xl" style="display: none;">
+        <div class="chat-header">
+            <div class="d-flex align-items-center gap-2">
+                <div class="status-indicator online"></div>
+                <span class="fw-bold fs-6">Ding Assistant</span>
+            </div>
+            <button onclick="toggleChat()" class="btn-close-custom" aria-label="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <div id="chat-messages" class="chat-body">
+            <div class="ai-msg">
+                <div class="msg-content">Hello! I'm your AI assistant. How can I help you with the blog today?</div>
+            </div>
+        </div>
+
+        <div class="chat-footer">
+            <div class="input-wrapper">
+                <textarea id="ai-user-input" rows="1" placeholder="Type a message..." autocomplete="off"></textarea>
+                <button id="ai-send-btn" onclick="sendMessage()" aria-label="Send">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </button>
+            </div>
+            <div class="footer-note">Press Enter to send</div>
+        </div>
+    </div>
+</div>
+
+<!-- Load Marked for Markdown Parsing -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
