@@ -5,11 +5,8 @@ from .models import Post, Comment
 from .forms import CommentForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Count
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 import json, ollama
-from django.http import StreamingHttpResponse
-from pgvector.django import CosineDistance
-from .models import PostChunk
 from django.views.decorators.csrf import csrf_exempt
 
 def post_list(request, tag_slug=None):
@@ -106,94 +103,69 @@ def health_check(request):
     """Simplified health check for K8s probes"""
     return HttpResponse("ok", content_type="text/plain")
 
-# 1. Helper: Find relevant context from your blog
-# Initialize Ollama client for the specific host
+# --- Optimized AI Agent (Direct Streaming) ---
+# Removed RAG context for lower overhead and faster TTFB (Time To First Byte)
+# as requested by the user.
+
 ollama_client = ollama.Client(host='http://192.168.0.18:11434')
 
-def get_blog_context(query_text):
-    # Convert user query to embedding using Ollama
-    try:
-        query_embedding = ollama_client.embeddings(model='nomic-embed-text', prompt=query_text)['embedding']
-        
-        # Semantic search in Postgres
-        relevant_chunks = PostChunk.objects.annotate(
-            distance=CosineDistance('embedding', query_embedding)
-        ).order_by('distance')[:3]
-        
-        return "\n".join([c.content for c in relevant_chunks])
-    except Exception as e:
-        print(f"Embedding Context Error: {e}")
-        return ""
-
-# 2. The AI Agent View (Streaming)
 @csrf_exempt
 def chat_api(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        user_query = data.get("message", "")
-        # Support full message history if provided
-        history = data.get("messages", [])
-        
-        # Get context from database
-        context = get_blog_context(user_query)
-        
-        system_prompt = f"""
-        You are Ding Assistant, a helpful and technical AI for this blog.
-        Base your answers on the following blog context as much as possible:
-        {context}
-        
-        If the information isn't in the context, answer from your general knowledge but clarify it.
-        Be concise, friendly, and use markdown for code or emphasis.
-        """
+        try:
+            data = json.loads(request.body)
+            messages = data.get("messages", [])
+            # If no history, use the current message
+            if not messages:
+                user_msg = data.get("message", "")
+                if user_msg:
+                    messages = [{'role': 'user', 'content': user_msg}]
 
-        messages = [{'role': 'system', 'content': system_prompt}]
-        if history:
-            messages.extend(history)
-        else:
-            messages.append({'role': 'user', 'content': user_query})
+            def stream_response():
+                try:
+                    stream = ollama_client.chat(
+                        model='qwen3-coder',
+                        messages=messages,
+                        stream=True,
+                    )
+                    
+                    for chunk in stream:
+                        # 1. Handle "Thinking" (Reasoning)
+                        # Note: Ollama python client structure might vary slightly, 
+                        # but usually it's in chunk['message']
+                        
+                        content = chunk.get('message', {}).get('content', '')
+                        
+                        # Handle legacy deepseek/qwen thinking tags if they appear in content
+                        # (Some models output <think>...</think> in content)
+                        if '<think>' in content:
+                            yield f"data: {json.dumps({'thinking': 'Started thinking...'})}\n\n"
+                            # Strip the tag for cleaner content if needed, or send as thinking
+                            content = content.replace('<think>', '')
+                        
+                        if content:
+                            yield f"data: {json.dumps({'content': content})}\n\n"
+                        
+                        # 2. Handle Metrics (Final chunk)
+                        if chunk.get('done'):
+                            metrics = {
+                                'total_duration': chunk.get('total_duration', 0) / 1e9,
+                                'eval_count': chunk.get('eval_count', 0),
+                                'eval_duration': chunk.get('eval_duration', 1) / 1e9
+                            }
+                            yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
+                            
+                except Exception as e:
+                    print(f"Ollama Error: {e}")
+                    yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
-        def stream_response():
-            try:
-                stream = ollama_client.chat(
-                    model='qwen3-coder',
-                    messages=messages,
-                    stream=True,
-                )
-                
-                is_thinking = False
-                for chunk in stream:
-                    content = chunk['message']['content']
-                    data_packet = {}
-                    
-                    # Logic to handle <think> blocks if the model supports it
-                    if '<think>' in content:
-                        is_thinking = True
-                        content = content.replace('<think>', '')
-                    
-                    if '</think>' in content:
-                        is_thinking = False
-                        content = content.replace('</think>', '')
-                    
-                    if is_thinking:
-                        data_packet['thinking'] = content
-                    else:
-                        data_packet['content'] = content
-                    
-                    if chunk.get('done'):
-                        data_packet['done'] = True
-                        data_packet['metrics'] = {
-                            'total_duration': chunk.get('total_duration', 0) / 1e9,
-                            'eval_count': chunk.get('eval_count', 0),
-                            'eval_duration': chunk.get('eval_duration', 1) / 1e9
-                        }
-                    
-                    if data_packet.get('content') or data_packet.get('thinking') or data_packet.get('done'):
-                        yield f"data: {json.dumps(data_packet)}\n\n"
-                    
-            except Exception as e:
-                print(f"Ollama Error: {e}")
-                yield f"data: {json.dumps({'error': str(e)})}\n\n"
-
-        response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
-        response['X-Accel-Buffering'] = 'no'
-        return response
+            response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
+            # Critical headers for Nginx to disable buffering
+            response['X-Accel-Buffering'] = 'no'
+            response['Cache-Control'] = 'no-cache'
+            return response
+            
+        except Exception as e:
+             return HttpResponse(json.dumps({'error': str(e)}), status=500, content_type="application/json")
+             
+    return HttpResponse("Method not allowed", status=405)
