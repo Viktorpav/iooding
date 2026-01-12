@@ -519,3 +519,85 @@ a:hover {
     margin: 10px 0;
     font-size: 0.85rem;
 }
+
+/* User Message Actions */
+.msg-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 6px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.user-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    max-width: 95%;
+    align-self: flex-end;
+}
+
+/* Show actions on hover */
+.user-wrapper:hover .msg-actions,
+.ai-msg:hover .msg-actions {
+    opacity: 1;
+}
+
+.action-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.ai-msg .action-btn {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text);
+    opacity: 0.7;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.ai-msg .action-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--primary);
+}
+
+/* Stop Generation Button */
+#ai-stop-btn {
+    display: none;
+    /* Hidden by default */
+    background: #ff3b30;
+    color: white;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 18px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 8px;
+}
+
+#ai-stop-btn:hover {
+    transform: scale(1.05);
+    background: #d43329;
+    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+}
+
+#ai-stop-btn.active {
+    display: flex;
+    /* Shown when active */
+}

@@ -39,7 +39,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: viktor2003/iooding:v27
+          image: viktor2003/iooding:v28
           imagePullPolicy: IfNotPresent
           command:
             - sh
@@ -180,7 +180,7 @@ spec:
       ########################################
       containers:
         - name: iooding
-          image: viktor2003/iooding:v27
+          image: viktor2003/iooding:v28
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
