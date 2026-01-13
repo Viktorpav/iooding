@@ -107,29 +107,45 @@ async def health_check(request):
 
 @csrf_exempt
 async def chat_api(request):
+    print("AI Chat API call started.")
     if request.method == "POST":
         try:
-            body_bytes = request.body
-            data = json.loads(body_bytes)
-            messages = data.get("messages", [])
+            # 1. Read body safely
+            try:
+                # In Django 5.x async views, request.body is okay but we'll monitor it
+                body_bytes = request.body
+                print(f"Body received, size: {len(body_bytes)}")
+                data = json.loads(body_bytes)
+            except Exception as e:
+                print(f"Error parsing request body: {e}")
+                return HttpResponse(json.dumps({'error': f'Invalid request body: {e}'}), status=400)
             
+            messages = data.get("messages", [])
             if not messages:
                 user_msg = data.get("message", "")
                 if user_msg:
                     messages = [{'role': 'user', 'content': user_msg}]
 
-            # Lazy import to speed up startup and avoid circular deps
-            from blog.ai_utils import get_ollama_client, generate_rag_context
-            
-            # Use shared client factory
-            client = get_ollama_client(async_client=True)
+            print(f"Messages count: {len(messages)}")
 
+            # 2. Imports and Client
+            try:
+                from blog.ai_utils import get_ollama_client, generate_rag_context
+                client = get_ollama_client(async_client=True)
+                print("Ollama client initialized.")
+            except Exception as e:
+                import traceback
+                print(f"Error initializing AI utils: {traceback.format_exc()}")
+                return HttpResponse(json.dumps({'error': f'AI Startup Error: {e}'}), status=500)
+
+            # 3. Stream Generator
             async def stream_response():
                 try:
-                    # 1. Immediate feedback to user (improves perceived latency)
+                    print("Stream Generator started.")
+                    # 1. Immediate feedback to user
                     yield f"data: {json.dumps({'thinking': 'Analyzing query...'})}\n\n"
                     
-                    # 2. RAG Logic (now fully async and non-blocking)
+                    # 2. RAG Logic
                     user_msg_content = ""
                     for m in reversed(messages):
                         if m['role'] == 'user':
@@ -137,58 +153,57 @@ async def chat_api(request):
                             break
                     
                     if user_msg_content:
+                        print(f"Generating RAG context for: {user_msg_content[:30]}...")
                         context_text = await generate_rag_context(user_msg_content, client)
                         if context_text:
+                            print("Context found, adding to messages.")
                             system_prompt = f"You are a helpful assistant. Use the following context to answer:\n\n{context_text}"
                             messages.insert(0, {'role': 'system', 'content': system_prompt})
                             yield f"data: {json.dumps({'thinking': 'Context retrieved, generating answer...'})}\n\n"
                         else:
+                            print("No relevant context found.")
                             yield f"data: {json.dumps({'thinking': 'Direct response (no relevant context found)...'})}\n\n"
 
                     # 3. Stream from Ollama
-                    # Async iteration over the response stream
-                    async for chunk in await client.chat(
-                        model='qwen3-coder',
-                        messages=messages,
-                        stream=True,
-                    ):
-                        # 1. Handle "Thinking" (Reasoning)
-                        content = chunk.get('message', {}).get('content', '')
+                    print(f"Starting chat stream from Ollama model: qwen3-coder:latest")
+                    try:
+                        # Use await on the result if it's a coroutine returning an async iterator
+                        chat_resp = await client.chat(
+                            model='qwen3-coder:latest',
+                            messages=messages,
+                            stream=True,
+                        )
+                        print("Ollama stream connection established.")
                         
-                        if '<think>' in content:
-                            yield f"data: {json.dumps({'thinking': 'Started thinking...'})}\n\n"
-                            content = content.replace('<think>', '')
-                        
-                        if content:
-                            yield f"data: {json.dumps({'content': content})}\n\n"
-                        
-                        # 2. Handle Metrics (Final chunk)
-                        if chunk.get('done'):
-                            total_duration = chunk.get('total_duration', 0) / 1e9
-                            eval_count = chunk.get('eval_count', 0)
-                            eval_duration_raw = chunk.get('eval_duration', 0)
-                            if eval_duration_raw > 0:
-                                eval_duration = eval_duration_raw / 1e9
-                            else:
-                                eval_duration = 0.001 
-
-                            metrics = {
-                                'total_duration': total_duration,
-                                'eval_count': eval_count,
-                                'eval_duration': eval_duration
-                            }
-                            yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
+                        async for chunk in chat_resp:
+                            content = chunk.get('message', {}).get('content', '')
                             
+                            if '<think>' in content:
+                                yield f"data: {json.dumps({'thinking': 'Started thinking...'})}\n\n"
+                                content = content.replace('<think>', '')
+                            
+                            if content:
+                                yield f"data: {json.dumps({'content': content})}\n\n"
+                            
+                            if chunk.get('done'):
+                                metrics = {
+                                    'total_duration': chunk.get('total_duration', 0) / 1e9,
+                                    'eval_count': chunk.get('eval_count', 0),
+                                    'eval_duration': (chunk.get('eval_duration', 0) / 1e9) or 0.001
+                                }
+                                yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
+                                break # End of stream
+                    except Exception as e:
+                        import traceback
+                        print(f"Ollama inner chat error: {traceback.format_exc()}")
+                        yield f"data: {json.dumps({'error': f'Ollama Chat Error: {str(e)}'})}\n\n"
+
                 except Exception as e:
                     import traceback
-                    err_trace = traceback.format_exc()
-                    print(f"Ollama Stream Error:\n{err_trace}")
-                    err_msg = str(e)
-                    if "connection" in err_msg.lower():
-                        yield f"data: {json.dumps({'error': f'Connection failed to Ollama: {err_msg}'})}\n\n"
-                    else:
-                        yield f"data: {json.dumps({'error': f'AI Error: {err_msg}'})}\n\n"
+                    print(f"Stream Generator outer error: {traceback.format_exc()}")
+                    yield f"data: {json.dumps({'error': f'Stream Processing Error: {str(e)}'})}\n\n"
 
+            print("Returning StreamingHttpResponse.")
             response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
             response['X-Accel-Buffering'] = 'no'
             response['Cache-Control'] = 'no-cache'
@@ -196,7 +211,7 @@ async def chat_api(request):
             
         except Exception as e:
              import traceback
-             print(f"Chat API Top-level Error:\n{traceback.format_exc()}")
+             print(f"Chat API Top-level Recovery: {traceback.format_exc()}")
              return HttpResponse(json.dumps({'error': str(e)}), status=500, content_type="application/json")
              
     return HttpResponse("Method not allowed", status=405)
