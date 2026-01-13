@@ -180,13 +180,14 @@ async def chat_api(request):
                             yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
                             
                 except Exception as e:
-                    # Handle concurrency/overload errors gracefully
+                    import traceback
+                    err_trace = traceback.format_exc()
+                    print(f"Ollama Stream Error:\n{err_trace}")
                     err_msg = str(e)
                     if "connection" in err_msg.lower():
-                        yield f"data: {json.dumps({'error': 'Server busy, please try again.'})}\n\n"
+                        yield f"data: {json.dumps({'error': f'Connection failed to Ollama: {err_msg}'})}\n\n"
                     else:
-                        print(f"Ollama Async Error: {e}")
-                        yield f"data: {json.dumps({'error': err_msg})}\n\n"
+                        yield f"data: {json.dumps({'error': f'AI Error: {err_msg}'})}\n\n"
 
             response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
             response['X-Accel-Buffering'] = 'no'
@@ -194,6 +195,8 @@ async def chat_api(request):
             return response
             
         except Exception as e:
+             import traceback
+             print(f"Chat API Top-level Error:\n{traceback.format_exc()}")
              return HttpResponse(json.dumps({'error': str(e)}), status=500, content_type="application/json")
              
     return HttpResponse("Method not allowed", status=405)
