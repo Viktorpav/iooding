@@ -4,7 +4,7 @@ let lastEnterTime = 0;
 let abortController = null;
 let isGenerating = false;
 let currentAiDiv = null; // Track current AI response element
-const MAX_HISTORY = 50;
+const MAX_HISTORY = 20;
 
 document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('ai-user-input');

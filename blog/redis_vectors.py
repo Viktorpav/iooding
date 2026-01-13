@@ -110,6 +110,10 @@ async def search_similar_async(query_embedding: list, top_k: int = 3, max_distan
     """Search for similar chunks using vector similarity (Async)."""
     import numpy as np
     client = get_async_redis_client()
+
+    # Ensure index exists before searching
+    await ensure_index_exists_async()
+
     def parse_doc(doc):
         try:
             return {

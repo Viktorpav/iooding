@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from blog.models import Post
-from blog.redis_vectors import index_chunk, delete_post_chunks, get_chunk_count
+from blog.redis_vectors import index_chunk, delete_post_chunks, get_chunk_count, ensure_index_exists
 from blog.ai_utils import get_ollama_client
 import re
 
@@ -16,6 +16,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write("Starting Redis vector indexing...")
+        ensure_index_exists()
         
         client = get_ollama_client()
         indexed = 0

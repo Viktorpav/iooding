@@ -112,7 +112,6 @@ async def chat_api(request):
         try:
             # 1. Read body safely
             try:
-                # In Django 5.x async views, request.body is okay but we'll monitor it
                 body_bytes = request.body
                 print(f"Body received, size: {len(body_bytes)}")
                 data = json.loads(body_bytes)
@@ -120,13 +119,27 @@ async def chat_api(request):
                 print(f"Error parsing request body: {e}")
                 return HttpResponse(json.dumps({'error': f'Invalid request body: {e}'}), status=400)
             
-            messages = data.get("messages", [])
-            if not messages:
-                user_msg = data.get("message", "")
-                if user_msg:
-                    messages = [{'role': 'user', 'content': user_msg}]
+            # Combine history and current message
+            history = data.get("messages", [])
+            user_msg = data.get("message", "")
+            
+            messages = []
+            # 1. Add limited history (to avoid overwhelming CPU with long prompts)
+            # Take last 10 messages from history
+            if history:
+                messages.extend(history[-10:])
+            
+            # 2. Add current message if not already at the end of history
+            if user_msg:
+                # Avoid duplicates if frontend accidentally sent it in history too
+                if not messages or messages[-1].get('content') != user_msg:
+                    messages.append({'role': 'user', 'content': user_msg})
 
-            print(f"Messages count: {len(messages)}")
+            if not messages:
+                print("No messages to process.")
+                return HttpResponse(json.dumps({'error': 'Empty message'}), status=400)
+
+            print(f"Processing {len(messages)} messages (History: {len(history)})")
 
             # 2. Imports and Client
             try:
@@ -179,13 +192,16 @@ async def chat_api(request):
                             content = chunk.get('message', {}).get('content', '')
                             
                             if '<think>' in content:
+                                print("Ollama started thinking...")
                                 yield f"data: {json.dumps({'thinking': 'Started thinking...'})}\n\n"
                                 content = content.replace('<think>', '')
                             
                             if content:
+                                # print(f"Chunk content: {content[:20]}...")
                                 yield f"data: {json.dumps({'content': content})}\n\n"
                             
                             if chunk.get('done'):
+                                print("Ollama finished generation.")
                                 metrics = {
                                     'total_duration': chunk.get('total_duration', 0) / 1e9,
                                     'eval_count': chunk.get('eval_count', 0),
@@ -193,6 +209,7 @@ async def chat_api(request):
                                 }
                                 yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
                                 break # End of stream
+                        print("Stream iteration completed normally.")
                     except Exception as e:
                         import traceback
                         print(f"Ollama inner chat error: {traceback.format_exc()}")
@@ -202,6 +219,8 @@ async def chat_api(request):
                     import traceback
                     print(f"Stream Generator outer error: {traceback.format_exc()}")
                     yield f"data: {json.dumps({'error': f'Stream Processing Error: {str(e)}'})}\n\n"
+                finally:
+                    print("Stream Generator finished (finally).")
 
             print("Returning StreamingHttpResponse.")
             response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
