@@ -5,7 +5,7 @@ from django.core.cache import cache
 import redis
 import redis.asyncio as async_redis
 from redis.commands.search.field import VectorField, TextField, NumericField
-from redis.commands.search.indexDefinition import IndexDefinition, IndexType
+from redis.commands.search.index_definition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 
 # Index configuration
