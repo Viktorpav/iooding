@@ -8,7 +8,6 @@ from django.db.models import Count
 from django.http import HttpResponse, StreamingHttpResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
-from blog.ai_utils import get_ollama_client, generate_rag_context
 
 def post_list(request, tag_slug=None):
     posts = Post.published.all()
@@ -100,8 +99,8 @@ def reply_page(request):
     return redirect("/")
 
 
-def health_check(request):
-    """Simplified health check for K8s probes"""
+async def health_check(request):
+    """Simplified health check for K8s probes - Async to avoid threadpool block"""
     return HttpResponse("ok", content_type="text/plain")
 
 # --- Optimized AI Agent (Async Direct Streaming) ---
@@ -119,6 +118,9 @@ async def chat_api(request):
                 if user_msg:
                     messages = [{'role': 'user', 'content': user_msg}]
 
+            # Lazy import to speed up startup and avoid circular deps
+            from blog.ai_utils import get_ollama_client, generate_rag_context
+            
             # Use shared client factory
             client = get_ollama_client(async_client=True)
 

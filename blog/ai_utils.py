@@ -1,8 +1,3 @@
-"""
-AI utilities for the blog - optimized for low latency.
-Uses Redis Stack for vector search instead of PostgreSQL.
-"""
-import ollama
 from django.conf import settings
 from blog.redis_vectors import (
     search_similar_async, 
@@ -10,12 +5,16 @@ from blog.redis_vectors import (
     cache_embedding_async
 )
 
+# Skip RAG for these simple patterns
+SKIP_RAG_PATTERNS = {'hi', 'hello', 'hey', 'thanks', 'bye', 'ok', 'yes', 'no', 'sure'}
+
 # Shared clients to reduce latency from connection overhead
 _ollama_client = None
 _ollama_async_client = None
 
 def get_ollama_client(async_client=False):
     """Factory for Ollama clients - reuses instances to minimize latency."""
+    import ollama
     global _ollama_client, _ollama_async_client
     host = settings.OLLAMA_HOST
     

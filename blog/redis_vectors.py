@@ -1,6 +1,5 @@
-import json
 import hashlib
-import numpy as np
+import json
 from django.conf import settings
 from django.core.cache import cache
 import redis
@@ -70,8 +69,6 @@ async def ensure_index_exists_async():
         await client.ft(INDEX_NAME).info()
         return True
     except redis.ResponseError:
-        # Avoid concurrent index creation in async environment
-        # For simplicity in this case, we just try to create it
         try:
             schema = (
                 TextField("$.title", as_name="title"),
@@ -111,8 +108,8 @@ def index_chunk(post_id: int, title: str, content: str, embedding: list) -> str:
 
 async def search_similar_async(query_embedding: list, top_k: int = 3, max_distance: float = 0.5) -> list:
     """Search for similar chunks using vector similarity (Async)."""
+    import numpy as np
     client = get_async_redis_client()
-    # Conversion of results helper
     def parse_doc(doc):
         try:
             return {
@@ -131,12 +128,8 @@ async def search_similar_async(query_embedding: list, top_k: int = 3, max_distan
         .return_fields("title", "content", "post_id", "distance")
         .dialect(2)
     )
-    
     try:
-        results = await client.ft(INDEX_NAME).search(
-            q,
-            query_params={"query_vector": query_vector}
-        )
+        results = await client.ft(INDEX_NAME).search(q, query_params={"query_vector": query_vector})
         parsed = [parse_doc(doc) for doc in results.docs]
         return [p for p in parsed if p and p['distance'] < max_distance]
     except Exception as e:
@@ -145,6 +138,7 @@ async def search_similar_async(query_embedding: list, top_k: int = 3, max_distan
 
 def search_similar(query_embedding: list, top_k: int = 3, max_distance: float = 0.5) -> list:
     """Search for similar chunks using vector similarity (Sync)."""
+    import numpy as np
     client = get_redis_client()
     if not ensure_index_exists(): return []
     query_vector = np.array(query_embedding, dtype=np.float32).tobytes()
@@ -189,23 +183,12 @@ def get_chunk_count() -> int:
         return int(info.get('num_docs', 0))
     except Exception: return 0
 
-# --- Embedding Cache Functions ---
 def get_embedding_cache_key(text: str) -> str:
     return f"emb:{hashlib.md5(text.encode()).hexdigest()[:16]}"
 
 async def get_cached_embedding_async(text: str) -> list | None:
     """Get cached embedding for text (Async)."""
-    # django-redis doesn't have native async tag, we use the client directly
     client = get_async_redis_client()
-    key = f"iooding:1:{get_embedding_cache_key(text)}" # Mapping to django-redis prefix
-    cached = await client.get(key)
-    if cached:
-        # django-redis uses pickle by default, but we might want to store as JSON for interoperability
-        # or just use the django cache for simplicity and bear the block
-        pass
-    # For now, let's use the standard django cache which is fast but sync, 
-    # OR we can just use the async client directly with JSON.
-    # Let's use the async client with simple JSON for embeddings.
     key = f"emb_json:{get_embedding_cache_key(text)}"
     data = await client.get(key)
     return json.loads(data) if data else None

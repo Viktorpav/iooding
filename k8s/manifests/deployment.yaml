@@ -39,7 +39,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: viktor2003/iooding:v35
+          image: viktor2003/iooding:v36
           imagePullPolicy: IfNotPresent
           command:
             - sh
@@ -174,7 +174,7 @@ spec:
       ########################################
       containers:
         - name: iooding
-          image: viktor2003/iooding:v35
+          image: viktor2003/iooding:v36
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
@@ -235,8 +235,8 @@ spec:
             httpGet:
               path: /health/
               port: 8000
-            failureThreshold: 30
-            periodSeconds: 2
+            failureThreshold: 60
+            periodSeconds: 3
 
           livenessProbe:
             httpGet:
