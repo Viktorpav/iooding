@@ -43,24 +43,40 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
         - name: redis
-          image: docker.io/redis:7-alpine
+          # Upgraded to Redis Stack for vector search support
+          image: docker.io/redis/redis-stack-server:7.2.0-v10
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 6379
           resources:
             requests:
-              memory: "64Mi"
-              cpu: "25m"
-            limits:
               memory: "128Mi"
-              cpu: "200m"
+              cpu: "50m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          env:
+            # Enable vector search module
+            - name: REDIS_ARGS
+              value: "--appendonly yes"
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
           livenessProbe:
             tcpSocket:
               port: 6379
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:
             tcpSocket:
               port: 6379
-            initialDelaySeconds: 2
+            initialDelaySeconds: 5
             periodSeconds: 5
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
