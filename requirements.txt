@@ -9,8 +9,7 @@ django-ckeditor-5
 django-redis
 whitenoise
 
-# AI & Vector Support
-pgvector==0.3.6
+# AI & Vector Support (using Redis Stack instead of pgvector)
 ollama==0.4.7
 django-environ
 numpy

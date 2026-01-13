@@ -72,7 +72,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'iooding.wsgi.application'
 
-# Database
+# Database - simplified to single PostgreSQL instance
+# Vector storage is now handled by Redis Stack
 DATABASES = {
     'default': {
         'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'),
@@ -84,21 +85,10 @@ DATABASES = {
         'OPTIONS': {
             'connect_timeout': 5,
         }
-    },
-    'ai': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('AI_DB_NAME', 'iooding_ai'),
-        'USER': os.environ.get('AI_DB_USER', 'iooding'),
-        'PASSWORD': os.environ.get('AI_DB_PASSWORD', DB_PASSWORD),
-        'HOST': os.environ.get('AI_DB_HOST', 'postgres-ai'),
-        'PORT': os.environ.get('AI_DB_PORT', '5432'),
-        'OPTIONS': {
-            'connect_timeout': 5,
-        }
     }
 }
 
-DATABASE_ROUTERS = ['blog.db_routers.AIRouter']
+# No database router needed - Redis handles vectors
 
 
 # Redis Configuration

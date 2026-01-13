@@ -1,13 +1,17 @@
+"""
+AI utilities for the blog - optimized for low latency.
+Uses Redis Stack for vector search instead of PostgreSQL.
+"""
 import ollama
-import hashlib
 from django.conf import settings
-from django.core.cache import cache
-from blog.models import PostChunk
-from pgvector.django import CosineDistance
-from asgiref.sync import sync_to_async
+from blog.redis_vectors import (
+    search_similar, 
+    get_cached_embedding, 
+    cache_embedding
+)
 
 # Skip RAG for these simple patterns
-SKIP_RAG_PATTERNS = ['hi', 'hello', 'hey', 'thanks', 'bye', 'ok', 'yes', 'no']
+SKIP_RAG_PATTERNS = {'hi', 'hello', 'hey', 'thanks', 'bye', 'ok', 'yes', 'no', 'sure'}
 
 def get_ollama_client(async_client=False):
     """Factory for Ollama clients using settings."""
@@ -16,75 +20,60 @@ def get_ollama_client(async_client=False):
         return ollama.AsyncClient(host=host)
     return ollama.Client(host=host)
 
-@sync_to_async
-def get_similar_chunks(embedding, limit=3):
-    """Retrieve similar chunks from the AI database."""
-    return list(PostChunk.objects.annotate(
-        distance=CosineDistance('embedding', embedding)
-    ).order_by('distance')[:limit])
-
-def should_skip_rag(user_msg):
+def should_skip_rag(user_msg: str) -> bool:
     """Check if RAG can be skipped for simple queries."""
     msg_lower = user_msg.lower().strip()
+    
     # Skip for very short messages
     if len(msg_lower) < 10:
         return True
-    # Skip for simple greetings
+    
+    # Skip for simple greetings/responses
     if msg_lower in SKIP_RAG_PATTERNS:
         return True
-    # Skip for messages that are clearly not about blog content
-    if msg_lower.startswith(('write ', 'explain ', 'what is ', 'how to ')):
-        # These might still benefit from RAG, don't skip
-        return False
+    
+    # Skip for code generation requests (usually not about blog content)
+    code_indicators = ('write code', 'write a function', 'implement', 'create a script')
+    if any(msg_lower.startswith(ind) for ind in code_indicators):
+        return True
+    
     return False
 
-def get_embedding_cache_key(text):
-    """Generate cache key for embedding."""
-    return f"emb:{hashlib.md5(text.encode()).hexdigest()[:16]}"
-
-@sync_to_async
-def get_cached_embedding(key):
-    """Get embedding from cache."""
-    return cache.get(key)
-
-@sync_to_async
-def set_cached_embedding(key, embedding):
-    """Cache embedding for 1 hour."""
-    cache.set(key, embedding, timeout=3600)
-
-async def generate_rag_context(user_msg, client):
+async def generate_rag_context(user_msg: str, client) -> str:
     """
-    Generates context string for RAG.
-    Returns empty string if failure, skip, or no match.
+    Generates context string for RAG using Redis vector search.
+    Returns empty string if skip, failure, or no relevant match.
     """
     # Fast path: skip RAG for simple queries
     if should_skip_rag(user_msg):
         return ""
     
     try:
-        # Check cache first
-        cache_key = get_embedding_cache_key(user_msg)
-        embedding = await get_cached_embedding(cache_key)
+        # Check cache first for the embedding
+        embedding = get_cached_embedding(user_msg)
         
         if not embedding:
-            # Generate embedding with timeout consideration
+            # Generate embedding
             resp = await client.embeddings(model='nomic-embed-text', prompt=user_msg)
             embedding = resp['embedding']
             # Cache for future use
-            await set_cached_embedding(cache_key, embedding)
+            cache_embedding(user_msg, embedding, timeout=3600)
         
-        # Search DB
-        chunks = await get_similar_chunks(embedding, limit=2)  # Reduced from 3 to 2 for speed
+        # Search Redis for similar chunks
+        chunks = search_similar(embedding, top_k=2, max_distance=0.5)
         
         if not chunks:
             return ""
         
-        # Only use chunks with reasonable similarity (distance < 0.5)
-        relevant_chunks = [c for c in chunks if hasattr(c, 'distance') and c.distance < 0.5]
-        if not relevant_chunks:
-            return ""
-            
-        return "\n\n".join([c.content for c in relevant_chunks])
+        # Build context from relevant chunks
+        context_parts = []
+        for chunk in chunks:
+            if chunk['content']:
+                context_parts.append(f"From '{chunk['title']}':\n{chunk['content']}")
+        
+        return "\n\n---\n\n".join(context_parts)
+        
     except Exception as e:
+        # Non-blocking: log and continue without RAG
         print(f"RAG Error (non-blocking): {e}")
         return ""

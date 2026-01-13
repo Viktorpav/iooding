@@ -2,9 +2,8 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
-from django_ckeditor_5.fields import CKEditor5Field  # Changed import
+from django_ckeditor_5.fields import CKEditor5Field
 from taggit.managers import TaggableManager
-from pgvector.django import VectorField
 
 # creating model manager
 
@@ -22,7 +21,7 @@ class Post(models.Model):
     slug = models.SlugField(max_length=250, unique_for_date='publish')
     image = models.ImageField(upload_to='featured_image/%Y/%m/%d/', blank=True, null=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_posts')
-    body = CKEditor5Field('Text', config_name='extends')  # Changed field
+    body = CKEditor5Field('Text', config_name='extends')
     publish = models.DateTimeField(default=timezone.now)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -44,7 +43,6 @@ class Post(models.Model):
     @property
     def read_time(self):
         # Average reading speed is ~200 words per minute
-        # We strip tags from body to get actual text content
         import re
         text = re.sub('<[^<]+?>', '', self.body)
         word_count = len(text.split())
@@ -74,12 +72,5 @@ class Comment(models.Model):
     def get_comments(self):
         return Comment.objects.filter(parent=self).filter(active=True)
 
-class PostChunk(models.Model):
-    # Decoupled for cross-database support
-    post_id = models.IntegerField(db_index=True)
-    content = models.TextField()
-    # 768 is common for nomic-embed-text; use 1024/1536 for larger models
-    embedding = VectorField(dimensions=768) 
-
-    def __str__(self):
-        return f"Chunk of Post ID {self.post_id}"
+# Note: PostChunk model removed - vector storage now uses Redis Stack
+# See blog/redis_vectors.py for vector operations
