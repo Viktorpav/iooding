@@ -1,14 +1,10 @@
-"""
-Redis-based vector search and embedding storage for RAG.
-Uses Redis Stack's built-in vector similarity search (VSS).
-Replaces PostgreSQL pgvector for better performance.
-"""
 import json
 import hashlib
 import numpy as np
 from django.conf import settings
 from django.core.cache import cache
 import redis
+import redis.asyncio as async_redis
 from redis.commands.search.field import VectorField, TextField, NumericField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
@@ -19,6 +15,7 @@ VECTOR_DIM = 768  # nomic-embed-text dimension
 DOC_PREFIX = "chunk:"
 
 _redis_client = None
+_async_redis_client = None
 
 def get_redis_client():
     """Get Redis client - singleton pattern for connection reuse."""
@@ -28,14 +25,21 @@ def get_redis_client():
         _redis_client = redis.from_url(redis_url, decode_responses=False)
     return _redis_client
 
+def get_async_redis_client():
+    """Get Async Redis client for use in async views."""
+    global _async_redis_client
+    if _async_redis_client is None:
+        redis_url = settings.CACHES.get('default', {}).get('LOCATION', 'redis://redis:6379/1')
+        _async_redis_client = async_redis.from_url(redis_url, decode_responses=False)
+    return _async_redis_client
+
 def ensure_index_exists():
-    """Create the vector index if it doesn't exist."""
+    """Create the vector index if it doesn't exist (Sync version)."""
     client = get_redis_client()
     try:
         client.ft(INDEX_NAME).info()
         return True
     except redis.ResponseError:
-        # Index doesn't exist, create it
         try:
             schema = (
                 TextField("$.title", as_name="title"),
@@ -43,7 +47,7 @@ def ensure_index_exists():
                 NumericField("$.post_id", as_name="post_id"),
                 VectorField(
                     "$.embedding",
-                    "FLAT",  # FLAT for small datasets (<10k), HNSW for larger
+                    "FLAT",
                     {
                         "TYPE": "FLOAT32",
                         "DIM": VECTOR_DIM,
@@ -52,55 +56,75 @@ def ensure_index_exists():
                     as_name="embedding"
                 )
             )
-            
-            definition = IndexDefinition(
-                prefix=[DOC_PREFIX],
-                index_type=IndexType.JSON
-            )
-            
-            client.ft(INDEX_NAME).create_index(
-                schema,
-                definition=definition
-            )
-            print(f"Created Redis vector index: {INDEX_NAME}")
+            definition = IndexDefinition(prefix=[DOC_PREFIX], index_type=IndexType.JSON)
+            client.ft(INDEX_NAME).create_index(schema, definition=definition)
             return True
         except Exception as e:
-            print(f"Failed to create index: {e}")
+            print(f"Failed to create Redis index: {e}")
+            return False
+
+async def ensure_index_exists_async():
+    """Create the vector index if it doesn't exist (Async version)."""
+    client = get_async_redis_client()
+    try:
+        await client.ft(INDEX_NAME).info()
+        return True
+    except redis.ResponseError:
+        # Avoid concurrent index creation in async environment
+        # For simplicity in this case, we just try to create it
+        try:
+            schema = (
+                TextField("$.title", as_name="title"),
+                TextField("$.content", as_name="content"),
+                NumericField("$.post_id", as_name="post_id"),
+                VectorField(
+                    "$.embedding",
+                    "FLAT",
+                    {
+                        "TYPE": "FLOAT32",
+                        "DIM": VECTOR_DIM,
+                        "DISTANCE_METRIC": "COSINE",
+                    },
+                    as_name="embedding"
+                )
+            )
+            definition = IndexDefinition(prefix=[DOC_PREFIX], index_type=IndexType.JSON)
+            await client.ft(INDEX_NAME).create_index(schema, definition=definition)
+            return True
+        except Exception:
             return False
 
 def index_chunk(post_id: int, title: str, content: str, embedding: list) -> str:
-    """Index a single chunk in Redis."""
+    """Index a single chunk in Redis (Sync)."""
     client = get_redis_client()
     ensure_index_exists()
-    
-    # Create unique ID based on post and content hash
     content_hash = hashlib.md5(content[:100].encode()).hexdigest()[:8]
     doc_id = f"{DOC_PREFIX}{post_id}:{content_hash}"
-    
     doc = {
         "post_id": post_id,
         "title": title,
         "content": content,
-        "embedding": embedding  # List of floats
+        "embedding": embedding
     }
-    
     client.json().set(doc_id, "$", doc)
     return doc_id
 
-def search_similar(query_embedding: list, top_k: int = 3, max_distance: float = 0.5) -> list:
-    """
-    Search for similar chunks using vector similarity.
-    Returns list of dicts with title, content, post_id, distance.
-    """
-    client = get_redis_client()
-    
-    if not ensure_index_exists():
-        return []
-    
-    # Convert embedding to bytes for Redis query
+async def search_similar_async(query_embedding: list, top_k: int = 3, max_distance: float = 0.5) -> list:
+    """Search for similar chunks using vector similarity (Async)."""
+    client = get_async_redis_client()
+    # Conversion of results helper
+    def parse_doc(doc):
+        try:
+            return {
+                "post_id": int(doc.post_id) if hasattr(doc, 'post_id') else 0,
+                "title": doc.title if hasattr(doc, 'title') else "",
+                "content": doc.content if hasattr(doc, 'content') else "",
+                "distance": float(doc.distance) if hasattr(doc, 'distance') else 1.0
+            }
+        except (ValueError, AttributeError):
+            return None
+
     query_vector = np.array(query_embedding, dtype=np.float32).tobytes()
-    
-    # Build KNN query
     q = (
         Query(f"*=>[KNN {top_k} @embedding $query_vector AS distance]")
         .sort_by("distance")
@@ -109,12 +133,29 @@ def search_similar(query_embedding: list, top_k: int = 3, max_distance: float = 
     )
     
     try:
-        results = client.ft(INDEX_NAME).search(
+        results = await client.ft(INDEX_NAME).search(
             q,
             query_params={"query_vector": query_vector}
         )
-        
-        # Filter by distance and return
+        parsed = [parse_doc(doc) for doc in results.docs]
+        return [p for p in parsed if p and p['distance'] < max_distance]
+    except Exception as e:
+        print(f"Async Redis search error: {e}")
+        return []
+
+def search_similar(query_embedding: list, top_k: int = 3, max_distance: float = 0.5) -> list:
+    """Search for similar chunks using vector similarity (Sync)."""
+    client = get_redis_client()
+    if not ensure_index_exists(): return []
+    query_vector = np.array(query_embedding, dtype=np.float32).tobytes()
+    q = (
+        Query(f"*=>[KNN {top_k} @embedding $query_vector AS distance]")
+        .sort_by("distance")
+        .return_fields("title", "content", "post_id", "distance")
+        .dialect(2)
+    )
+    try:
+        results = client.ft(INDEX_NAME).search(q, query_params={"query_vector": query_vector})
         return [
             {
                 "post_id": int(doc.post_id) if hasattr(doc, 'post_id') else 0,
@@ -122,11 +163,9 @@ def search_similar(query_embedding: list, top_k: int = 3, max_distance: float = 
                 "content": doc.content if hasattr(doc, 'content') else "",
                 "distance": float(doc.distance) if hasattr(doc, 'distance') else 1.0
             }
-            for doc in results.docs
-            if float(doc.distance) < max_distance
+            for doc in results.docs if float(doc.distance) < max_distance
         ]
-    except redis.ResponseError as e:
-        print(f"Redis search error: {e}")
+    except Exception:
         return []
 
 def delete_post_chunks(post_id: int):
@@ -139,8 +178,7 @@ def delete_post_chunks(post_id: int):
         for key in keys:
             client.delete(key)
             deleted += 1
-        if cursor == 0:
-            break
+        if cursor == 0: break
     return deleted
 
 def get_chunk_count() -> int:
@@ -149,21 +187,37 @@ def get_chunk_count() -> int:
     try:
         info = client.ft(INDEX_NAME).info()
         return int(info.get('num_docs', 0))
-    except redis.ResponseError:
-        return 0
+    except Exception: return 0
 
 # --- Embedding Cache Functions ---
 def get_embedding_cache_key(text: str) -> str:
-    """Generate cache key for embedding."""
     return f"emb:{hashlib.md5(text.encode()).hexdigest()[:16]}"
 
+async def get_cached_embedding_async(text: str) -> list | None:
+    """Get cached embedding for text (Async)."""
+    # django-redis doesn't have native async tag, we use the client directly
+    client = get_async_redis_client()
+    key = f"iooding:1:{get_embedding_cache_key(text)}" # Mapping to django-redis prefix
+    cached = await client.get(key)
+    if cached:
+        # django-redis uses pickle by default, but we might want to store as JSON for interoperability
+        # or just use the django cache for simplicity and bear the block
+        pass
+    # For now, let's use the standard django cache which is fast but sync, 
+    # OR we can just use the async client directly with JSON.
+    # Let's use the async client with simple JSON for embeddings.
+    key = f"emb_json:{get_embedding_cache_key(text)}"
+    data = await client.get(key)
+    return json.loads(data) if data else None
+
+async def cache_embedding_async(text: str, embedding: list, timeout: int = 3600):
+    """Cache embedding for text (Async)."""
+    client = get_async_redis_client()
+    key = f"emb_json:{get_embedding_cache_key(text)}"
+    await client.setex(key, timeout, json.dumps(embedding))
+
 def get_cached_embedding(text: str) -> list | None:
-    """Get cached embedding for text."""
-    key = get_embedding_cache_key(text)
-    cached = cache.get(key)
-    return cached
+    return cache.get(get_embedding_cache_key(text))
 
 def cache_embedding(text: str, embedding: list, timeout: int = 3600):
-    """Cache embedding for text (default 1 hour)."""
-    key = get_embedding_cache_key(text)
-    cache.set(key, embedding, timeout=timeout)
+    cache.set(get_embedding_cache_key(text), embedding, timeout=timeout)

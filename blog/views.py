@@ -122,21 +122,28 @@ async def chat_api(request):
             # Use shared client factory
             client = get_ollama_client(async_client=True)
 
-            # RAG Logic extracted to utility
-            user_msg_content = ""
-            for m in reversed(messages):
-                if m['role'] == 'user':
-                    user_msg_content = m['content']
-                    break
-            
-            if user_msg_content:
-                context_text = await generate_rag_context(user_msg_content, client)
-                if context_text:
-                    system_prompt = f"You are a helpful assistant. Use the following context to answer:\n\n{context_text}"
-                    messages.insert(0, {'role': 'system', 'content': system_prompt})
-
             async def stream_response():
                 try:
+                    # 1. Immediate feedback to user (improves perceived latency)
+                    yield f"data: {json.dumps({'thinking': 'Analyzing query...'})}\n\n"
+                    
+                    # 2. RAG Logic (now fully async and non-blocking)
+                    user_msg_content = ""
+                    for m in reversed(messages):
+                        if m['role'] == 'user':
+                            user_msg_content = m['content']
+                            break
+                    
+                    if user_msg_content:
+                        context_text = await generate_rag_context(user_msg_content, client)
+                        if context_text:
+                            system_prompt = f"You are a helpful assistant. Use the following context to answer:\n\n{context_text}"
+                            messages.insert(0, {'role': 'system', 'content': system_prompt})
+                            yield f"data: {json.dumps({'thinking': 'Context retrieved, generating answer...'})}\n\n"
+                        else:
+                            yield f"data: {json.dumps({'thinking': 'Direct response (no relevant context found)...'})}\n\n"
+
+                    # 3. Stream from Ollama
                     # Async iteration over the response stream
                     async for chunk in await client.chat(
                         model='qwen3-coder',
