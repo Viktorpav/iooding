@@ -29,7 +29,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: viktor2003/iooding:v54
+          image: viktor2003/iooding:v56
           command: ["sh", "-c", "/app/docker-entrypoint.sh deploy"]
           env:
             - name: DJANGO_SUPERUSER_USERNAME
@@ -83,7 +83,7 @@ spec:
           command: ["sh", "-c", "until nc -z postgres 5432; do sleep 1; done"]
       containers:
         - name: iooding
-          image: viktor2003/iooding:v54
+          image: viktor2003/iooding:v56
           ports: [{ containerPort: 8000 }]
           env:
             - name: DB_PASSWORD
