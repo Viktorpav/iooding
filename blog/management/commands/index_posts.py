@@ -43,11 +43,13 @@ class Command(BaseCommand):
                 
                 for i, content in enumerate(chunks):
                     if len(content) < 50: continue
-                    emb = client.embeddings(model='nomic-embed-text', prompt=content)['embedding']
+                    # Prepend title to content for better semantic search coverage
+                    rich_content = f"Post Title: {post.title}\nSection: {content}"
+                    emb = client.embeddings(model='nomic-embed-text', prompt=rich_content)['embedding']
                     index_chunk(
                         post_id=post.id, 
-                        title=f"{post.title} (Part {i+1})", 
-                        content=content, 
+                        title=f"{post.title} (P{i+1})", 
+                        content=content, # Keep original content for display
                         embedding=emb
                     )
                 

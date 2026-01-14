@@ -31,17 +31,12 @@ def should_skip_rag(user_msg: str) -> bool:
     """Check if RAG can be skipped for simple queries."""
     msg_lower = user_msg.lower().strip()
     
-    # Skip for very short messages
-    if len(msg_lower) < 10:
+    # Only skip very short greetings
+    if len(msg_lower) < 4:
         return True
     
-    # Skip for simple greetings/responses
-    if msg_lower in SKIP_RAG_PATTERNS:
-        return True
-    
-    # Skip for code generation requests
-    code_indicators = ('write code', 'write a function', 'implement', 'create a script')
-    if any(msg_lower.startswith(ind) for ind in code_indicators):
+    # Skip for simple greetings/responses if they are not questions
+    if msg_lower in SKIP_RAG_PATTERNS and '?' not in msg_lower:
         return True
     
     return False

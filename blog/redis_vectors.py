@@ -94,7 +94,7 @@ def index_chunk(post_id: int, title: str, content: str, embedding: list) -> str:
     client.json().set(doc_id, "$", doc)
     return doc_id
 
-async def search_similar_async(query_embedding: list, top_k: int = 3, max_distance: float = 0.5) -> list:
+async def search_similar_async(query_embedding: list, top_k: int = 5, max_distance: float = 0.7) -> list:
     """Search for similar chunks using vector similarity (Async)."""
     import numpy as np
     client = get_async_redis_client()
@@ -128,7 +128,7 @@ async def search_similar_async(query_embedding: list, top_k: int = 3, max_distan
         print(f"Async Redis search error: {e}")
         return []
 
-def search_similar(query_embedding: list, top_k: int = 3, max_distance: float = 0.5) -> list:
+def search_similar(query_embedding: list, top_k: int = 5, max_distance: float = 0.7) -> list:
     """Search for similar chunks using vector similarity (Sync)."""
     import numpy as np
     client = get_redis_client()
