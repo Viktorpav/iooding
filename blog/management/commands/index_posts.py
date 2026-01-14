@@ -1,7 +1,3 @@
-from django.core.management.base import BaseCommand
-from blog.models import Post
-from blog.redis_vectors import index_chunk, delete_post_chunks, get_chunk_count, ensure_index_exists
-from blog.ai_utils import get_ollama_client
 import re
 
 class Command(BaseCommand):
@@ -15,15 +11,28 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        from django.core.management.base import BaseCommand
+        from blog.models import Post
+        from blog.redis_vectors import index_chunk, delete_post_chunks, ensure_index_exists, get_post_hash, set_post_hash
+        from blog.ai_utils import get_ollama_client
+        import hashlib
+
         self.stdout.write("Building RAG Knowledge Base...")
         ensure_index_exists()
         client = get_ollama_client()
-        indexed, failed = 0, 0
+        indexed, skipped, failed = 0, 0, 0
+        force = options.get('force')
         
         for post in Post.published.all():
             try:
                 text = re.sub('<[^<]+?>', '', post.body).strip()
                 if not text: continue
+                
+                # Check if content has changed
+                current_hash = hashlib.md5(text.encode()).hexdigest()
+                if not force and get_post_hash(post.id) == current_hash:
+                    skipped += 1
+                    continue
                 
                 # 1. Clean up old chunks for this post
                 delete_post_chunks(post.id)
@@ -33,7 +42,7 @@ class Command(BaseCommand):
                 chunks = [text[i:i + chunk_size] for i in range(0, len(text), chunk_size - overlap)]
                 
                 for i, content in enumerate(chunks):
-                    if len(content) < 50: continue # Skip tiny fragments
+                    if len(content) < 50: continue
                     emb = client.embeddings(model='nomic-embed-text', prompt=content)['embedding']
                     index_chunk(
                         post_id=post.id, 
@@ -42,10 +51,14 @@ class Command(BaseCommand):
                         embedding=emb
                     )
                 
+                # Store new hash
+                set_post_hash(post.id, current_hash)
                 indexed += 1
                 self.stdout.write(self.style.SUCCESS(f"✓ {post.title} ({len(chunks)} chunks)"))
             except Exception as e:
                 failed += 1
                 self.stdout.write(self.style.ERROR(f"✗ {post.title}: {e}"))
         
-        self.stdout.write(self.style.SUCCESS(f"\nDone. Knowledge base updated: {indexed} posts processed."))
+        self.stdout.write(self.style.SUCCESS(
+            f"\nDone. Knowledge base updated. Indexed: {indexed}, Skipped: {skipped}, Failed: {failed}"
+        ))

@@ -35,15 +35,20 @@ run_static() {
 }
 
 # Command dispatch
-if [ "$1" = 'migrate' ]; then
-    run_migrate
-    exit 0
-fi
-
-if [ "$1" = 'static' ]; then
-    run_static
-    exit 0
-fi
-
-# Otherwise execute the command passed (CMD in Dockerfile)
-exec "$@"
+case "$1" in
+    "migrate")
+        run_migrate
+        ;;
+    "static")
+        run_static
+        ;;
+    "deploy")
+        echo "Starting full deployment task [$(date)]"
+        run_migrate
+        run_static
+        echo "Deployment task finished [$(date)]"
+        ;;
+    *)
+        exec "$@"
+        ;;
+esac

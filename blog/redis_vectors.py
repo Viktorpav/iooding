@@ -175,6 +175,25 @@ def get_chunk_count() -> int:
         return int(info.get('num_docs', 0))
     except Exception: return 0
 
+def get_post_hash_key(post_id: int) -> str:
+    """Key for storing post-level metadata (hash)."""
+    return f"post_meta:{post_id}"
+
+def get_post_hash(post_id: int) -> str | None:
+    """Get stored hash for a post to check if re-indexing is needed."""
+    client = get_redis_client()
+    data = client.get(get_post_hash_key(post_id))
+    if data:
+        try:
+            return json.loads(data).get('hash')
+        except: return None
+    return None
+
+def set_post_hash(post_id: int, content_hash: str):
+    """Store hash for a post after successful indexing."""
+    client = get_redis_client()
+    client.set(get_post_hash_key(post_id), json.dumps({'hash': content_hash}))
+
 def get_embedding_cache_key(text: str) -> str:
     return f"emb:{hashlib.md5(text.encode()).hexdigest()[:16]}"
 

@@ -30,7 +30,7 @@ spec:
       containers:
         - name: migrate
           image: viktor2003/iooding:v41
-          command: ["sh", "-c", "/app/docker-entrypoint.sh migrate && python manage.py index_posts && /app/docker-entrypoint.sh static"]
+          command: ["sh", "-c", "/app/docker-entrypoint.sh deploy"]
           env:
             - name: DJANGO_SUPERUSER_USERNAME
               valueFrom: { secretKeyRef: { name: iooding-admin-secret, key: username } }
