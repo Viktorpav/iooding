@@ -42,7 +42,7 @@ def should_skip_rag(user_msg: str) -> bool:
     return False
 
 async def get_full_site_content() -> str:
-    """Fetches full content of all published posts (Only for small blogs)."""
+    """Fetches full content + rich metadata of all published posts."""
     from asgiref.sync import sync_to_async
     from blog.models import Post
     import re
@@ -51,7 +51,8 @@ async def get_full_site_content() -> str:
     def _fetch():
         posts = Post.published.all()
         return [
-            f"POST: {p.title}\nURL: /blog/{p.slug}/\nCONTENT: {re.sub('<[^<]+?>', '', p.body)[:2000]}"
+            f"POST: {p.title}\nURL: {p.get_absolute_url()}\nDATE: {p.publish.strftime('%Y-%m-%d')}\n"
+            f"READ_TIME: {p.read_time} min\nCONTENT: {re.sub('<[^<]+?>', '', p.body)[:2500]}"
             for p in posts
         ]
     
@@ -61,74 +62,74 @@ async def get_full_site_content() -> str:
     except: return ""
 
 async def get_site_metadata() -> str:
-    """Fetches a summary of all posts and tags from the database (Async safe)."""
+    """Fetches a detailed inventory of the blog's current state."""
     from asgiref.sync import sync_to_async
     from blog.models import Post
     from taggit.models import Tag
     
     @sync_to_async
     def _fetch():
-        posts = list(Post.published.all())
+        posts = list(Post.published.all().order_by('-publish'))
         tags = Tag.objects.all().values_list('name', flat=True)
         return posts, list(tags)
 
     try:
         posts, tags = await _fetch()
-        meta = "--- INSTANCE IDENTITY & STATUS ---\n"
-        meta += "Name: Ding AI (Global Integrated Assistant)\n"
-        meta += "System Access: DIRECT READ (Post Database + Search Index)\n\n"
-        meta += "--- SITUATION AWARENESS ---\n"
-        meta += f"- Total Active Posts: {len(posts)}\n"
-        meta += f"- Active Tags: {', '.join(tags) if tags else 'None'}\n"
-        meta += "- All Available Titles: " + (", ".join([p.title for p in posts]) if posts else "None")
+        latest = posts[0].title if posts else "None"
+        meta = "--- SYSTEM AWARENESS: SITE INVENTORY ---\n"
+        meta += f"Assistant Identity: Ding AI (Integrated Site Engine)\n"
+        meta += f"Host: Ding Blog (iooding.local)\n"
+        meta += f"Total Records: {len(posts)} Posts\n"
+        meta += f"Tags/Categories: {', '.join(tags) if tags else 'General'}\n"
+        meta += f"Latest Post: {latest}\n"
+        meta += "Available Titles Index: " + (", ".join([p.title for p in posts]) if posts else "No content")
         return len(posts), meta
     except Exception as e:
         return 0, f"Error: {e}"
 
 async def generate_rag_context(user_msg: str, client) -> str:
-    """Retrieves context using a Hybrid Strategy (Full-site for small, Semantic+Text for large)."""
+    """Hybrid Retrieval Strategy with deep metadata integration."""
     from blog.redis_vectors import text_search_async, search_similar_async
     
     try:
-        # 1. Site Status Check
         post_count, site_meta = await get_site_metadata()
         
-        # 2. POWERFUL MODE: If blog is small, just feed the AI EVERYTHING.
-        if 0 < post_count <= 10:
+        # Adaptive Retrieval Strategy
+        if 0 < post_count <= 15:
+            # Small blog: Feed the AI the entire context with metadata
             full_content = await get_full_site_content()
-            return f"{site_meta}\n\n--- FULL SITE KNOWLEDGE (GOD MODE) ---\n{full_content}"
+            return f"{site_meta}\n\n--- SITE DATA DUMP (COMPLETE) ---\n{full_content}"
         
-        # 3. HYBRID MODE (For larger blogs): Keywords + Semantic
-        # A. Keyword Search (Exact matches)
+        # Large blog: Keyword + Vector Search
         text_matches = await text_search_async(user_msg, top_k=3)
-        
-        # B. Semantic Search (Conceptual matches)
         emb_resp = await client.embeddings(model='nomic-embed-text', prompt=user_msg)
         vector_matches = await search_similar_async(emb_resp['embedding'], top_k=5)
         
-        # Combine
         seen = set()
         context = f"{site_meta}\n\n--- RELEVANT CONTENT SEGMENTS ---\n"
         for m in (text_matches + vector_matches):
             text_id = f"{m['post_id']}:{m['content'][:50]}"
             if text_id not in seen:
-                context += f"\n- FROM: {m['title']}\n- TEXT: {m['content']}\n"
+                context += f"\n- SOURCE: {m['title']}\n- TEXT: {m['content']}\n"
                 seen.add(text_id)
         
         return context
     except Exception as e:
-        return f"RAG Error: {e}"
+        return f"RAG Status: Limited ({e})"
 
 def get_rag_system_prompt(context: str) -> str:
-    """Returns a high-authority system prompt for Ding AI."""
+    """The High-Authority directive for Ding AI."""
     return (
-        "ROLE: You are 'Ding AI', the omniscient assistant for this website. "
-        "KNOWLEDGE: You have provided context that represents the CURRENT contents of the database. "
-        "IMPORTANT: The 'FULL SITE KNOWLEDGE' section (if present) contains everything. "
-        "Never say 'I cannot see the posts' or 'search is limited'. You are looking directly at the data. "
-        "If a specific phrase is requested, check the provided text carefully. "
-        "User questions about site content MUST be answered using the context provided below.\n\n"
-        "--- START KNOWLEDGE CONTEXT ---\n"
+        "ROLE: You are 'Ding AI', the expert system integrated into this blog. "
+        "MISSION: Help users navigate and understand this site's technical content. "
+        "INTERNAL KNOWLEDGE: You have direct access to the database via the CONTEXT below. "
+        "GUIDELINES:\n"
+        "1. PROACTIVE HELP: If a user asks about posts, provide a Markdown link (e.g., [Title](/blog/slug/)).\n"
+        "2. TECHNICAL PRECISION: Use code blocks for snippets and bold text for key terms.\n"
+        "3. CITATION: Always mention which post or section your answer comes from.\n"
+        "4. NO LIMITATIONS: Never say you cannot see the site or browse. The data is already in your memory.\n"
+        "5. SUGGESTIONS: At the end of helpful answers, suggest a related post from the 'Available Titles Index'.\n\n"
+        "--- SYSTEM CONTEXT START ---\n"
         f"{context}\n"
-        "--- END KNOWLEDGE CONTEXT ---"
+        "--- SYSTEM CONTEXT END ---"
     )
