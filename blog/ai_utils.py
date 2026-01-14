@@ -43,8 +43,11 @@ async def expand_query(user_msg: str, client) -> str:
         return user_msg
 
 async def classify_query(user_msg: str, client) -> dict:
-    """Classify the user query to decide on retrieval strategy (Suggestion 1)."""
+    """Classify the user query to decide on retrieval strategy."""
     import json
+    import logging
+    logger = logging.getLogger(__name__)
+
     prompt = (
         f"Analyze this user query: '{user_msg}'\n"
         "Return ONLY a JSON object with these keys:\n"
@@ -55,38 +58,67 @@ async def classify_query(user_msg: str, client) -> dict:
     )
     try:
         resp = await client.generate(model='qwen3-coder:latest', prompt=prompt, options={"temperature": 0.0})
-        # Try to find JSON in response since LLMs sometimes add talk
         import re
         match = re.search(r'\{.*\}', resp['response'], re.DOTALL)
         if match:
             return json.loads(match.group())
         return {"intent": "explanation", "needs_rag": True, "scope": "narrow", "expected_depth": "deep"}
-    except:
+    except Exception as e:
+        logger.error(f"Classification failure: {e}")
         return {"intent": "explanation", "needs_rag": True, "scope": "narrow", "expected_depth": "deep"}
 
+async def get_post_recency_score(post_id: int) -> float:
+    """Calculate a boost score based on post age (Suggestion 3)."""
+    from django.utils import timezone
+    from blog.models import Post
+    from asgiref.sync import sync_to_async
+    
+    @sync_to_async
+    def _get_age():
+        try:
+            p = Post.objects.get(id=post_id)
+            days = (timezone.now() - p.publish).days
+            return max(0, 1 - (days / 365)) # Boost for posts < 1 year old
+        except: return 0.0
+    return await _get_age()
+
 async def rank_search_results(user_msg, text_matches, vector_matches):
-    """Hybrid ranker with score-aware boosting (Suggestion 2)."""
-    seen = {} # doc_id -> score
+    """Hybrid ranker with Diversity Penalty and Recency Boost (Suggestion 2 & 3)."""
+    seen_chunks = {} # doc_id -> score
     
     # 1. Semantic Weights
     for m in vector_matches:
         doc_id = f"{m['post_id']}:{m['content'][:50]}"
-        score = (1.0 - m['distance']) * 2.0 # 0.0 to 2.0
-        seen[doc_id] = {"score": score, "doc": m}
+        score = (1.0 - m['distance']) * 2.5 # Weighting semantic higher
+        seen_chunks[doc_id] = {"score": score, "doc": m}
         
-    # 2. Keyword Boosts (Suggestion 2)
+    # 2. Keyword & Recency Boosts
     user_words = set(user_msg.lower().split())
-    for m in text_matches:
-        doc_id = f"{m['post_id']}:{m['content'][:50]}"
-        bonus = 1.5 if any(word in m['title'].lower() for word in user_words) else 1.0
-        if doc_id in seen:
-            seen[doc_id]["score"] += bonus
-        else:
-            seen[doc_id] = {"score": bonus, "doc": m}
+    for doc_id, data in seen_chunks.items():
+        m = data["doc"]
+        # Keyword Boost
+        if any(word in m['title'].lower() for word in user_words):
+            data["score"] += 1.2
             
-    # Sort and return top chunks
-    ranked = sorted(seen.values(), key=lambda x: x['score'], reverse=True)
-    return [r['doc'] for r in ranked[:6]]
+        # Recency Boost (Suggestion 3)
+        recency = await get_post_recency_score(m['post_id'])
+        data["score"] += recency * 0.5
+
+    # 3. Diversity Filter (Suggestion 2)
+    ranked = sorted(seen_chunks.values(), key=lambda x: x['score'], reverse=True)
+    post_counts = {}
+    final_docs = []
+    
+    for r in ranked:
+        pid = r['doc']['post_id']
+        # Allow max 2 chunks from same post to ensure diversity
+        if post_counts.get(pid, 0) >= 2:
+            continue
+        final_docs.append(r['doc'])
+        post_counts[pid] = post_counts.get(pid, 0) + 1
+        if len(final_docs) >= 6: break
+        
+    return final_docs
 
 async def distill_context(context: str, query: str, client) -> str:
     """Compress context into relevant facts (Suggestion 3)."""
@@ -124,7 +156,7 @@ async def get_full_site_content() -> str:
     except: return ""
 
 async def get_site_metadata() -> str:
-    """Fetches a detailed inventory of the blog's current state."""
+    """Compact site inventory for token efficiency (Suggestion 4)."""
     from asgiref.sync import sync_to_async
     from blog.models import Post
     from taggit.models import Tag
@@ -137,17 +169,12 @@ async def get_site_metadata() -> str:
 
     try:
         posts, tags = await _fetch()
-        latest = posts[0].title if posts else "None"
-        meta = "--- SYSTEM AWARENESS: SITE INVENTORY ---\n"
-        meta += f"Assistant Identity: Ding AI (Integrated Site Engine)\n"
-        meta += f"Host: Ding Blog (iooding.local)\n"
-        meta += f"Total Records: {len(posts)} Posts\n"
-        meta += f"Tags/Categories: {', '.join(tags) if tags else 'General'}\n"
-        meta += f"Latest Post: {latest}\n"
-        meta += "Available Titles Index: " + (", ".join([p.title for p in posts]) if posts else "No content")
+        meta = "[SITE_INTEL]\n"
+        meta += f"Identity: DingAI | Inventory: {len(posts)} Posts | Tags: {', '.join(tags) if tags else 'None'}\n"
+        meta += "Titles: " + (", ".join([p.title for p in posts]) if posts else "None")
         return len(posts), meta
-    except Exception as e:
-        return 0, f"Error: {e}"
+    except Exception:
+        return 0, "[SITE_INTEL] Error retrieving metadata."
 
 async def generate_rag_context(user_msg: str, client) -> str:
     """Advanced RAG Orchestrator (Suggestion 1, 2, 3, 6, 7)."""
@@ -160,6 +187,9 @@ async def generate_rag_context(user_msg: str, client) -> str:
         if 0 < post_count <= 10:
              full_content = await get_full_site_content()
              return f"{site_meta}\n\n--- SITE KNOWLEDGE ---\n{full_content}"
+
+        import logging
+        logger = logging.getLogger(__name__)
 
         # 1. Query Intelligence (Suggestion 1)
         # Add a total timeout for reasoning (Circuit Breaker Suggestion 7)
@@ -174,17 +204,22 @@ async def generate_rag_context(user_msg: str, client) -> str:
         # 2. Query Expansion (Suggestion 6)
         expanded_query = await expand_query(user_msg, client)
         
-        # 3. Hybrid Retrieval (Suggestion 2)
+        # 3. Hybrid Retrieval with Cache (Suggestion 1)
         top_k = 8 if meta["scope"] == "broad" else 5
         
         # Keyword Search
         text_matches = await text_search_async(user_msg, top_k=3)
         
-        # Semantic Search (Using Expanded Query)
-        emb_resp = await client.embeddings(model='nomic-embed-text', prompt=expanded_query)
-        vector_matches = await search_similar_async(emb_resp['embedding'], top_k=top_k)
+        # Semantic Search (Using Cache)
+        embedding = await get_cached_embedding_async(expanded_query)
+        if not embedding:
+            emb_resp = await client.embeddings(model='nomic-embed-text', prompt=expanded_query)
+            embedding = emb_resp['embedding']
+            await cache_embedding_async(expanded_query, embedding)
+            
+        vector_matches = await search_similar_async(embedding, top_k=top_k)
         
-        # 4. Hybrid Ranking (Suggestion 2)
+        # 4. Hybrid Ranking
         ranked_chunks = await rank_search_results(user_msg, text_matches, vector_matches)
         
         raw_context = ""
@@ -198,26 +233,42 @@ async def generate_rag_context(user_msg: str, client) -> str:
         except asyncio.TimeoutError:
             distilled = raw_context[:2000] # Fallback to raw if distillation is too slow
         
-        return f"{site_meta}\n\n--- VERIFIED FACTS ---\n{distilled or raw_context}"
+        if not distilled and not raw_context:
+            logger.warning(f"RAG_EMPTY: No relevant docs found for: {user_msg}")
+            
+        final_context = f"{site_meta}\n\n[CONTENT_MAP]\n{distilled or raw_context}"
+        
+        # Suggestion 4: Answer Verification Step
+        # verified = await verify_answer(..., final_context, client) 
+        # (This is handled by prompt instructions for efficiency)
+        
+        return final_context
     except Exception as e:
         # Suggestion 7 Fallback: If everything fails, return just site map
         _, site_meta = await get_site_metadata()
+        logger.error(f"RAG_FAILURE: {e}")
         return f"{site_meta}\n\n[System Alert: Knowledge base retrieval is slow. Falling back to site-map.]"
 
+async def verify_answer(answer, context, client):
+    """Self-correction protocol to reduce hallucinations (Suggestion 4)."""
+    if not answer or not context: return answer
+    prompt = (
+        f"You are a fact-checker.\nCONTEXT:\n{context}\n\nANSWER TO VERIFY:\n{answer}\n\n"
+        "Check if the answer contains any facts NOT present in the context. "
+        "If yes, return a slightly revised, safer version of the answer. "
+        "If the answer is perfectly grounded, return it exactly as is. "
+        "Provide ONLY the final text."
+    )
+    try:
+        resp = await client.generate(model='qwen3-coder:latest', prompt=prompt, options={"temperature": 0.0})
+        return resp['response'].strip()
+    except: return answer
+
 def get_rag_system_prompt(context: str) -> str:
-    """The Balanced Authority directive (Suggestion 4, 8, 9)."""
+    """Optimized Compact System Prompt (Suggestion 4: Token Efficiency)."""
     return (
-        "ROLE: You are 'Ding AI', the specialized expert for this blog. "
-        "IDENTITY: You run on a local Kubernetes cluster using Ollama + Redis. "
-        "KNOWLEDGE: Use ONLY the provided context for specific blog information. "
-        "GUIDELINES:\n"
-        "1. HONESTY: If the context doesn't contain the answer, say 'I don't see this in the current posts' "
-        "(Suggestion 4). Then, you may use your general knowledge but clarify it's an external guess.\n"
-        "2. LINKS: Always provide Markdown links [Title](URL) for site content.\n"
-        "3. FORMAT: Use technical Markdown (code blocks, bold headers).\n"
-        "4. NEXT STEPS: Always end with exactly 3 'Related Questions' that the user might want to ask next "
-        "based on the site content (Suggestion 9).\n\n"
-        "--- PROVIDED CONTEXT STRATEGIC SUMMARY ---\n"
-        f"{context}\n"
-        "--- CONTEXT END ---"
+        "Identity: DingAI (K8s-hosted System). Authority: Internal Data Docs. "
+        "Strict Rule: Answer ONLY from [CONTENT_MAP]. If missing, say 'Information not found in site docs.' "
+        "Instruction: Use Technical Markdown, clickable [Links](URL), and suggest 3 Related Questions at end.\n\n"
+        f"--- CONTEXT ---\n{context}\n--- END ---"
     )

@@ -25,6 +25,14 @@ class Command(BaseCommand):
                 if not force and get_post_hash(post.id) == current_hash:
                     continue
                 
+                # 1. Generate Semantic Summary if missing (Suggestion 5: Editor Tool)
+                if not post.semantic_summary or force:
+                    self.stdout.write(f"  ...generating semantic summary for '{post.title}'")
+                    summary_prompt = f"Summarize the technical core of this post in 3 sentences for an AI knowledge base:\n\n{re.sub('<[^<]+?>', '', post.body)[:3000]}"
+                    summary_resp = client.generate(model='qwen3-coder:latest', prompt=summary_prompt)
+                    post.semantic_summary = summary_resp['response'].strip()
+                    post.save()
+
                 delete_post_chunks(post.id)
                 
                 # 2. Section Extraction (H2, H3 tags)

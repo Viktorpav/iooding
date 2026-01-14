@@ -46,6 +46,8 @@ function toggleChat() {
 }
 
 function sendQuickAction(query) {
+    const sidebar = document.getElementById('ai-sidebar');
+    if (!sidebar.classList.contains('active')) toggleChat();
     const input = document.getElementById('ai-user-input');
     input.value = query;
     handleSendClick();

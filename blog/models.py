@@ -27,6 +27,7 @@ class Post(models.Model):
     updated = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
     tags = TaggableManager()
+    semantic_summary = models.TextField(blank=True, help_text="AI-generated semantic map of the post")
 
     class Meta:
         ordering = ('-publish',)
