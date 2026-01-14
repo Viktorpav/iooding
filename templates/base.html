@@ -85,43 +85,55 @@
     <div class="container">
       <div class="footer-content">
         <div class="footer-brand">
-          <span class="brand-text">Ding</span>
-          <p>The high-performance technical blog and AI assistant ecosystem. Built for developers, by developers.</p>
+          <span class="brand-text">Ding.</span>
+          <p>Advancing technical discourse through high-performance engineering and integrated AI intelligence. Designed
+            for the modern developer.</p>
+          <div class="mt-4 d-flex gap-3">
+            <a href="#" class="btn btn-outline-primary btn-sm rounded-pill px-3">Documentation</a>
+            <a href="#" class="btn btn-outline-secondary btn-sm rounded-pill px-3">GitHub</a>
+          </div>
         </div>
 
         <div class="footer-section">
-          <h4>Navigation</h4>
+          <h4>Ecosystem</h4>
           <ul class="footer-links">
-            <li><a href="{% url 'blog:post_list' %}">Home</a></li>
-            <li><a href="{% url 'blog:post_tag' tag_slug='python' %}">Python Docs</a></li>
-            <li><a href="{% url 'blog:post_tag' tag_slug='django' %}">Django Mastery</a></li>
+            <li><a href="{% url 'blog:post_list' %}">Main Repository</a></li>
+            <li><a href="{% url 'blog:post_tag' tag_slug='python' %}">Python Core</a></li>
+            <li><a href="{% url 'blog:post_tag' tag_slug='django' %}">Django Framework</a></li>
+            <li><a href="{% url 'blog:post_tag' tag_slug='linux' %}">OS Architecture</a></li>
           </ul>
         </div>
 
         <div class="footer-section">
-          <h4>Tags</h4>
+          <h4>Connectivity</h4>
           <ul class="footer-links">
-            <li><a href="{% url 'blog:post_tag' tag_slug='linux' %}">Linux</a></li>
-            <li><a href="{% url 'blog:post_tag' tag_slug='tips' %}">Tips</a></li>
-            <li><a href="{% url 'blog:post_list' %}">All Posts</a></li>
+            <li><a href="#">Newsletter Sink</a></li>
+            <li><a href="#">Privacy Protocol</a></li>
+            <li><a href="#">License Agreement</a></li>
+            <li><a href="#">Support Sync</a></li>
           </ul>
         </div>
 
         <div class="footer-section">
-          <h4>Tech Stack</h4>
-          <div class="stack-tags">
-            <span class="tech-tag">Django 5.0</span>
+          <h4>Infrastructure</h4>
+          <div class="tech-stack-flex">
+            <span class="tech-tag">Django 5.1</span>
             <span class="tech-tag">Redis Stack</span>
-            <span class="tech-tag">Ollama</span>
+            <span class="tech-tag">Ollama RAG</span>
             <span class="tech-tag">Kubernetes</span>
-            <span class="tech-tag">Python 3.12</span>
+            <span class="tech-tag">Vector Search</span>
           </div>
         </div>
       </div>
 
       <div class="footer-bottom">
-        <span>&copy; {% now "Y" %} Ding. All systems operational.</span>
-        <span>Premium AI-Driven Infrastructure</span>
+        <div class="d-flex align-items-center gap-3">
+          <span class="pulse"></span>
+          <span>SYSTEMS NOMINAL • {% now "Y" %} DING ENGINE</span>
+        </div>
+        <div class="d-none d-md-block">
+          <span>PREMIUM AI-DRIVEN INFRASTRUCTURE • V5.0.0</span>
+        </div>
       </div>
     </div>
   </footer>

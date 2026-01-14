@@ -29,7 +29,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     scrollToBottom(true);
+    initMobileGestures();
 });
+
+let touchStartY = 0;
+function initMobileGestures() {
+    const sidebar = document.getElementById('ai-sidebar');
+    sidebar.addEventListener('touchstart', (e) => {
+        if (window.innerWidth > 768) return;
+        touchStartY = e.touches[0].clientY;
+    });
+    sidebar.addEventListener('touchmove', (e) => {
+        if (window.innerWidth > 768 || touchStartY === 0) return;
+        const deltaY = e.touches[0].clientY - touchStartY;
+        if (deltaY > 100) { // Threshold for swipe down
+            toggleChat();
+            touchStartY = 0;
+        }
+    });
+}
 
 function resizeInput(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
 

@@ -12,12 +12,15 @@
 
     <!-- The Sidebar Panel -->
     <div id="ai-sidebar" class="premium-glass">
+        <!-- Suggestion 1: Mobile Bottom Sheet Handle -->
+        <div class="mobile-handle d-none"></div>
+
         <div class="sidebar-inner">
             <div class="sidebar-header">
                 <div class="agent-brand">
                     <img src="{% static 'ai_logo.png' %}" alt="AI Agent" class="header-logo">
                     <div class="header-text">
-                        <span class="agent-name">Ding Assistent</span>
+                        <span class="agent-name">Ding Assistant</span>
                         <span class="agent-status"><span class="pulse"></span> Online</span>
                     </div>
                 </div>
@@ -39,11 +42,53 @@
                 </div>
             </div>
 
+            <!-- Suggestion 4: Quick Actions as Scrollable Chips -->
+            <div class="quick-actions">
+                <button class="quick-action-chip" onclick="sendQuickAction('Summarize the core of this site')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <path d="M14 2v6h6" />
+                        <path d="M16 13H8" />
+                        <path d="M16 17H8" />
+                        <path d="M10 9H8" />
+                    </svg>
+                    Summarize
+                </button>
+                <button class="quick-action-chip" onclick="sendQuickAction('Show me technical setup insights')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <path
+                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                        <line x1="12" y1="22.08" x2="12" y2="12" />
+                    </svg>
+                    Architecture
+                </button>
+                <button class="quick-action-chip" onclick="sendQuickAction('What is the identity of this AI?')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 16v-4" />
+                        <path d="M12 8h.01" />
+                    </svg>
+                    Identity
+                </button>
+                <button class="quick-action-chip" onclick="sendQuickAction('Latest posts index')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    Latest
+                </button>
+            </div>
+
             <div id="chat-messages" class="chat-viewport">
-                <!-- Status Badge -->
+                <!-- Status Badge (Hidden on mobile via CSS) -->
                 <div class="ai-status-badge">
                     <span class="badge-icon"></span>
-                    <span class="badge-text">Neural Sync Active | 1.2ms latency</span>
+                    <span class="badge-text">Neural Sync Active</span>
                 </div>
 
                 <!-- Welcome Message -->
@@ -58,7 +103,6 @@
             <!-- Cool Idea: Quick Actions -->
             <div class="quick-actions">
                 <button onclick="sendQuickAction('Summarize this page')">📝 Summarize</button>
-                <button onclick="sendQuickAction('List latest posts')">📌 Latest</button>
                 <button onclick="sendQuickAction('Who are you?')">🤖 Identity</button>
             </div>
 
