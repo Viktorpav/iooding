@@ -27,19 +27,81 @@ def get_ollama_client(async_client=False):
             _ollama_client = ollama.Client(host=host)
         return _ollama_client
 
-def should_skip_rag(user_msg: str) -> bool:
-    """Check if RAG can be skipped for simple queries."""
-    msg_lower = user_msg.lower().strip()
+async def expand_query(user_msg: str, client) -> str:
+    """Expand simple queries with technical synonyms for better recall (Suggestion 6)."""
+    prompt = (
+        f"User is asking about technical topics in a blog.\n"
+        f"QUERY: {user_msg}\n"
+        "Return 3-5 keywords or synonyms that would improve search results for this query. "
+        "Format: comma separated list. No intro."
+    )
+    try:
+        resp = await client.generate(model='qwen3-coder:latest', prompt=prompt, options={"temperature": 0.0})
+        expansion = resp['response'].strip()
+        return f"{user_msg}, {expansion}"
+    except:
+        return user_msg
+
+async def classify_query(user_msg: str, client) -> dict:
+    """Classify the user query to decide on retrieval strategy (Suggestion 1)."""
+    import json
+    prompt = (
+        f"Analyze this user query: '{user_msg}'\n"
+        "Return ONLY a JSON object with these keys:\n"
+        "- intent: greeting | navigation | explanation | code | opinion\n"
+        "- needs_rag: true | false\n"
+        "- scope: narrow | broad\n"
+        "- expected_depth: shallow | deep"
+    )
+    try:
+        resp = await client.generate(model='qwen3-coder:latest', prompt=prompt, options={"temperature": 0.0})
+        # Try to find JSON in response since LLMs sometimes add talk
+        import re
+        match = re.search(r'\{.*\}', resp['response'], re.DOTALL)
+        if match:
+            return json.loads(match.group())
+        return {"intent": "explanation", "needs_rag": True, "scope": "narrow", "expected_depth": "deep"}
+    except:
+        return {"intent": "explanation", "needs_rag": True, "scope": "narrow", "expected_depth": "deep"}
+
+async def rank_search_results(user_msg, text_matches, vector_matches):
+    """Hybrid ranker with score-aware boosting (Suggestion 2)."""
+    seen = {} # doc_id -> score
     
-    # Only skip very short greetings
-    if len(msg_lower) < 4:
-        return True
-    
-    # Skip for simple greetings/responses if they are not questions
-    if msg_lower in SKIP_RAG_PATTERNS and '?' not in msg_lower:
-        return True
-    
-    return False
+    # 1. Semantic Weights
+    for m in vector_matches:
+        doc_id = f"{m['post_id']}:{m['content'][:50]}"
+        score = (1.0 - m['distance']) * 2.0 # 0.0 to 2.0
+        seen[doc_id] = {"score": score, "doc": m}
+        
+    # 2. Keyword Boosts (Suggestion 2)
+    user_words = set(user_msg.lower().split())
+    for m in text_matches:
+        doc_id = f"{m['post_id']}:{m['content'][:50]}"
+        bonus = 1.5 if any(word in m['title'].lower() for word in user_words) else 1.0
+        if doc_id in seen:
+            seen[doc_id]["score"] += bonus
+        else:
+            seen[doc_id] = {"score": bonus, "doc": m}
+            
+    # Sort and return top chunks
+    ranked = sorted(seen.values(), key=lambda x: x['score'], reverse=True)
+    return [r['doc'] for r in ranked[:6]]
+
+async def distill_context(context: str, query: str, client) -> str:
+    """Compress context into relevant facts (Suggestion 3)."""
+    if not context or len(context) < 300: return context
+    prompt = (
+        f"QUESTION: {query}\n\nRAW CONTEXT:\n{context}\n\n"
+        "INSTRUCTION: Extract ONLY factual bullet points from the context that answer the question. "
+        "Cite source titles in brackets like [Post Title]. If no info is relevant, return 'NO RELEVANT INFO'."
+    )
+    try:
+        resp = await client.generate(model='qwen3-coder:latest', prompt=prompt, options={"temperature": 0.1})
+        res = resp['response'].strip()
+        return res if "NO RELEVANT INFO" not in res else ""
+    except:
+        return context
 
 async def get_full_site_content() -> str:
     """Fetches full content + rich metadata of all published posts."""
@@ -88,48 +150,74 @@ async def get_site_metadata() -> str:
         return 0, f"Error: {e}"
 
 async def generate_rag_context(user_msg: str, client) -> str:
-    """Hybrid Retrieval Strategy with deep metadata integration."""
+    """Advanced RAG Orchestrator (Suggestion 1, 2, 3, 6, 7)."""
     from blog.redis_vectors import text_search_async, search_similar_async
+    import asyncio
     
     try:
+        # 0. Fast Track for small blogs (Suggestion 7 Fallback)
         post_count, site_meta = await get_site_metadata()
+        if 0 < post_count <= 10:
+             full_content = await get_full_site_content()
+             return f"{site_meta}\n\n--- SITE KNOWLEDGE ---\n{full_content}"
+
+        # 1. Query Intelligence (Suggestion 1)
+        # Add a total timeout for reasoning (Circuit Breaker Suggestion 7)
+        try:
+            meta = await asyncio.wait_for(classify_query(user_msg, client), timeout=5.0)
+        except asyncio.TimeoutError:
+            return f"{site_meta}\n\n[Warning: Deep reasoning timed out. Using fast retrieval.]"
+            
+        if not meta["needs_rag"]:
+            return "NO_RAG_NEEDED"
+            
+        # 2. Query Expansion (Suggestion 6)
+        expanded_query = await expand_query(user_msg, client)
         
-        # Adaptive Retrieval Strategy
-        if 0 < post_count <= 15:
-            # Small blog: Feed the AI the entire context with metadata
-            full_content = await get_full_site_content()
-            return f"{site_meta}\n\n--- SITE DATA DUMP (COMPLETE) ---\n{full_content}"
+        # 3. Hybrid Retrieval (Suggestion 2)
+        top_k = 8 if meta["scope"] == "broad" else 5
         
-        # Large blog: Keyword + Vector Search
+        # Keyword Search
         text_matches = await text_search_async(user_msg, top_k=3)
-        emb_resp = await client.embeddings(model='nomic-embed-text', prompt=user_msg)
-        vector_matches = await search_similar_async(emb_resp['embedding'], top_k=5)
         
-        seen = set()
-        context = f"{site_meta}\n\n--- RELEVANT CONTENT SEGMENTS ---\n"
-        for m in (text_matches + vector_matches):
-            text_id = f"{m['post_id']}:{m['content'][:50]}"
-            if text_id not in seen:
-                context += f"\n- SOURCE: {m['title']}\n- TEXT: {m['content']}\n"
-                seen.add(text_id)
+        # Semantic Search (Using Expanded Query)
+        emb_resp = await client.embeddings(model='nomic-embed-text', prompt=expanded_query)
+        vector_matches = await search_similar_async(emb_resp['embedding'], top_k=top_k)
         
-        return context
+        # 4. Hybrid Ranking (Suggestion 2)
+        ranked_chunks = await rank_search_results(user_msg, text_matches, vector_matches)
+        
+        raw_context = ""
+        for m in ranked_chunks:
+            # Suggestion 5: Mention section titles in raw context
+            raw_context += f"SOURCE: {m['title']}\nCONTENT: {m['content']}\n\n"
+            
+        # 5. Context Distillation (Suggestion 3)
+        try:
+            distilled = await asyncio.wait_for(distill_context(raw_context, user_msg, client), timeout=8.0)
+        except asyncio.TimeoutError:
+            distilled = raw_context[:2000] # Fallback to raw if distillation is too slow
+        
+        return f"{site_meta}\n\n--- VERIFIED FACTS ---\n{distilled or raw_context}"
     except Exception as e:
-        return f"RAG Status: Limited ({e})"
+        # Suggestion 7 Fallback: If everything fails, return just site map
+        _, site_meta = await get_site_metadata()
+        return f"{site_meta}\n\n[System Alert: Knowledge base retrieval is slow. Falling back to site-map.]"
 
 def get_rag_system_prompt(context: str) -> str:
-    """The High-Authority directive for Ding AI."""
+    """The Balanced Authority directive (Suggestion 4, 8, 9)."""
     return (
-        "ROLE: You are 'Ding AI', the expert system integrated into this blog. "
-        "MISSION: Help users navigate and understand this site's technical content. "
-        "INTERNAL KNOWLEDGE: You have direct access to the database via the CONTEXT below. "
+        "ROLE: You are 'Ding AI', the specialized expert for this blog. "
+        "IDENTITY: You run on a local Kubernetes cluster using Ollama + Redis. "
+        "KNOWLEDGE: Use ONLY the provided context for specific blog information. "
         "GUIDELINES:\n"
-        "1. PROACTIVE HELP: If a user asks about posts, provide a Markdown link (e.g., [Title](/blog/slug/)).\n"
-        "2. TECHNICAL PRECISION: Use code blocks for snippets and bold text for key terms.\n"
-        "3. CITATION: Always mention which post or section your answer comes from.\n"
-        "4. NO LIMITATIONS: Never say you cannot see the site or browse. The data is already in your memory.\n"
-        "5. SUGGESTIONS: At the end of helpful answers, suggest a related post from the 'Available Titles Index'.\n\n"
-        "--- SYSTEM CONTEXT START ---\n"
+        "1. HONESTY: If the context doesn't contain the answer, say 'I don't see this in the current posts' "
+        "(Suggestion 4). Then, you may use your general knowledge but clarify it's an external guess.\n"
+        "2. LINKS: Always provide Markdown links [Title](URL) for site content.\n"
+        "3. FORMAT: Use technical Markdown (code blocks, bold headers).\n"
+        "4. NEXT STEPS: Always end with exactly 3 'Related Questions' that the user might want to ask next "
+        "based on the site content (Suggestion 9).\n\n"
+        "--- PROVIDED CONTEXT STRATEGIC SUMMARY ---\n"
         f"{context}\n"
-        "--- SYSTEM CONTEXT END ---"
+        "--- CONTEXT END ---"
     )

@@ -132,32 +132,38 @@ async def chat_api(request):
 
         async def stream_response():
             try:
-                yield f"data: {json.dumps({'thinking': 'Searching internal knowledge base...'})}\n\n"
+                yield f"data: {json.dumps({'thinking': 'Analyzing intent and scope...'})}\n\n"
                 
-                # 1. RAG Context Retrieval (Site Identity + Semantic Search)
+                # 1. Classification & Context Discovery
                 context_text = await generate_rag_context(user_msg, client)
                 
-                if context_text:
-                    messages.insert(0, {
-                        'role': 'system', 
-                        'content': get_rag_system_prompt(context_text)
-                    })
-                    yield f"data: {json.dumps({'thinking': 'Context found, generating verified response...'})}\n\n"
+                if context_text == "NO_RAG_NEEDED":
+                    yield f"data: {json.dumps({'thinking': 'General query detected. Responding directly...'})}\n\n"
+                    messages.insert(0, {'role': 'system', 'content': "You are 'Ding AI'. Provide a helpful, concise response."})
+                elif context_text:
+                    messages.insert(0, {'role': 'system', 'content': get_rag_system_prompt(context_text)})
+                    yield f"data: {json.dumps({'thinking': 'Knowledge retrieved. Synthesizing final answer...'})}\n\n"
                 else:
-                    messages.insert(0, {
-                        'role': 'system', 
-                        'content': "You are 'Ding AI'. No specific internal documents found. Answer generally."
-                    })
-                    yield f"data: {json.dumps({'thinking': 'No specific docs found. Using general knowledge...'})}\n\n"
+                    messages.insert(0, {'role': 'system', 'content': "You are 'Ding AI'. Context limited. Help generally."})
+                    yield f"data: {json.dumps({'thinking': 'Limited info found. Using latent knowledge...'})}\n\n"
 
-                # 2. Ollama Chat Stream
-                chat_resp = await client.chat(model='qwen3-coder:latest', messages=messages, stream=True)
+                # 2. Optimized Chat Stream (Suggestion 8)
+                options = {
+                    "temperature": 0.2, # Stable & focused
+                    "top_p": 0.9,
+                    "repeat_penalty": 1.1,
+                    "num_ctx": 4096
+                }
+                
+                chat_resp = await client.chat(
+                    model='qwen3-coder:latest', 
+                    messages=messages, 
+                    stream=True, 
+                    options=options
+                )
+                
                 async for chunk in chat_resp:
                     content = chunk.get('message', {}).get('content', '')
-                    if '<think>' in content:
-                        yield f"data: {json.dumps({'thinking': 'Thinking...'})}\n\n"
-                        content = content.replace('<think>', '')
-                    
                     if content:
                         yield f"data: {json.dumps({'content': content})}\n\n"
                     

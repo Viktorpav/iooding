@@ -40,11 +40,13 @@ def get_schema():
         NumericField("$.post_id", as_name="post_id"),
         VectorField(
             "$.embedding",
-            "FLAT",
+            "HNSW", # Optimized for speed and scale
             {
                 "TYPE": "FLOAT32",
                 "DIM": VECTOR_DIM,
                 "DISTANCE_METRIC": "COSINE",
+                "M": 16,
+                "EF_CONSTRUCTION": 200,
             },
             as_name="embedding"
         )
