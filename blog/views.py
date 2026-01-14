@@ -107,130 +107,74 @@ async def health_check(request):
 
 @csrf_exempt
 async def chat_api(request):
-    print("AI Chat API call started.")
-    if request.method == "POST":
-        try:
-            # 1. Read body safely
+    """
+    Async API endpoint for AI Chat.
+    Handles message history, RAG context, and streams responses from Ollama.
+    """
+    if request.method != "POST":
+        return HttpResponse("Method not allowed", status=405)
+
+    try:
+        data = json.loads(request.body)
+        user_msg = data.get("message", "")
+        history = data.get("messages", [])
+        
+        # Build prompt: last 10 turns + current message
+        messages = history[-10:] if history else []
+        if user_msg and (not messages or messages[-1].get('content') != user_msg):
+            messages.append({'role': 'user', 'content': user_msg})
+
+        if not messages:
+            return HttpResponse(json.dumps({'error': 'Empty message'}), status=400)
+
+        from blog.ai_utils import get_ollama_client, generate_rag_context, get_rag_system_prompt
+        client = get_ollama_client(async_client=True)
+
+        async def stream_response():
             try:
-                body_bytes = request.body
-                print(f"Body received, size: {len(body_bytes)}")
-                data = json.loads(body_bytes)
-            except Exception as e:
-                print(f"Error parsing request body: {e}")
-                return HttpResponse(json.dumps({'error': f'Invalid request body: {e}'}), status=400)
-            
-            # Combine history and current message
-            history = data.get("messages", [])
-            user_msg = data.get("message", "")
-            
-            messages = []
-            # 1. Add limited history (to avoid overwhelming CPU with long prompts)
-            # Take last 10 messages from history
-            if history:
-                messages.extend(history[-10:])
-            
-            # 2. Add current message if not already at the end of history
-            if user_msg:
-                # Avoid duplicates if frontend accidentally sent it in history too
-                if not messages or messages[-1].get('content') != user_msg:
-                    messages.append({'role': 'user', 'content': user_msg})
+                yield f"data: {json.dumps({'thinking': 'Searching internal knowledge base...'})}\n\n"
+                
+                # 1. RAG Context Retrieval
+                context_text = await generate_rag_context(user_msg, client)
+                
+                if context_text:
+                    messages.insert(0, {
+                        'role': 'system', 
+                        'content': get_rag_system_prompt(context_text)
+                    })
+                    yield f"data: {json.dumps({'thinking': 'Context found, generating verified response...'})}\n\n"
+                else:
+                    messages.insert(0, {
+                        'role': 'system', 
+                        'content': "You are 'Antigravity AI'. No specific internal documents found. Answer generally."
+                    })
+                    yield f"data: {json.dumps({'thinking': 'No specific docs found. Using general knowledge...'})}\n\n"
 
-            if not messages:
-                print("No messages to process.")
-                return HttpResponse(json.dumps({'error': 'Empty message'}), status=400)
-
-            print(f"Processing {len(messages)} messages (History: {len(history)})")
-
-            # 2. Imports and Client
-            try:
-                from blog.ai_utils import get_ollama_client, generate_rag_context
-                client = get_ollama_client(async_client=True)
-                print("Ollama client initialized.")
-            except Exception as e:
-                import traceback
-                print(f"Error initializing AI utils: {traceback.format_exc()}")
-                return HttpResponse(json.dumps({'error': f'AI Startup Error: {e}'}), status=500)
-
-            # 3. Stream Generator
-            async def stream_response():
-                try:
-                    print("Stream Generator started.")
-                    # 1. Immediate feedback to user
-                    yield f"data: {json.dumps({'thinking': 'Analyzing query...'})}\n\n"
+                # 2. Ollama Chat Stream
+                chat_resp = await client.chat(model='qwen3-coder:latest', messages=messages, stream=True)
+                async for chunk in chat_resp:
+                    content = chunk.get('message', {}).get('content', '')
+                    if '<think>' in content:
+                        yield f"data: {json.dumps({'thinking': 'Thinking...'})}\n\n"
+                        content = content.replace('<think>', '')
                     
-                    # 2. RAG Logic
-                    user_msg_content = ""
-                    for m in reversed(messages):
-                        if m['role'] == 'user':
-                            user_msg_content = m['content']
-                            break
+                    if content:
+                        yield f"data: {json.dumps({'content': content})}\n\n"
                     
-                    if user_msg_content:
-                        print(f"Generating RAG context for: {user_msg_content[:30]}...")
-                        context_text = await generate_rag_context(user_msg_content, client)
-                        if context_text:
-                            print("Context found, adding to messages.")
-                            system_prompt = f"You are a helpful assistant. Use the following context to answer:\n\n{context_text}"
-                            messages.insert(0, {'role': 'system', 'content': system_prompt})
-                            yield f"data: {json.dumps({'thinking': 'Context retrieved, generating answer...'})}\n\n"
-                        else:
-                            print("No relevant context found.")
-                            yield f"data: {json.dumps({'thinking': 'Direct response (no relevant context found)...'})}\n\n"
-
-                    # 3. Stream from Ollama
-                    print(f"Starting chat stream from Ollama model: qwen3-coder:latest")
-                    try:
-                        # Use await on the result if it's a coroutine returning an async iterator
-                        chat_resp = await client.chat(
-                            model='qwen3-coder:latest',
-                            messages=messages,
-                            stream=True,
-                        )
-                        print("Ollama stream connection established.")
+                    if chunk.get('done'):
+                        metrics = {
+                            'total_duration': chunk.get('total_duration', 0) / 1e9,
+                            'eval_count': chunk.get('eval_count', 0),
+                            'eval_duration': (chunk.get('eval_duration', 0) / 1e9) or 0.001
+                        }
+                        yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
                         
-                        async for chunk in chat_resp:
-                            content = chunk.get('message', {}).get('content', '')
-                            
-                            if '<think>' in content:
-                                print("Ollama started thinking...")
-                                yield f"data: {json.dumps({'thinking': 'Started thinking...'})}\n\n"
-                                content = content.replace('<think>', '')
-                            
-                            if content:
-                                # print(f"Chunk content: {content[:20]}...")
-                                yield f"data: {json.dumps({'content': content})}\n\n"
-                            
-                            if chunk.get('done'):
-                                print("Ollama finished generation.")
-                                metrics = {
-                                    'total_duration': chunk.get('total_duration', 0) / 1e9,
-                                    'eval_count': chunk.get('eval_count', 0),
-                                    'eval_duration': (chunk.get('eval_duration', 0) / 1e9) or 0.001
-                                }
-                                yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
-                                break # End of stream
-                        print("Stream iteration completed normally.")
-                    except Exception as e:
-                        import traceback
-                        print(f"Ollama inner chat error: {traceback.format_exc()}")
-                        yield f"data: {json.dumps({'error': f'Ollama Chat Error: {str(e)}'})}\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'error': f'AI Error: {str(e)}'})}\n\n"
 
-                except Exception as e:
-                    import traceback
-                    print(f"Stream Generator outer error: {traceback.format_exc()}")
-                    yield f"data: {json.dumps({'error': f'Stream Processing Error: {str(e)}'})}\n\n"
-                finally:
-                    print("Stream Generator finished (finally).")
-
-            print("Returning StreamingHttpResponse.")
-            response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
-            response['X-Accel-Buffering'] = 'no'
-            response['Cache-Control'] = 'no-cache'
-            return response
+        response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
+        response['X-Accel-Buffering'], response['Cache-Control'] = 'no', 'no-cache'
+        return response
             
-        except Exception as e:
-             import traceback
-             print(f"Chat API Top-level Recovery: {traceback.format_exc()}")
-             return HttpResponse(json.dumps({'error': str(e)}), status=500, content_type="application/json")
-             
-    return HttpResponse("Method not allowed", status=405)
+    except Exception as e:
+         return HttpResponse(json.dumps({'error': str(e)}), status=500, content_type="application/json")

@@ -20,30 +20,39 @@
 }
 
 body {
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg);
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
     color: var(--text);
     line-height: 1.6;
+    transition: padding-right 0.5s;
+    overflow-x: hidden;
+}
+
+body.ai-active {
+    padding-right: 30%;
 }
 
 .navbar {
     height: var(--header-height);
-    background-color: rgba(var(--bg), 0.8) !important;
+    background: rgba(var(--bg), 0.8) !important;
     backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border) !important;
     position: sticky;
     top: 0;
     z-index: 1000;
 }
 
+body.ai-active .navbar {
+    width: 70%;
+    transition: 0.5s;
+}
+
 .card {
-    background-color: var(--surface);
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     box-shadow: var(--shadow);
+    transition: 0.2s;
 }
 
 .card:hover {
@@ -52,120 +61,44 @@ body {
 }
 
 .btn-primary {
-    background-color: var(--primary);
+    background: var(--primary);
     border: none;
     border-radius: 8px;
     padding: 8px 16px;
     font-weight: 500;
-    transition: opacity 0.2s;
+    transition: 0.2s;
 }
 
 .btn-primary:hover {
     opacity: 0.8;
-    background-color: var(--primary);
-}
-
-.featured-image-list {
-    object-fit: cover;
-    width: 100%;
-    height: 100%;
-}
-
-.nav-link {
-    color: var(--text) !important;
-    font-weight: 500;
-    opacity: 0.7;
-}
-
-.nav-link:hover,
-.nav-link.active {
-    opacity: 1;
-}
-
-footer {
-    padding: 40px 0;
-    border-top: 1px solid var(--border);
-    text-align: center;
-    font-size: 0.9rem;
-    opacity: 0.6;
-}
-
-/* Custom link style */
-a {
-    color: var(--primary);
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
-.badge {
-    border-radius: 6px;
-    padding: 4px 8px;
-    font-weight: 500;
 }
 
 .navbar-brand {
-    color: var(--text) !important;
     font-size: 1.5rem;
     letter-spacing: -0.5px;
     background: linear-gradient(135deg, var(--primary), #5856d6);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    transition: opacity 0.2s;
 }
 
-.navbar-brand:hover {
-    opacity: 0.8;
-}
-
-/* CKEditor adjustments for both modes */
+/* CKEditor */
 .ck-editor__editable {
     min-height: 400px;
-    background-color: var(--bg) !important;
+    background: var(--bg) !important;
     color: var(--text) !important;
 }
 
 .ck.ck-toolbar {
-    background-color: var(--surface) !important;
+    background: var(--surface) !important;
     border-color: var(--border) !important;
 }
 
-.ck.ck-button {
-    color: var(--text) !important;
-}
-
-.ck.ck-button:hover {
-    background: var(--border) !important;
-}
-
-/* CKEditor adjustments for dark mode specific */
-@media (prefers-color-scheme: dark) {
-    .ck-content {
-        background-color: var(--bg) !important;
-        color: var(--text) !important;
-    }
-
-    .ck.ck-editor__main>.ck-editor__editable {
-        background: var(--bg) !important;
-        color: var(--text) !important;
-    }
-
-    .ck.ck-reset_all,
-    .ck.ck-reset_all * {
-        color: var(--text) !important;
-    }
-}
-
-/* --- Advanced AI Integration: Sidebar Panel --- */
-
+/* AI Sidebar */
 #ai-system-container {
     --side-bg: rgba(255, 255, 255, 0.7);
     --side-border: rgba(255, 255, 255, 0.3);
     --accent: #007aff;
-    --accent-glow: rgba(0, 122, 255, 0.5);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -175,22 +108,19 @@ a:hover {
     }
 }
 
-/* Edge Trigger */
 #ai-edge-trigger {
     position: fixed;
     right: 0;
     bottom: 15%;
     background: var(--side-bg);
     backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--side-border);
     border-right: none;
     border-radius: 40px 0 0 40px;
-    padding: 12px 18px 12px 12px;
+    padding: 12px 18px;
     cursor: pointer;
     z-index: 10000;
-    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+    transition: 0.4s;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -206,21 +136,6 @@ a:hover {
     transform: translateX(110%);
 }
 
-.trigger-logo {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    box-shadow: 0 0 15px var(--accent-glow);
-}
-
-.trigger-text {
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    font-family: 'Inter', sans-serif;
-}
-
-/* The Sidebar Panel */
 #ai-sidebar {
     position: fixed;
     top: 0;
@@ -229,12 +144,10 @@ a:hover {
     height: 100vh;
     background: var(--side-bg);
     backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
     border-left: 1px solid var(--side-border);
     z-index: 10001;
     transform: translateX(105%);
-    transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-    box-shadow: -30px 0 60px rgba(0, 0, 0, 0.2);
+    transition: 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 #ai-sidebar.active {
@@ -247,7 +160,6 @@ a:hover {
     flex-direction: column;
 }
 
-/* Header */
 .sidebar-header {
     padding: 40px 30px 20px;
     display: flex;
@@ -267,25 +179,6 @@ a:hover {
     border-radius: 50%;
 }
 
-.header-text {
-    display: flex;
-    flex-direction: column;
-}
-
-.agent-name {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: var(--text);
-}
-
-.agent-status {
-    font-size: 0.7rem;
-    opacity: 0.6;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
 .pulse {
     width: 6px;
     height: 6px;
@@ -295,7 +188,9 @@ a:hover {
 }
 
 @keyframes statusPulse {
-    0% {
+
+    0%,
+    100% {
         transform: scale(1);
         box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.7);
     }
@@ -303,11 +198,6 @@ a:hover {
     70% {
         transform: scale(1.1);
         box-shadow: 0 0 0 6px rgba(52, 199, 89, 0);
-    }
-
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(52, 199, 89, 0);
     }
 }
 
@@ -318,17 +208,10 @@ a:hover {
     height: 40px;
     border-radius: 50%;
     cursor: pointer;
-    color: var(--text);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
-}
-
-@media (prefers-color-scheme: dark) {
-    .close-trigger {
-        background: rgba(255, 255, 255, 0.05);
-    }
+    transition: 0.2s;
 }
 
 .close-trigger:hover {
@@ -337,7 +220,6 @@ a:hover {
     transform: rotate(90deg);
 }
 
-/* Chat Viewport */
 .chat-viewport {
     flex: 1;
     overflow-y: auto;
@@ -360,7 +242,6 @@ a:hover {
     align-self: flex-end;
     background: var(--accent);
     color: white;
-    box-shadow: 0 10px 20px rgba(0, 122, 255, 0.2);
     border-bottom-right-radius: 4px;
 }
 
@@ -374,29 +255,10 @@ a:hover {
 @media (prefers-color-scheme: dark) {
     .ai-msg {
         background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.06);
     }
 }
 
-/* Msg Decorators & Metrics */
-.msg-metrics {
-    margin-top: 12px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    opacity: 0.5;
-    display: flex;
-    gap: 12px;
-}
-
-@media (prefers-color-scheme: dark) {
-    .msg-metrics {
-        border-top-color: rgba(255, 255, 255, 0.05);
-    }
-}
-
-/* Thinking Detail */
 .thinking-box {
     background: rgba(99, 102, 241, 0.05);
     border-left: 2px solid #6366f1;
@@ -410,18 +272,16 @@ a:hover {
     font-size: 0.75rem;
     font-weight: 600;
     color: #6366f1;
-    outline: none;
 }
 
 .thinking-content {
     margin-top: 8px;
     font-size: 0.8rem;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: monospace;
     opacity: 0.8;
     white-space: pre-wrap;
 }
 
-/* Footer & Input */
 .sidebar-footer {
     padding: 30px;
 }
@@ -431,7 +291,7 @@ a:hover {
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 28px;
     padding: 15px 20px;
-    transition: all 0.3s;
+    transition: 0.3s;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -455,44 +315,10 @@ a:hover {
     resize: none;
     min-height: 24px;
     max-height: 200px;
-    font-family: inherit;
     font-size: 1rem;
     margin-bottom: 12px;
 }
 
-.footer-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.model-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.model-tag {
-    font-size: 0.65rem;
-    font-family: monospace;
-    opacity: 0.5;
-}
-
-.stats-mini {
-    font-size: 0.7rem;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--accent);
-    font-weight: 600;
-}
-
-.keyboard-hint {
-    font-size: 0.7rem;
-    opacity: 0.6;
-    font-family: 'Inter', sans-serif;
-    color: var(--text);
-}
-
-/* Unified Send/Stop Button */
 #ai-send-btn {
     background: var(--accent);
     color: white;
@@ -500,38 +326,28 @@ a:hover {
     width: 44px;
     height: 44px;
     border-radius: 18px;
-    /* Squircle */
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition: 0.2s;
 }
 
 #ai-send-btn:hover {
     transform: scale(1.05) translateY(-2px);
-    box-shadow: 0 8px 15px rgba(0, 122, 255, 0.3);
 }
 
 #ai-send-btn.stop-mode {
     background: #ff3b30;
-    /* Red for stop */
-    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
 }
 
-#ai-send-btn.stop-mode:hover {
-    background: #d70015;
-}
-
-/* User Message Actions */
 .msg-actions {
     display: flex;
     justify-content: flex-end;
-    /* Right aligned */
     gap: 8px;
     margin-top: 6px;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: 0.2s;
 }
 
 .user-wrapper {
@@ -542,74 +358,47 @@ a:hover {
     align-self: flex-end;
 }
 
-/* Ensure actions are visible on hover */
 .user-wrapper:hover .msg-actions,
 .ai-msg:hover .msg-actions {
     opacity: 1;
 }
 
 .action-btn {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.05);
     border: none;
-    color: rgba(255, 255, 255, 0.9);
     cursor: pointer;
     padding: 4px 8px;
     border-radius: 6px;
     font-size: 0.65rem;
-    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 4px;
-    transition: all 0.2s;
+    transition: 0.2s;
 }
 
-.ai-msg .action-btn {
-    background: rgba(0, 0, 0, 0.05);
-    /* Softer for light mode bubble */
-    color: var(--text);
-    opacity: 0.6;
-}
-
-.action-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+.user-msg .action-btn {
+    background: rgba(255, 255, 255, 0.15);
     color: white;
 }
 
-.ai-msg .action-btn:hover {
+.action-btn:hover {
     background: rgba(0, 0, 0, 0.1);
     color: var(--primary);
 }
 
-/* --- Sidebar Layout Integration --- */
-body {
-    transition: padding-right 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    overflow-x: hidden;
+.msg-metrics {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    font-family: monospace;
+    font-size: 0.65rem;
+    opacity: 0.5;
+    display: flex;
+    gap: 12px;
 }
 
-body.ai-active {
-    padding-right: 30%;
-}
-
-/* Adjust navbar when sidebar is active */
-body.ai-active .navbar {
-    transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    width: 70%;
-}
-
-/* Main content transition */
-body.ai-active main.container {
-    transition: margin-right 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* Footer adjustments */
-body.ai-active footer.container {
-    transition: padding-right 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    padding-right: 30%;
-}
-
-/* Generating placeholder animation */
 .generating-placeholder {
-    animation: pulse 1.5s ease-in-out infinite;
+    animation: pulse 1.5s infinite;
 }
 
 @keyframes pulse {
@@ -624,7 +413,6 @@ body.ai-active footer.container {
     }
 }
 
-/* Responsive adjustments for smaller screens */
 @media (max-width: 1200px) {
     #ai-sidebar {
         width: 40%;
@@ -632,10 +420,6 @@ body.ai-active footer.container {
 
     body.ai-active {
         padding-right: 40%;
-    }
-
-    body.ai-active .navbar {
-        width: 60%;
     }
 }
 
@@ -646,9 +430,5 @@ body.ai-active footer.container {
 
     body.ai-active {
         padding-right: 0;
-    }
-
-    body.ai-active .navbar {
-        width: 100%;
     }
 }

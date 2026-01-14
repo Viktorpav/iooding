@@ -32,6 +32,24 @@ def get_async_redis_client():
         _async_redis_client = async_redis.from_url(redis_url, decode_responses=False)
     return _async_redis_client
 
+def get_schema():
+    """Shared schema definition for Redis vector index."""
+    return (
+        TextField("$.title", as_name="title"),
+        TextField("$.content", as_name="content"),
+        NumericField("$.post_id", as_name="post_id"),
+        VectorField(
+            "$.embedding",
+            "FLAT",
+            {
+                "TYPE": "FLOAT32",
+                "DIM": VECTOR_DIM,
+                "DISTANCE_METRIC": "COSINE",
+            },
+            as_name="embedding"
+        )
+    )
+
 def ensure_index_exists():
     """Create the vector index if it doesn't exist (Sync version)."""
     client = get_redis_client()
@@ -40,23 +58,8 @@ def ensure_index_exists():
         return True
     except redis.ResponseError:
         try:
-            schema = (
-                TextField("$.title", as_name="title"),
-                TextField("$.content", as_name="content"),
-                NumericField("$.post_id", as_name="post_id"),
-                VectorField(
-                    "$.embedding",
-                    "FLAT",
-                    {
-                        "TYPE": "FLOAT32",
-                        "DIM": VECTOR_DIM,
-                        "DISTANCE_METRIC": "COSINE",
-                    },
-                    as_name="embedding"
-                )
-            )
             definition = IndexDefinition(prefix=[DOC_PREFIX], index_type=IndexType.JSON)
-            client.ft(INDEX_NAME).create_index(schema, definition=definition)
+            client.ft(INDEX_NAME).create_index(get_schema(), definition=definition)
             return True
         except Exception as e:
             print(f"Failed to create Redis index: {e}")
@@ -70,23 +73,8 @@ async def ensure_index_exists_async():
         return True
     except redis.ResponseError:
         try:
-            schema = (
-                TextField("$.title", as_name="title"),
-                TextField("$.content", as_name="content"),
-                NumericField("$.post_id", as_name="post_id"),
-                VectorField(
-                    "$.embedding",
-                    "FLAT",
-                    {
-                        "TYPE": "FLOAT32",
-                        "DIM": VECTOR_DIM,
-                        "DISTANCE_METRIC": "COSINE",
-                    },
-                    as_name="embedding"
-                )
-            )
             definition = IndexDefinition(prefix=[DOC_PREFIX], index_type=IndexType.JSON)
-            await client.ft(INDEX_NAME).create_index(schema, definition=definition)
+            await client.ft(INDEX_NAME).create_index(get_schema(), definition=definition)
             return True
         except Exception:
             return False

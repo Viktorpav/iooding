@@ -1,6 +1,3 @@
-########################################
-# Persistent Volume Claim (Media)
-########################################
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -10,17 +7,13 @@ metadata:
     app: iooding-blog
     recurring-job-group.longhorn.io/backup: enabled
 spec:
-  accessModes:
-    - ReadWriteOnce
+  accessModes: ["ReadWriteOnce"]
   storageClassName: longhorn-storage
   resources:
     requests:
       storage: 1Gi
 
 ---
-########################################
-# One-time Migration Job (ArgoCD Hook)
-########################################
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -29,170 +22,72 @@ metadata:
   annotations:
     argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
-    argocd.argoproj.io/sync-wave: "0"
 spec:
-  backoffLimit: 3
   template:
     spec:
-      nodeSelector:
-        node-role.kubernetes.io/storage: "true"
+      nodeSelector: { "node-role.kubernetes.io/storage": "true" }
       restartPolicy: OnFailure
       containers:
         - name: migrate
           image: viktor2003/iooding:v41
-          imagePullPolicy: IfNotPresent
-          command:
-            - sh
-            - -c
-            - |
-              /app/docker-entrypoint.sh migrate
-              /app/docker-entrypoint.sh static
+          command: ["sh", "-c", "/app/docker-entrypoint.sh migrate && python manage.py index_posts && /app/docker-entrypoint.sh static"]
           env:
             - name: DJANGO_SUPERUSER_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: iooding-admin-secret
-                  key: username
+              valueFrom: { secretKeyRef: { name: iooding-admin-secret, key: username } }
             - name: DJANGO_SUPERUSER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: iooding-admin-secret
-                  key: password
+              valueFrom: { secretKeyRef: { name: iooding-admin-secret, key: password } }
             - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-secret
-                  key: password
+              valueFrom: { secretKeyRef: { name: postgres-secret, key: password } }
             - name: DB_HOST
               value: postgres
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: aws-credentials
-                  key: access_key_id
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: aws-credentials
-                  key: secret_access_key
-            - name: AWS_DEFAULT_REGION
-              value: eu-central-1
             - name: DJANGO_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-secret
-                  key: django_secret_key
-
+              valueFrom: { secretKeyRef: { name: postgres-secret, key: django_secret_key } }
           resources:
-            requests:
-              cpu: 50m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
+            requests: { cpu: 50m, memory: 256Mi }
+            limits: { cpu: 500m, memory: 512Mi }
 
 ---
-########################################
-# Service
-########################################
 apiVersion: v1
 kind: Service
 metadata:
   name: iooding-service
   namespace: iooding
 spec:
-  selector:
-    app: iooding-blog
-  ports:
-    - port: 80
-      targetPort: 8000
+  selector: { app: iooding-blog }
+  ports: [{ port: 80, targetPort: 8000 }]
 
 ---
-########################################
-# Deployment (NO migrations inside)
-########################################
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: iooding-blog
   namespace: iooding
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 spec:
-  replicas: 1 # Only 1 replica needed for RWO
-  strategy:
-    type: Recreate # Changed from RollingUpdate (RWO can't do rolling)
+  replicas: 1
+  strategy: { type: Recreate }
   selector:
-    matchLabels:
-      app: iooding-blog
+    matchLabels: { app: iooding-blog }
   template:
     metadata:
-      labels:
-        app: iooding-blog
+      labels: { app: iooding-blog }
     spec:
-      nodeSelector:
-        node-role.kubernetes.io/storage: "true"
+      nodeSelector: { "node-role.kubernetes.io/storage": "true" }
       terminationGracePeriodSeconds: 10
-
-      ########################################
-      # Fast failover tolerations
-      ########################################
       tolerations:
-        - key: "node.kubernetes.io/not-ready"
-          operator: "Exists"
-          effect: "NoExecute"
-          tolerationSeconds: 10
-
-        - key: "node.kubernetes.io/unreachable"
-          operator: "Exists"
-          effect: "NoExecute"
-          tolerationSeconds: 10
-
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 100
-        fsGroup: 100
-
-      ########################################
-      # Init: wait for database
-      ########################################
+        - { key: "node.kubernetes.io/not-ready", operator: "Exists", effect: "NoExecute", tolerationSeconds: 10 }
+        - { key: "node.kubernetes.io/unreachable", operator: "Exists", effect: "NoExecute", tolerationSeconds: 10 }
+      securityContext: { runAsNonRoot: true, runAsUser: 100, fsGroup: 100 }
       initContainers:
         - name: wait-for-db
           image: alpine:latest
-          command:
-            - sh
-            - -c
-            - |
-              until nc -z postgres 5432; do
-                echo "waiting for database"
-                sleep 1
-              done
-              echo "PostgreSQL ready!"
-
-      ########################################
-      # Application container
-      ########################################
+          command: ["sh", "-c", "until nc -z postgres 5432; do sleep 1; done"]
       containers:
         - name: iooding
           image: viktor2003/iooding:v41
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8000
-
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
-
+          ports: [{ containerPort: 8000 }]
           env:
             - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-secret
-                  key: password
+              valueFrom: { secretKeyRef: { name: postgres-secret, key: password } }
             - name: DB_HOST
               value: postgres
             - name: REDIS_URL
@@ -201,72 +96,25 @@ spec:
               value: "*"
             - name: DEBUG
               value: "True"
-            - name: HTTPS_ENABLED
-              value: "False"
             - name: CSRF_TRUSTED_ORIGINS
               value: "https://iooding.local"
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: aws-credentials
-                  key: access_key_id
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: aws-credentials
-                  key: secret_access_key
-            - name: AWS_DEFAULT_REGION
-              value: eu-central-1
             - name: DJANGO_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-secret
-                  key: django_secret_key
-
-
+              valueFrom: { secretKeyRef: { name: postgres-secret, key: django_secret_key } }
           volumeMounts:
-            - name: media-storage
-              mountPath: /app/media
-            - name: tmp-volume
-              mountPath: /tmp
-
-          # Health checks
+            - { name: media-storage, mountPath: /app/media }
+            - { name: tmp-volume, mountPath: /tmp }
           startupProbe:
-            httpGet:
-              path: /health/
-              port: 8000
-            failureThreshold: 60
-            periodSeconds: 3
-
+            httpGet: { path: /health/, port: 8000 }
+            failureThreshold: 30
+            periodSeconds: 5
           livenessProbe:
-            httpGet:
-              path: /health/
-              port: 8000
-            periodSeconds: 5
-            timeoutSeconds: 5
-            failureThreshold: 3
-
+            httpGet: { path: /health/, port: 8000 }
+            periodSeconds: 10
           readinessProbe:
-            httpGet:
-              path: /health/
-              port: 8000
+            httpGet: { path: /health/, port: 8000 }
             periodSeconds: 5
-            timeoutSeconds: 2
-            failureThreshold: 2
-
-          lifecycle:
-            preStop:
-              exec:
-                command: ["/bin/sh", "-c", "sleep 5"] # Give Ingress time to remove pod from target group
-
-      ########################################
-      # Volumes
-      ########################################
       volumes:
         - name: media-storage
-          persistentVolumeClaim:
-            claimName: media-pvc
+          persistentVolumeClaim: { claimName: media-pvc }
         - name: tmp-volume
-          emptyDir:
-            medium: Memory
-            sizeLimit: 128Mi
+          emptyDir: { medium: Memory, sizeLimit: 128Mi }

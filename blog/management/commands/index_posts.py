@@ -15,55 +15,37 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        self.stdout.write("Starting Redis vector indexing...")
+        self.stdout.write("Building RAG Knowledge Base...")
         ensure_index_exists()
-        
         client = get_ollama_client()
-        indexed = 0
-        failed = 0
+        indexed, failed = 0, 0
         
         for post in Post.published.all():
             try:
-                # Clean HTML from body
-                clean_text = re.sub('<[^<]+?>', '', post.body)
+                text = re.sub('<[^<]+?>', '', post.body).strip()
+                if not text: continue
                 
-                # Chunk the content (first 3000 chars for now)
-                # TODO: Implement proper text splitting for longer posts
-                content_chunk = clean_text[:3000].strip()
+                # 1. Clean up old chunks for this post
+                delete_post_chunks(post.id)
                 
-                if not content_chunk:
-                    self.stdout.write(self.style.WARNING(f"Skipping empty post: {post.title}"))
-                    continue
+                # 2. Split into overlapping chunks (~1000 chars with 200 char overlap)
+                chunk_size, overlap = 1000, 200
+                chunks = [text[i:i + chunk_size] for i in range(0, len(text), chunk_size - overlap)]
                 
-                # Generate embedding
-                embedding = client.embeddings(
-                    model='nomic-embed-text', 
-                    prompt=content_chunk
-                )['embedding']
-                
-                # Delete existing chunks for this post
-                deleted = delete_post_chunks(post.id)
-                if deleted:
-                    self.stdout.write(f"  Removed {deleted} old chunks for post {post.id}")
-                
-                # Index in Redis
-                doc_id = index_chunk(
-                    post_id=post.id,
-                    title=post.title,
-                    content=content_chunk,
-                    embedding=embedding
-                )
+                for i, content in enumerate(chunks):
+                    if len(content) < 50: continue # Skip tiny fragments
+                    emb = client.embeddings(model='nomic-embed-text', prompt=content)['embedding']
+                    index_chunk(
+                        post_id=post.id, 
+                        title=f"{post.title} (Part {i+1})", 
+                        content=content, 
+                        embedding=emb
+                    )
                 
                 indexed += 1
-                self.stdout.write(self.style.SUCCESS(f"✓ Indexed: {post.title}"))
-                
+                self.stdout.write(self.style.SUCCESS(f"✓ {post.title} ({len(chunks)} chunks)"))
             except Exception as e:
                 failed += 1
-                self.stdout.write(self.style.ERROR(f"✗ Failed to index {post.title}: {e}"))
+                self.stdout.write(self.style.ERROR(f"✗ {post.title}: {e}"))
         
-        # Summary
-        total = get_chunk_count()
-        self.stdout.write(self.style.SUCCESS(
-            f"\nIndexing complete: {indexed} posts indexed, {failed} failed. "
-            f"Total chunks in Redis: {total}"
-        ))
+        self.stdout.write(self.style.SUCCESS(f"\nDone. Knowledge base updated: {indexed} posts processed."))

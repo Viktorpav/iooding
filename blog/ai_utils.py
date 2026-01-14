@@ -47,39 +47,41 @@ def should_skip_rag(user_msg: str) -> bool:
     return False
 
 async def generate_rag_context(user_msg: str, client) -> str:
-    """
-    Generates context string for RAG using Redis vector search.
-    Returns empty string if skip, failure, or no relevant match.
-    Fully async to avoid blocking the event loop.
-    """
+    """Retrieves and formats context from Redis for the LLM."""
     if should_skip_rag(user_msg):
         return ""
     
     try:
-        # Check async cache first for the embedding
-        embedding = await get_cached_embedding_async(user_msg)
-        
-        if not embedding:
-            # Generate embedding via Ollama (already async client passed in)
+        # 1. Semantic Embedding
+        emb = await get_cached_embedding_async(user_msg)
+        if not emb:
             resp = await client.embeddings(model='nomic-embed-text', prompt=user_msg)
-            embedding = resp['embedding']
-            # Cache for future use (async)
-            await cache_embedding_async(user_msg, embedding, timeout=3600)
+            emb = resp['embedding']
+            await cache_embedding_async(user_msg, emb)
         
-        # Search Redis for similar chunks (async)
-        chunks = await search_similar_async(embedding, top_k=2, max_distance=0.5)
-        
+        # 2. Vector Search (Top 4 chunks for broader context)
+        chunks = await search_similar_async(emb, top_k=4)
         if not chunks:
             return ""
         
-        # Build context from relevant chunks
-        context_parts = []
-        for chunk in chunks:
-            if chunk.get('content'):
-                context_parts.append(f"From '{chunk['title']}':\n{chunk['content']}")
+        # 3. Instruction-based context formatting
+        context = "RELATIIVE CONTEXT FROM INTERNAL DOCUMENTS:\n"
+        for c in chunks:
+            if c.get('content'):
+                context += f"\n-- SOURCE: {c['title']} --\n{c['content']}\n"
         
-        return "\n\n---\n\n".join(context_parts)
-        
+        return context
     except Exception as e:
-        print(f"RAG Error (non-blocking): {e}")
+        print(f"RAG Retrieval Error: {e}")
         return ""
+
+def get_rag_system_prompt(context: str) -> str:
+    """Returns a strict system prompt for RAG-based generation."""
+    return (
+        "You are 'Ding AI', an expert assistant for this blog. "
+        "Use the PROVIDED CONTEXT below to answer the user accurately. "
+        "If the answer isn't in the context, say you don't know based on internal docs, "
+        "but then use your general knowledge to provide a helpful guess. "
+        "ALWAYS cite the source title if you use the context.\n\n"
+        f"{context}"
+    )
