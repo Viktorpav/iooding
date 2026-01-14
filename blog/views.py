@@ -146,7 +146,7 @@ async def chat_api(request):
                 else:
                     messages.insert(0, {
                         'role': 'system', 
-                        'content': "You are 'Antigravity AI'. No specific internal documents found. Answer generally."
+                        'content': "You are 'Ding AI'. No specific internal documents found. Answer generally."
                     })
                     yield f"data: {json.dumps({'thinking': 'No specific docs found. Using general knowledge...'})}\n\n"
 

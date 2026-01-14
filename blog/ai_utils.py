@@ -41,42 +41,68 @@ def should_skip_rag(user_msg: str) -> bool:
     
     return False
 
+async def get_site_metadata() -> str:
+    """Fetches a summary of all posts and tags from the database (Async safe)."""
+    from asgiref.sync import sync_to_async
+    from blog.models import Post
+    from django.db.models import Count
+    from taggit.models import Tag
+    
+    @sync_to_async
+    def _fetch():
+        posts = Post.published.all().values_list('title', flat=True)
+        tags = Tag.objects.all().values_list('name', flat=True)
+        return list(posts), list(tags)
+
+    try:
+        posts, tags = await _fetch()
+        meta = "BLOG OVERVIEW (Knowledge Base Status):\n"
+        meta += f"- Total Posts: {len(posts)}\n"
+        meta += f"- Active Tags: {', '.join(tags) if tags else 'None'}\n"
+        meta += "- Post Titles: " + (", ".join(posts) if posts else "No posts yet")
+        return meta
+    except Exception as e:
+        return f"Error fetching site metadata: {e}"
+
 async def generate_rag_context(user_msg: str, client) -> str:
-    """Retrieves and formats context from Redis for the LLM."""
+    """Retrieves context from Redis and adds site-wide metadata."""
     if should_skip_rag(user_msg):
         return ""
     
     try:
-        # 1. Semantic Embedding
+        # 1. Site-wide Metadata (Always give the AI a 'Map' of the site)
+        site_meta = await get_site_metadata()
+        
+        # 2. Semantic Search for specific details
         emb = await get_cached_embedding_async(user_msg)
         if not emb:
             resp = await client.embeddings(model='nomic-embed-text', prompt=user_msg)
             emb = resp['embedding']
             await cache_embedding_async(user_msg, emb)
         
-        # 2. Vector Search (Top 4 chunks for broader context)
         chunks = await search_similar_async(emb, top_k=4)
-        if not chunks:
-            return ""
         
-        # 3. Instruction-based context formatting
-        context = "RELATIIVE CONTEXT FROM INTERNAL DOCUMENTS:\n"
-        for c in chunks:
-            if c.get('content'):
-                context += f"\n-- SOURCE: {c['title']} --\n{c['content']}\n"
+        # 3. Combine Metadata + Semantic Chunks
+        context = f"{site_meta}\n\nDETAILED CONTEXT FROM POSTS:\n"
+        if chunks:
+            for c in chunks:
+                if c.get('content'):
+                    context += f"\n-- SOURCE: {c['title']} --\n{c['content']}\n"
+        else:
+            context += "No specific content matches found in vector search."
         
         return context
     except Exception as e:
-        print(f"RAG Retrieval Error: {e}")
+        print(f"RAG Error: {e}")
         return ""
 
 def get_rag_system_prompt(context: str) -> str:
     """Returns a strict system prompt for RAG-based generation."""
     return (
-        "You are 'Ding AI', an expert assistant for this blog. "
-        "Use the PROVIDED CONTEXT below to answer the user accurately. "
-        "If the answer isn't in the context, say you don't know based on internal docs, "
-        "but then use your general knowledge to provide a helpful guess. "
-        "ALWAYS cite the source title if you use the context.\n\n"
+        "You are 'Ding AI', the official expert for this technical blog. "
+        "You have DIRECT ACCESS to the blog's content via the PROVIDED CONTEXT below. "
+        "NEVER say you cannot see the posts or the website. "
+        "Use the 'BLOG OVERVIEW' for general questions and 'DETAILED CONTEXT' for specific ones. "
+        "If unsure, refer to the post titles listed in the context.\n\n"
         f"{context}"
     )
