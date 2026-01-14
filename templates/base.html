@@ -23,16 +23,21 @@
 </head>
 
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light">
+  <div id="scroll-progress"></div>
+
+  <nav class="navbar navbar-expand-lg">
     <div class="container">
-      <a class="navbar-brand fw-bold" href="{% url 'blog:post_list' %}">Ding</a>
+      <a class="navbar-brand" href="{% url 'blog:post_list' %}">Ding</a>
+
       <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
-        data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-        aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
+        data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
       </button>
+
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
           <li class="nav-item">
             <a class="nav-link {% if '/tag/linux/' in request.path %}active{% endif %}"
               href="{% url 'blog:post_tag' tag_slug='linux' %}">Linux</a>
@@ -42,54 +47,95 @@
               href="{% url 'blog:post_tag' tag_slug='tips' %}">Tips</a>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
-              aria-expanded="false">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
               Tutorial
             </a>
-            <ul class="dropdown-menu border-0 shadow-sm" aria-labelledby="navbarDropdown">
-              <li>
-                <a class="dropdown-item {% if '/tag/python/' in request.path %}active{% endif %}"
-                  href="{% url 'blog:post_tag' tag_slug='python' %}">Python</a>
-              </li>
-              <li>
-                <a class="dropdown-item {% if '/tag/django/' in request.path %}active{% endif %}"
-                  href="{% url 'blog:post_tag' tag_slug='django' %}">Django</a>
-              </li>
+            <ul class="dropdown-menu border-0 shadow-lg" aria-labelledby="navbarDropdown">
+              <li><a class="dropdown-item" href="{% url 'blog:post_tag' tag_slug='python' %}">Python</a></li>
+              <li><a class="dropdown-item" href="{% url 'blog:post_tag' tag_slug='django' %}">Django</a></li>
             </ul>
           </li>
         </ul>
-        <form class="d-flex" action="{% url 'blog:post_list' %}" method="get">
-          <input class="form-control me-2 border-0 bg-light" type="search" value="{{ request.GET.q }}" name="q"
-            placeholder="Search" aria-label="Search">
-          <button class="btn btn-outline-primary" type="submit">Search</button>
-        </form>
+
+        <div class="d-flex align-items-center">
+          <form class="search-input-wrap me-3" action="{% url 'blog:post_list' %}" method="get">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              style="opacity:0.4">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input id="nav-search-field" type="search" value="{{ request.GET.q }}" name="q"
+              placeholder="Search insights...">
+          </form>
+        </div>
       </div>
     </div>
   </nav>
 
   {% include 'includes/chat_widget.html' %}
 
-
   <main class="container my-5">
     {% if request.GET.q %}
-    <h2 class="mb-4">
-      Search Results for "{{ request.GET.q }}"
-    </h2>
+    <h1 class="h3 mb-5 fw-bold">Results for "{{ request.GET.q }}"</h1>
     {% endif %}
-    {% block content %}
-    {% endblock content %}
+    {% block content %}{% endblock %}
   </main>
 
-  <footer class="container">
-    <p>&copy; {% now "Y" %} Ding. All rights reserved.</p>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span class="brand-text">Ding</span>
+          <p>The high-performance technical blog and AI assistant ecosystem. Built for developers, by developers.</p>
+        </div>
+
+        <div class="footer-section">
+          <h4>Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="{% url 'blog:post_list' %}">Home</a></li>
+            <li><a href="{% url 'blog:post_tag' tag_slug='python' %}">Python Docs</a></li>
+            <li><a href="{% url 'blog:post_tag' tag_slug='django' %}">Django Mastery</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4>Tags</h4>
+          <ul class="footer-links">
+            <li><a href="{% url 'blog:post_tag' tag_slug='linux' %}">Linux</a></li>
+            <li><a href="{% url 'blog:post_tag' tag_slug='tips' %}">Tips</a></li>
+            <li><a href="{% url 'blog:post_list' %}">All Posts</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4>Tech Stack</h4>
+          <div class="stack-tags">
+            <span class="tech-tag">Django 5.0</span>
+            <span class="tech-tag">Redis Stack</span>
+            <span class="tech-tag">Ollama</span>
+            <span class="tech-tag">Kubernetes</span>
+            <span class="tech-tag">Python 3.12</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>&copy; {% now "Y" %} Ding. All systems operational.</span>
+        <span>Premium AI-Driven Infrastructure</span>
+      </div>
+    </div>
   </footer>
 
-  <!-- Bootstrap Bundle with Popper -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-    crossorigin="anonymous"></script>
-  <!-- javascript -->
-  <script src="{% static 'js/main.js' %}?v=3.0.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/main.js' %}?v=4.0.0"></script>
+  <script>
+    window.onscroll = function () {
+      let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      let scrolled = (winScroll / height) * 100;
+      document.getElementById("scroll-progress").style.width = scrolled + "%";
+    };
+  </script>
 </body>
 
 </html>

@@ -35,13 +35,20 @@ function resizeInput(el) { el.style.height = 'auto'; el.style.height = el.scroll
 
 function toggleChat() {
     const sidebar = document.getElementById('ai-sidebar');
+    const isActivating = !sidebar.classList.contains('active');
     sidebar.classList.toggle('active');
     document.body.classList.toggle('ai-active');
-    document.getElementById('ai-edge-trigger').classList.toggle('hidden', sidebar.classList.contains('active'));
-    if (sidebar.classList.contains('active')) {
+    document.getElementById('ai-edge-trigger').classList.toggle('hidden', !isActivating);
+    if (isActivating) {
         scrollToBottom(true);
         document.getElementById('ai-user-input').focus();
     }
+}
+
+function sendQuickAction(query) {
+    const input = document.getElementById('ai-user-input');
+    input.value = query;
+    handleSendClick();
 }
 
 function scrollToBottom(force = false) {
