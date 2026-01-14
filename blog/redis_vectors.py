@@ -94,6 +94,30 @@ def index_chunk(post_id: int, title: str, content: str, embedding: list) -> str:
     client.json().set(doc_id, "$", doc)
     return doc_id
 
+async def text_search_async(keyword: str, top_k: int = 5) -> list:
+    """Search for blocks containing exact keywords using Redis FTS (Async)."""
+    client = get_async_redis_client()
+    await ensure_index_exists_async()
+    
+    # Escape special characters for Redis search
+    clean_keyword = keyword.replace('"', '').replace("'", "")
+    q = Query(f"@content:({clean_keyword})").return_fields("title", "content", "post_id").limit(0, top_k)
+    
+    try:
+        results = await client.ft(INDEX_NAME).search(q)
+        return [
+            {
+                "post_id": int(doc.post_id) if hasattr(doc, 'post_id') else 0,
+                "title": doc.title if hasattr(doc, 'title') else "",
+                "content": doc.content if hasattr(doc, 'content') else "",
+                "distance": 0.0 # Match found via text
+            }
+            for doc in results.docs
+        ]
+    except Exception as e:
+        print(f"Text search error: {e}")
+        return []
+
 async def search_similar_async(query_embedding: list, top_k: int = 5, max_distance: float = 0.7) -> list:
     """Search for similar chunks using vector similarity (Async)."""
     import numpy as np

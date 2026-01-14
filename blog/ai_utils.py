@@ -41,77 +41,94 @@ def should_skip_rag(user_msg: str) -> bool:
     
     return False
 
+async def get_full_site_content() -> str:
+    """Fetches full content of all published posts (Only for small blogs)."""
+    from asgiref.sync import sync_to_async
+    from blog.models import Post
+    import re
+    
+    @sync_to_async
+    def _fetch():
+        posts = Post.published.all()
+        return [
+            f"POST: {p.title}\nURL: /blog/{p.slug}/\nCONTENT: {re.sub('<[^<]+?>', '', p.body)[:2000]}"
+            for p in posts
+        ]
+    
+    try:
+        contents = await _fetch()
+        return "\n\n---\n\n".join(contents)
+    except: return ""
+
 async def get_site_metadata() -> str:
     """Fetches a summary of all posts and tags from the database (Async safe)."""
     from asgiref.sync import sync_to_async
     from blog.models import Post
-    from django.db.models import Count
     from taggit.models import Tag
     
     @sync_to_async
     def _fetch():
-        posts = Post.published.all().values_list('title', flat=True)
+        posts = list(Post.published.all())
         tags = Tag.objects.all().values_list('name', flat=True)
-        return list(posts), list(tags)
+        return posts, list(tags)
 
     try:
         posts, tags = await _fetch()
         meta = "--- INSTANCE IDENTITY & STATUS ---\n"
-        meta += "Name: Ding AI (Integrated Assistant)\n"
-        meta += "Host: Ding Technical Blog (iooding.local)\n"
-        meta += "Architecture: Django + Redis Stack (Vector DB) + Kubernetes + Ollama\n"
-        meta += "System Access: READ-ONLY (Database + Vector Search)\n\n"
-        meta += "--- KNOWLEDGE BASE SUMMARY ---\n"
-        meta += f"- Total Published Posts: {len(posts)}\n"
-        meta += f"- Active Categories/Tags: {', '.join(tags) if tags else 'None'}\n"
-        meta += "- Current Post Titles: " + (", ".join(posts) if posts else "Indexing in progress...")
-        return meta
+        meta += "Name: Ding AI (Global Integrated Assistant)\n"
+        meta += "System Access: DIRECT READ (Post Database + Search Index)\n\n"
+        meta += "--- SITUATION AWARENESS ---\n"
+        meta += f"- Total Active Posts: {len(posts)}\n"
+        meta += f"- Active Tags: {', '.join(tags) if tags else 'None'}\n"
+        meta += "- All Available Titles: " + (", ".join([p.title for p in posts]) if posts else "None")
+        return len(posts), meta
     except Exception as e:
-        return f"Error fetching site metadata: {e}"
+        return 0, f"Error: {e}"
 
 async def generate_rag_context(user_msg: str, client) -> str:
-    """Retrieves context from Redis and adds site-wide metadata."""
-    if should_skip_rag(user_msg):
-        return ""
+    """Retrieves context using a Hybrid Strategy (Full-site for small, Semantic+Text for large)."""
+    from blog.redis_vectors import text_search_async, search_similar_async
     
     try:
-        # 1. Site-wide Identity & Metadata
-        site_meta = await get_site_metadata()
+        # 1. Site Status Check
+        post_count, site_meta = await get_site_metadata()
         
-        # 2. Semantic Search for specific details
-        emb = await get_cached_embedding_async(user_msg)
-        if not emb:
-            resp = await client.embeddings(model='nomic-embed-text', prompt=user_msg)
-            emb = resp['embedding']
-            await cache_embedding_async(user_msg, emb)
+        # 2. POWERFUL MODE: If blog is small, just feed the AI EVERYTHING.
+        if 0 < post_count <= 10:
+            full_content = await get_full_site_content()
+            return f"{site_meta}\n\n--- FULL SITE KNOWLEDGE (GOD MODE) ---\n{full_content}"
         
-        chunks = await search_similar_async(emb, top_k=5)
+        # 3. HYBRID MODE (For larger blogs): Keywords + Semantic
+        # A. Keyword Search (Exact matches)
+        text_matches = await text_search_async(user_msg, top_k=3)
         
-        # 3. Combine Metadata + Semantic Chunks
-        context = f"{site_meta}\n\n--- DETAILED CONTENT FROM BLOG POSTS ---\n"
-        if chunks:
-            for c in chunks:
-                if c.get('content'):
-                    context += f"\nSOURCE: {c['title']}\nCONTENT: {c['content']}\n"
-        else:
-            context += "No specific matching text found for this query."
+        # B. Semantic Search (Conceptual matches)
+        emb_resp = await client.embeddings(model='nomic-embed-text', prompt=user_msg)
+        vector_matches = await search_similar_async(emb_resp['embedding'], top_k=5)
+        
+        # Combine
+        seen = set()
+        context = f"{site_meta}\n\n--- RELEVANT CONTENT SEGMENTS ---\n"
+        for m in (text_matches + vector_matches):
+            text_id = f"{m['post_id']}:{m['content'][:50]}"
+            if text_id not in seen:
+                context += f"\n- FROM: {m['title']}\n- TEXT: {m['content']}\n"
+                seen.add(text_id)
         
         return context
     except Exception as e:
-        print(f"RAG Error: {e}")
-        return ""
+        return f"RAG Error: {e}"
 
 def get_rag_system_prompt(context: str) -> str:
     """Returns a high-authority system prompt for Ding AI."""
     return (
-        "ROLE: You are 'Ding AI', the integrated intelligence of this website. "
-        "IDENTITY: You are NOT a generic large language model; you are a custom-built assistant "
-        "running on this blog's local infrastructure (Kubernetes + Ollama). "
-        "CAPABILITY: You have direct read-access to the blog's database and knowledge base. "
-        "INSTRUCTION: Never claim you cannot see the posts or the website. You are LITERALLY INSIDE it. "
-        "Use the 'INSTANCE IDENTITY' section to answer questions about yourself and the "
-        "'KNOWLEDGE BASE SUMMARY' to list posts/tags. Be professional and technically precise.\n\n"
-        "--- PROVIDED CONTEXT START ---\n"
+        "ROLE: You are 'Ding AI', the omniscient assistant for this website. "
+        "KNOWLEDGE: You have provided context that represents the CURRENT contents of the database. "
+        "IMPORTANT: The 'FULL SITE KNOWLEDGE' section (if present) contains everything. "
+        "Never say 'I cannot see the posts' or 'search is limited'. You are looking directly at the data. "
+        "If a specific phrase is requested, check the provided text carefully. "
+        "User questions about site content MUST be answered using the context provided below.\n\n"
+        "--- START KNOWLEDGE CONTEXT ---\n"
         f"{context}\n"
-        "--- PROVIDED CONTEXT END ---"
+        "--- END KNOWLEDGE CONTEXT ---"
     )
