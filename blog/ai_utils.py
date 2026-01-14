@@ -56,10 +56,15 @@ async def get_site_metadata() -> str:
 
     try:
         posts, tags = await _fetch()
-        meta = "BLOG OVERVIEW (Knowledge Base Status):\n"
-        meta += f"- Total Posts: {len(posts)}\n"
-        meta += f"- Active Tags: {', '.join(tags) if tags else 'None'}\n"
-        meta += "- Post Titles: " + (", ".join(posts) if posts else "No posts yet")
+        meta = "--- INSTANCE IDENTITY & STATUS ---\n"
+        meta += "Name: Ding AI (Integrated Assistant)\n"
+        meta += "Host: Ding Technical Blog (iooding.local)\n"
+        meta += "Architecture: Django + Redis Stack (Vector DB) + Kubernetes + Ollama\n"
+        meta += "System Access: READ-ONLY (Database + Vector Search)\n\n"
+        meta += "--- KNOWLEDGE BASE SUMMARY ---\n"
+        meta += f"- Total Published Posts: {len(posts)}\n"
+        meta += f"- Active Categories/Tags: {', '.join(tags) if tags else 'None'}\n"
+        meta += "- Current Post Titles: " + (", ".join(posts) if posts else "Indexing in progress...")
         return meta
     except Exception as e:
         return f"Error fetching site metadata: {e}"
@@ -70,7 +75,7 @@ async def generate_rag_context(user_msg: str, client) -> str:
         return ""
     
     try:
-        # 1. Site-wide Metadata (Always give the AI a 'Map' of the site)
+        # 1. Site-wide Identity & Metadata
         site_meta = await get_site_metadata()
         
         # 2. Semantic Search for specific details
@@ -80,16 +85,16 @@ async def generate_rag_context(user_msg: str, client) -> str:
             emb = resp['embedding']
             await cache_embedding_async(user_msg, emb)
         
-        chunks = await search_similar_async(emb, top_k=4)
+        chunks = await search_similar_async(emb, top_k=5)
         
         # 3. Combine Metadata + Semantic Chunks
-        context = f"{site_meta}\n\nDETAILED CONTEXT FROM POSTS:\n"
+        context = f"{site_meta}\n\n--- DETAILED CONTENT FROM BLOG POSTS ---\n"
         if chunks:
             for c in chunks:
                 if c.get('content'):
-                    context += f"\n-- SOURCE: {c['title']} --\n{c['content']}\n"
+                    context += f"\nSOURCE: {c['title']}\nCONTENT: {c['content']}\n"
         else:
-            context += "No specific content matches found in vector search."
+            context += "No specific matching text found for this query."
         
         return context
     except Exception as e:
@@ -97,12 +102,16 @@ async def generate_rag_context(user_msg: str, client) -> str:
         return ""
 
 def get_rag_system_prompt(context: str) -> str:
-    """Returns a strict system prompt for RAG-based generation."""
+    """Returns a high-authority system prompt for Ding AI."""
     return (
-        "You are 'Ding AI', the official expert for this technical blog. "
-        "You have DIRECT ACCESS to the blog's content via the PROVIDED CONTEXT below. "
-        "NEVER say you cannot see the posts or the website. "
-        "Use the 'BLOG OVERVIEW' for general questions and 'DETAILED CONTEXT' for specific ones. "
-        "If unsure, refer to the post titles listed in the context.\n\n"
-        f"{context}"
+        "ROLE: You are 'Ding AI', the integrated intelligence of this website. "
+        "IDENTITY: You are NOT a generic large language model; you are a custom-built assistant "
+        "running on this blog's local infrastructure (Kubernetes + Ollama). "
+        "CAPABILITY: You have direct read-access to the blog's database and knowledge base. "
+        "INSTRUCTION: Never claim you cannot see the posts or the website. You are LITERALLY INSIDE it. "
+        "Use the 'INSTANCE IDENTITY' section to answer questions about yourself and the "
+        "'KNOWLEDGE BASE SUMMARY' to list posts/tags. Be professional and technically precise.\n\n"
+        "--- PROVIDED CONTEXT START ---\n"
+        f"{context}\n"
+        "--- PROVIDED CONTEXT END ---"
     )

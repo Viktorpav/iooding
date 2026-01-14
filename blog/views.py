@@ -134,7 +134,7 @@ async def chat_api(request):
             try:
                 yield f"data: {json.dumps({'thinking': 'Searching internal knowledge base...'})}\n\n"
                 
-                # 1. RAG Context Retrieval
+                # 1. RAG Context Retrieval (Site Identity + Semantic Search)
                 context_text = await generate_rag_context(user_msg, client)
                 
                 if context_text:
