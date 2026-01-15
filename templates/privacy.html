@@ -1,43 +1,154 @@
 {% extends "base.html" %}
 
-{% block title %} | Privacy Protocol{% endblock %}
+{% block title %} | Security & Privacy{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-lg-8">
+    <div class="col-lg-9">
         <header class="text-center mb-5 mt-4">
-            <h1 class="display-4 fw-bold mb-3">Privacy Protocol</h1>
-            <p class="text-muted">High-Performance Ecosystem Trust Declaration</p>
+            <h1 class="display-4 fw-bold mb-3 gradient-text">Privacy Protocol</h1>
+            <p class="text-muted">Zero-Trust Intelligence Architecture</p>
         </header>
 
-        <div class="glass-card p-5 rounded-4 mb-5"
-            style="background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow);">
-            <div class="mb-5">
-                <h3 class="h4 fw-bold mb-3 text-primary">Data Integrity</h3>
-                <p>Ding is a technical repository. We do not engage in broad-spectrum data collection. Our primary
-                    interest is technical metadata required for containerized orchestration and AI inference stability.
-                </p>
+        <!-- Privacy Terminal Section -->
+        <div class="glass-card mb-5 p-0 rounded-4 border-0 shadow-lg overflow-hidden" style="background: #000;">
+            <!-- Terminal Header -->
+            <div class="d-flex align-items-center px-4 py-2 border-bottom border-white border-opacity-10"
+                style="background: #111;">
+                <div class="d-flex gap-2">
+                    <div style="width: 12px; height: 12px; background: #ff5f56; border-radius: 50%;"></div>
+                    <div style="width: 12px; height: 12px; background: #ffbd2e; border-radius: 50%;"></div>
+                    <div style="width: 12px; height: 12px; background: #27c93f; border-radius: 50%;"></div>
+                </div>
+                <div class="mx-auto small opacity-50 fw-bold">bash — SECURITY_AUDIT</div>
             </div>
 
-            <div class="mb-5">
-                <h3 class="h4 fw-bold mb-3 text-primary">Local AI Inference</h3>
-                <p>Crucially, all AI interactions (Ollama/RAG) occur within our local Kubernetes cluster. Your queries
-                    are never transmitted to external APIs or used for global model training. Private inference is a
-                    core architectural principle of this laboratory.</p>
+            <!-- Terminal Body (Pentest Challenge) -->
+            <div id="terminal" class="p-4"
+                style="height: 400px; font-family: 'JetBrains Mono', 'Courier New', monospace; overflow-y: auto; font-size: 0.9rem;">
+                <div class="text-primary mb-2">Initialize laboratory audit...</div>
+                <div class="text-muted mb-4 small">[INFO] Global Privacy Shield Active</div>
+                <div class="text-success mb-2">Welcome, auditor. Access the system state to verify privacy adherence.
+                </div>
+                <div class="text-muted mb-4">Type 'help' to begin the verification challenge.</div>
+
+                <div id="terminal-history"></div>
+
+                <div class="d-flex align-items-center">
+                    <span class="text-success me-2">guest@iooding:~$</span>
+                    <input type="text" id="terminal-input" class="bg-transparent border-0 text-white outline-none w-100"
+                        style="outline: none;" autocomplete="off" spellcheck="false">
+                </div>
+            </div>
+        </div>
+
+        <!-- Privacy Content -->
+        <div class="glass-card p-5 rounded-4 mb-5" style="background: var(--surface); border: 1px solid var(--border);">
+            <div class="row g-5">
+                <div class="col-md-6">
+                    <h3 class="h5 fw-bold mb-3 text-primary">Inference Sovereignity</h3>
+                    <p class="small text-muted">A standard blog sends your data to OpenAI. Ding treats your data as a
+                        secret. Every LLM token is generated on locally managed Apple Silicon within our private
+                        Kubernetes namespace. <strong>Zero external API residency.</strong></p>
+                </div>
+                <div class="col-md-6">
+                    <h3 class="h5 fw-bold mb-3 text-primary">Ephemeral Contexts</h3>
+                    <p class="small text-muted">AI chat histories are stored as session-bound technical metadata. We do
+                        not build psychological profiles; we build technical bridges. Data is purged upon session
+                        termination or manual reset.</p>
+                </div>
             </div>
 
-            <div class="mb-5">
-                <h3 class="h4 fw-bold mb-3 text-primary">Cookie Policy</h3>
-                <p>We use session-only technical cookies to maintain system state and AI context. These are non-tracking
-                    and expire immediately upon session termination.</p>
-            </div>
-
-            <div class="p-4 rounded-3 bg-black bg-opacity-5 border text-center">
-                <p class="small text-muted mb-0">For full transparency, the infrastructure code is available at <a
-                        href="https://github.com/Viktorpav/iooding" target="_blank"
-                        class="text-primary text-decoration-none">GitHub Repository</a>.</p>
+            <div class="mt-5 p-4 rounded-4 bg-primary bg-opacity-5 border border-primary border-opacity-10">
+                <h4 class="h6 fw-bold mb-2">Security Disclosure</h4>
+                <p class="smallest mb-0 opacity-70">Ding utilizes Nginx Ingress with stringent CSP (Content Security
+                    Policy) headers and X-Frame-Options to prevent injection and clickjacking. Our RBAC layer ensures
+                    that even if one service is compromised, the cluster state remains unreachable. Verified by the
+                    challenge above.</p>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    #terminal-input:focus {
+        box-shadow: none;
+    }
+
+    .text-gold {
+        color: #facc15;
+    }
+
+    .smallest {
+        font-size: 0.75rem;
+    }
+</style>
+
+<script>
+    const terminalHistory = document.getElementById('terminal-history');
+    const terminalInput = document.getElementById('terminal-input');
+    const terminal = document.getElementById('terminal');
+
+    terminalInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const cmd = terminalInput.value.trim().toLowerCase();
+            handleCommand(cmd);
+            terminalInput.value = '';
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+    });
+
+    function appendLine(text, color = 'white') {
+        const line = document.createElement('div');
+        line.className = `text-\${color} mb-1`;
+        line.innerHTML = text; // allow some HTML
+        terminalHistory.appendChild(line);
+    }
+
+    function handleCommand(cmd) {
+        appendLine(`guest@iooding:~$ \${cmd}`, 'muted');
+
+        switch (cmd) {
+            case 'help':
+                appendLine('Available commands:', 'primary');
+                appendLine('  ls       - List directory contents');
+                appendLine('  cat      - Read file contents');
+                appendLine('  whoami   - Current user status');
+                appendLine('  exploit  - Access restricted flags (Caution!)');
+                appendLine('  clear    - Clear display');
+                break;
+            case 'ls':
+                appendLine('privacy_policy.md  security_logs.txt  .hidden_vault/', 'success');
+                break;
+            case 'whoami':
+                appendLine('Unauthorized Guest (ID: auditing_agent)');
+                break;
+            case 'clear':
+                terminalHistory.innerHTML = '';
+                break;
+            case 'cat privacy_policy.md':
+                appendLine('DING PRIVACY LAYER: [ENCRYPTED] Local-first inference active. No logs generated.', 'text-muted');
+                break;
+            case 'exploit':
+                appendLine('Attempting payload injection...', 'danger');
+                setTimeout(() => {
+                    appendLine('ERROR: Zero-Trust Isolation detected.', 'danger');
+                    appendLine('SECURITY ALERT: Attempt logged in audit trail.', 'warning');
+                    appendLine('Try accessing \'.hidden_vault/\'', 'smallest opacity-50');
+                }, 1000);
+                break;
+            case 'ls .hidden_vault/':
+                appendLine('system_key.flag (RESTRICTED ACCESS)', 'danger');
+                break;
+            case 'cat .hidden_vault/system_key.flag':
+                appendLine('DECRYPTING PRIVACY FLAG...', 'text-gold');
+                setTimeout(() => {
+                    appendLine('FLAG{LOCAL_LLM_MAX_PRIVACY_2026}', 'text-gold fw-bold');
+                }, 800);
+                break;
+            default:
+                appendLine(`Command not found: \${cmd}`, 'danger');
+        }
+    }
+</script>
 {% endblock %}

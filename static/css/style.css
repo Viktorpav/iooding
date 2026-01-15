@@ -866,3 +866,23 @@ body.ai-active {
         bottom: 20px;
     }
 }
+/* Navigation Power Enhancements */
+.smallest {
+    font-size: 0.72rem;
+    line-height: 1.2;
+}
+
+.dropdown-item {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 10px 15px !important;
+}
+
+.dropdown-item:hover {
+    background: rgba(var(--text), 0.05) !important;
+    color: var(--primary) !important;
+    transform: translateX(4px);
+}
+
+.dropdown-menu {
+    border: 1px solid var(--border) !important;
+}

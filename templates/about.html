@@ -1,200 +1,278 @@
 {% extends "base.html" %}
 
-{% block title %} | About the Laboratory{% endblock %}
+{% block title %} | Internal Architecture{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-lg-10">
+    <div class="col-lg-11">
+        <!-- Hero Header -->
         <header class="text-center mb-5 mt-4">
-            <h1 class="display-3 fw-bold mb-3">Ding Architecture</h1>
-            <p class="lead text-muted mx-auto" style="max-width: 700px;">
-                An experimental high-performance inference laboratory designed to explore the intersection of
-                <strong>Kubernetes orchestration</strong> and <strong>local AI intelligence</strong>.
+            <h1 class="display-3 fw-bold mb-3 gradient-text">Architecture Insight</h1>
+            <p class="lead text-muted mx-auto" style="max-width: 800px;">
+                Deep-dive into the high-performance orchestration of a distributed laboratory.
+                From silicon-native inference to containerized persistence.
             </p>
         </header>
 
-        <div class="glass-card p-5 rounded-4 mb-5"
-            style="background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); position: relative; overflow: hidden;">
-
-            <!-- Technical Mission -->
-            <div class="row g-5 align-items-center mb-5 position-relative" style="z-index: 2;">
-                <div class="col-md-7">
-                    <h3 class="h4 fw-bold mb-4 text-primary d-flex align-items-center">
-                        <span class="me-2">🧩</span> The Engineering Core
-                    </h3>
-                    <p class="mb-4">
-                        Ding is a high-performance inference laboratory where distributed systems meet modern AI
-                        architecture.
-                        Unlike traditional search-based blogs, Ding utilizes <strong>Neural Path Mapping</strong> to
-                        connect disparate technical concepts across the infrastructure landscape.
-                    </p>
-                    <div class="d-flex flex-wrap gap-2 mb-4">
-                        <span
-                            class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-2">HNSW
-                            Vector Search</span>
-                        <span
-                            class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-2">Async
-                            RAG Pipeline</span>
-                        <span
-                            class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-2">M1/M3
-                            Silicon Optimized</span>
-                    </div>
+        <!-- System Architecture Diagram Section -->
+        <div class="glass-card p-5 rounded-4 mb-5 border-0 shadow-lg"
+            style="background: var(--surface); position: relative; overflow: hidden;">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <div>
+                    <h3 class="h4 fw-bold mb-1">System Topology</h3>
+                    <p class="small text-muted mb-0 text-uppercase letter-spacing-1">Live Logic Mapping</p>
                 </div>
-                <div class="col-md-5">
-                    <div class="p-4 rounded-4 bg-black bg-opacity-5 border border-white border-opacity-10 backdrop-blur"
-                        style="backdrop-filter: blur(10px);">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="small fw-bold opacity-50">NODE METADATA</span>
-                            <span class="pulse"></span>
-                        </div>
-                        <code class="small text-primary"
-                            style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">
-                            PLATFORM: Apple Silicon<br>
-                            KERNEL: Darwin-K8s<br>
-                            INFERENCE: Local Ollama<br>
-                            VERSION: 6.0.0-Nexus
-                        </code>
-                    </div>
+                <div class="status-indicator-wrap p-2 px-3 rounded-pill bg-black bg-opacity-5 border">
+                    <span class="smallest fw-bold opacity-50 me-2">NETWORK SYNC:</span>
+                    <span class="text-success smallest fw-bold">ACTIVE</span>
                 </div>
             </div>
 
-            <!-- Reach Features: Grid -->
-            <div class="row g-4 mb-5 position-relative" style="z-index: 2;">
-                <div class="col-md-4">
-                    <div class="p-4 rounded-4 h-100 feature-card-premium">
-                        <div class="fs-3 mb-3">🧠</div>
-                        <h5 class="fw-bold mb-3">Neural Inference</h5>
-                        <p class="small text-muted mb-0">Local execution of Qwen-Coder models within our cluster,
-                            ensuring 100% data sovereignty and zero-latency technical assistance.</p>
-                    </div>
+            <!-- SVG Architecture Diagram (Interactive) -->
+            <div class="diagram-container py-4 text-center">
+                <svg id="architecture-svg" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet" class="w-100"
+                    style="max-height: 500px;">
+                    <!-- Connections -->
+                    <g class="connections" stroke="var(--primary)" stroke-width="1.5" stroke-dasharray="4,4">
+                        <path d="M100,200 L250,200" class="flow-line">
+                            <animate attributeName="stroke-dashoffset" from="24" to="0" dur="2s"
+                                repeatCount="indefinite" />
+                        </path>
+                        <path d="M350,200 L500,120" class="flow-line" />
+                        <path d="M350,200 L500,280" class="flow-line" />
+                        <path d="M600,120 L750,120" class="flow-line" />
+                        <path d="M600,280 L750,280" class="flow-line" />
+                    </g>
+
+                    <!-- Nodes -->
+                    <g class="nodes">
+                        <!-- User -->
+                        <circle cx="100" cy="200" r="40" fill="var(--bg)" stroke="var(--primary)" stroke-width="2" />
+                        <text x="100" y="205" text-anchor="middle" font-size="12" fill="var(--text)"
+                            font-weight="bold">USER</text>
+
+                        <!-- Ingress -->
+                        <rect x="250" y="160" width="100" height="80" rx="10" fill="var(--bg)" stroke="var(--primary)"
+                            stroke-width="2" />
+                        <text x="300" y="195" text-anchor="middle" font-size="10" fill="var(--text)"
+                            font-weight="bold">NGINX</text>
+                        <text x="300" y="215" text-anchor="middle" font-size="8" fill="var(--text)"
+                            opacity="0.6">INGRESS</text>
+
+                        <!-- Django Core -->
+                        <rect x="500" y="80" width="100" height="80" rx="10" fill="var(--primary)" />
+                        <text x="550" y="125" text-anchor="middle" font-size="10" fill="white"
+                            font-weight="bold">DJANGO</text>
+                        <text x="550" y="140" text-anchor="middle" font-size="8" fill="white"
+                            opacity="0.8">ENGINE</text>
+
+                        <!-- AI Backend -->
+                        <rect x="500" y="240" width="100" height="80" rx="10" fill="var(--primary)" />
+                        <text x="550" y="285" text-anchor="middle" font-size="10" fill="white"
+                            font-weight="bold">OLLAMA</text>
+                        <text x="550" y="300" text-anchor="middle" font-size="8" fill="white" opacity="0.8">LLM
+                            CORE</text>
+
+                        <!-- Storage/Redis -->
+                        <rect x="700" y="85" width="70" height="70" rx="35" fill="var(--bg)" stroke="var(--primary)"
+                            stroke-width="2" />
+                        <text x="735" y="125" text-anchor="middle" font-size="10" fill="var(--text)"
+                            font-weight="bold">REDIS</text>
+
+                        <!-- Database -->
+                        <polygon points="735,240 770,260 770,300 735,320 700,300 700,260" fill="var(--bg)"
+                            stroke="var(--primary)" stroke-width="2" />
+                        <text x="735" y="285" text-anchor="middle" font-size="10" fill="var(--text)"
+                            font-weight="bold">DB</text>
+                    </g>
+                </svg>
+            </div>
+
+            <div class="row g-4 mt-5">
+                <div class="col-md-3">
+                    <h6 class="fw-bold mb-2">01. Traffic Gateway</h6>
+                    <p class="smallest text-muted">Ingress-Nginx handles TLS termination and dynamic routing to the
+                        cluster services.</p>
                 </div>
-                <div class="col-md-4">
-                    <div class="p-4 rounded-4 h-100 feature-card-premium">
-                        <div class="fs-3 mb-3">🔌</div>
-                        <h5 class="fw-bold mb-3">Nexus Search</h5>
-                        <p class="small text-muted mb-0">A hybrid retrieval system combining classic keyword precision
-                            with deep semantic understanding via Redis Vector Similarity.</p>
-                    </div>
+                <div class="col-md-3">
+                    <h6 class="fw-bold mb-2">02. Inference Layer</h6>
+                    <p class="smallest text-muted">Ollama operates as a sidecar/service, providing raw LLM tokens for
+                        RAG-enhanced responses.</p>
                 </div>
-                <div class="col-md-4">
-                    <div class="p-4 rounded-4 h-100 feature-card-premium">
-                        <div class="fs-3 mb-3">🍏</div>
-                        <h5 class="fw-bold mb-3">Mac-Native K8s</h5>
-                        <p class="small text-muted mb-0">High-density containerization optimized for the
-                            Power/Performance ratio of M-series chips, achieving enterprise stability.</p>
-                    </div>
+                <div class="col-md-3">
+                    <h6 class="fw-bold mb-2">03. Vector Matrix</h6>
+                    <p class="smallest text-muted">Redis Stack functions as our primary vector database, storing HNSW
+                        indexes for instant recall.</p>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="fw-bold mb-2">04. Persistent Core</h6>
+                    <p class="smallest text-muted">PostgreSQL stores the relational metadata and blog state with
+                        Longhorn HA storage.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mini Game Section: Cluster Balancer -->
+        <div class="glass-card p-5 rounded-4 mb-5 border-0 shadow-lg"
+            style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
+            <div class="text-center mb-5">
+                <span class="badge bg-primary px-3 py-2 mb-3">MINI-GAME: LABORATORY STABILITY</span>
+                <h3 class="fw-bold h2 mb-2">Balance the Cluster</h3>
+                <p class="opacity-70">A traffic spike is coming. Allocate resources to keep the service online!</p>
+            </div>
+
+            <div id="game-container"
+                class="game-board p-4 rounded-4 bg-black bg-opacity-20 border border-white border-opacity-10 position-relative"
+                style="min-height: 350px;">
+                <div id="game-stats"
+                    class="d-flex justify-content-between mb-4 border-bottom border-white border-opacity-10 pb-3">
+                    <div>LOAD: <span id="game-load" class="text-primary fw-bold">0%</span></div>
+                    <div>HEALTH: <span id="game-health" class="text-success fw-bold">100%</span></div>
+                    <div>SURVIVAL: <span id="game-time" class="fw-bold">0s</span></div>
+                </div>
+
+                <div id="game-canvas" class="d-flex justify-content-center align-items-center flex-wrap gap-3 py-5">
+                    <button onclick="startGame()" class="btn btn-primary btn-lg px-5">INITIALIZE PODS</button>
                 </div>
             </div>
 
-            <!-- Monitoring Dashboard -->
-            <div class="mt-5 position-relative" style="z-index: 2;">
-                <h3 class="h4 fw-bold mb-4 d-flex align-items-center">
-                    <span class="me-2">📊</span> Live Infrastructure Intelligence
-                    <span id="cluster-heartbeat"
-                        class="ms-3 badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-20"
-                        style="font-size: 0.65rem; letter-spacing: 0.1em;">SYNCING...</span>
-                </h3>
-
-                <div id="k8s-dashboard" class="row g-4">
-                    <!-- Dynamic Dashboard Injection -->
-                    <div class="col-12 text-center py-4 opacity-50">
-                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                        <span class="small">Connecting to Architecture API...</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-5 text-center position-relative" style="z-index: 2;">
-                <p class="fw-bold">
-                    Explore the source on <a href="https://github.com/Viktorpav/iooding" target="_blank"
-                        class="text-primary text-decoration-none">GitHub Repository</a>
-                </p>
+            <div class="mt-4 text-center smallest opacity-50">
+                INSTRUCTIONS: Click the red "LATENCY" nodes before they overwhelm the cluster pods.
             </div>
         </div>
     </div>
 </div>
 
 <style>
+    .gradient-text {
+        background: linear-gradient(90deg, var(--primary), #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .diagram-container {
+        background: rgba(var(--text), 0.01);
+        border-radius: 20px;
+    }
+
+    .flow-line {
+        filter: drop-shadow(0 0 2px var(--primary));
+    }
+
     .feature-card-premium {
         background: rgba(var(--text), 0.02);
         border: 1px solid var(--border);
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: all 0.3s ease;
     }
 
     .feature-card-premium:hover {
-        background: var(--surface);
         transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        border-color: var(--primary-opacity-20);
+        background: var(--surface);
     }
 
-    .backdrop-blur {
-        backdrop-filter: blur(12px) saturate(180%);
-        -webkit-backdrop-filter: blur(12px) saturate(180%);
+    /* Game Styles */
+    .game-node {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 0.7rem;
+        transition: all 0.2s;
+        animation: spawn 0.3s ease-out;
+        user-select: none;
+    }
+
+    .node-latency {
+        border: 2px solid #ef4444;
+        color: #ef4444;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .node-latency:active {
+        transform: scale(0.9);
+    }
+
+    @keyframes spawn {
+        from {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
     }
 </style>
 
 <script>
-    async function updateK8sDashboard() {
-        const container = document.getElementById('k8s-dashboard');
-        const heartbeat = document.getElementById('cluster-heartbeat');
+    let gameActive = false;
+    let gameHealth = 100;
+    let gameTime = 0;
+    let gameInt, timerInt;
 
-        try {
-            const res = await fetch('/api/cluster/status/');
-            const data = await res.json();
+    function startGame() {
+        if (gameActive) return;
+        gameActive = true;
+        gameHealth = 100;
+        gameTime = 0;
+        document.getElementById('game-canvas').innerHTML = '';
+        document.getElementById('game-health').textContent = '100%';
+        document.getElementById('game-health').className = 'text-success fw-bold';
 
-            let html = '';
+        timerInt = setInterval(() => {
+            gameTime++;
+            document.getElementById('game-time').textContent = gameTime + 's';
+            document.getElementById('game-load').textContent = Math.min(100, (gameTime * 2)) + '%';
+        }, 1000);
 
-            if (data.nodes.length === 0) {
-                container.innerHTML = '<div class="col-12 text-center text-warning small p-4">RBAC Handshake Timeout: API connection pending.</div>';
-                heartbeat.textContent = 'CONNECTING';
-                return;
-            }
+        gameInt = setInterval(spawnNode, 800 - Math.min(500, gameTime * 10));
+    }
 
-            // 1. Nodes Status
-            data.nodes.forEach(node => {
-                const isOnline = node.status === 'Online';
-                html += `
-                <div class="col-md-4">
-                    <div class="p-3 rounded-4 border ${isOnline ? 'border-success border-opacity-20' : 'border-danger border-opacity-20'}" style="background: rgba(var(--text), 0.02);">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="small fw-bold text-uppercase opacity-40">${node.role}</span>
-                            <span class="pulse ${isOnline ? '' : 'offline'}"></span>
-                        </div>
-                        <h6 class="fw-bold mb-1">${node.name}</h6>
-                        <p class="small mb-0 ${isOnline ? 'text-success' : 'text-danger'}">${node.status}</p>
-                    </div>
-                </div>
-            `;
-            });
+    function spawnNode() {
+        const canvas = document.getElementById('game-canvas');
+        if (canvas.children.length > 15) {
+            updateHealth(-10);
+            return;
+        }
 
-            // 2. Service health
-            html += `
-            <div class="col-md-4">
-                <div class="p-3 rounded-4 border border-primary border-opacity-20" style="background: rgba(var(--text), 0.02);">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="small fw-bold text-uppercase opacity-40">Orchestration</span>
-                        <span class="badge bg-primary rounded-pill" style="font-size: 0.6rem;">K8S</span>
-                    </div>
-                    <h6 class="fw-bold mb-1">iooding-blog</h6>
-                    <p class="small mb-0 opacity-70">${data.iooding_service}</p>
-                </div>
-            </div>
-        `;
+        const node = document.createElement('div');
+        node.className = 'game-node node-latency';
+        node.innerHTML = 'LAG';
+        node.onclick = () => {
+            node.remove();
+        };
 
-            container.innerHTML = html;
-            const globalHealthy = data.global_status === 'Healthy';
-            heartbeat.className = `ms-3 badge rounded-pill bg-${globalHealthy ? 'success' : 'warning'} bg-opacity-10 text-${globalHealthy ? 'success' : 'warning'} border border-${globalHealthy ? 'success' : 'warning'} border-opacity-20`;
-            heartbeat.textContent = data.global_status.toUpperCase();
+        canvas.appendChild(node);
+    }
 
-        } catch (e) {
-            container.innerHTML = '<div class="col-12 text-center text-danger small">Monitoring Sync Failure: API Unreachable</div>';
-            heartbeat.textContent = 'MAINTENANCE';
+    function updateHealth(val) {
+        gameHealth += val;
+        const h = document.getElementById('game-health');
+        h.textContent = gameHealth + '%';
+        if (gameHealth < 50) h.className = 'text-warning fw-bold';
+        if (gameHealth < 25) h.className = 'text-danger fw-bold';
+
+        if (gameHealth <= 0) {
+            endGame();
         }
     }
 
-    // Initial pull and periodic refresh
-    updateK8sDashboard();
-    setInterval(updateK8sDashboard, 15000);
+    function endGame() {
+        gameActive = false;
+        clearInterval(gameInt);
+        clearInterval(timerInt);
+        document.getElementById('game-canvas').innerHTML = `
+        <div class="text-center">
+            <h4 class="text-danger mb-3">CLUSTER CRITICAL FAILURE</h4>
+            <p>You maintained uptime for ${gameTime} seconds.</p>
+            <button onclick="startGame()" class="btn btn-primary mt-3">REBOOT SYSTEM</button>
+        </div>
+    `;
+    }
 </script>
 {% endblock %}

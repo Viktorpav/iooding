@@ -77,7 +77,6 @@ spec:
         - { key: "node.kubernetes.io/not-ready", operator: "Exists", effect: "NoExecute", tolerationSeconds: 10 }
         - { key: "node.kubernetes.io/unreachable", operator: "Exists", effect: "NoExecute", tolerationSeconds: 10 }
       securityContext: { runAsNonRoot: true, runAsUser: 100, fsGroup: 100 }
-      serviceAccountName: iooding-sa
       initContainers:
         - name: wait-for-db
           image: alpine:latest

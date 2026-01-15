@@ -103,16 +103,6 @@ async def health_check(request):
     """Simplified health check for K8s probes - Async to avoid threadpool block"""
     return HttpResponse("ok", content_type="text/plain")
 
-async def cluster_status(request):
-    """Endpoint to check the status of the K8s cluster."""
-    from .k8s_utils import get_cluster_status
-    from asgiref.sync import sync_to_async
-    
-    # We use sync_to_async because kubernetes-python is synchronous
-    status = await sync_to_async(get_cluster_status)()
-    return HttpResponse(json.dumps(status), content_type="application/json")
-
-
 async def ai_status(request):
     """Endpoint to check the status of the local AI (Ollama)."""
     from .ai_utils import check_ollama_status

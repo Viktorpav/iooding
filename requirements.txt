@@ -14,4 +14,3 @@ ollama==0.4.7
 django-environ
 numpy
 redis>=5.0.0
-kubernetes
