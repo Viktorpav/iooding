@@ -9,5 +9,7 @@ urlpatterns = [
     path('tag/<slug:tag_slug>/', views.post_list, name='post_tag'),
     path('<slug:post>/', views.post_detail, name="post_detail"),
     path('api/chat/', views.chat_api, name='chat_api'), # The AI Endpoint
+    path('api/chat/status/', views.ai_status, name='ai_status'),
+    path('privacy/', views.privacy, name='privacy'),
     path('health/', views.health_check, name='health_check'),
 ]

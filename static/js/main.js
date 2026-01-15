@@ -30,7 +30,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     scrollToBottom(true);
     initMobileGestures();
+    checkAiStatus();
 });
+
+async function checkAiStatus() {
+    const statusText = document.querySelector('.agent-status');
+    const welcomeBox = document.getElementById('ai-welcome-box');
+
+    try {
+        const res = await fetch('/api/chat/status/');
+        const data = await res.json();
+        if (data.online) {
+            statusText.innerHTML = '<span class="pulse"></span> Online';
+            if (welcomeBox) welcomeBox.innerHTML = '<p>Interface active. Powering high-performance inference. How can I assist with your technical journey today?</p>';
+        } else {
+            statusText.innerHTML = '<span class="pulse offline"></span> AI Offline';
+            if (welcomeBox) welcomeBox.innerHTML = '<p style="color:#ff3b30;">AI Error: All connection attempts failed. The high-performance inference engine is currently unreachable.</p>';
+        }
+    } catch (e) {
+        statusText.innerHTML = '<span class="pulse offline"></span> Connection Error';
+    }
+}
 
 let touchStartY = 0;
 function initMobileGestures() {

@@ -11,6 +11,18 @@ class PostAdmin(admin.ModelAdmin):
     date_hierarchy = 'publish'
     ordering = ('status', 'publish')
     list_editable = ('status',)
+    fieldsets = (
+        ('Header Information', {
+            'fields': ('title', 'slug', 'author', 'status', 'image')
+        }),
+        ('Content Area', {
+            'fields': ('body', 'tags', 'semantic_summary')
+        }),
+        ('Publishing Metadata', {
+            'fields': ('publish',),
+            'classes': ('collapse',),
+        }),
+    )
     actions = ['make_published', 'make_draft']
 
     @admin.action(description='Mark selected posts as published')

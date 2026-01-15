@@ -27,6 +27,17 @@ def get_ollama_client(async_client=False):
             _ollama_client = ollama.Client(host=host)
         return _ollama_client
 
+async def check_ollama_status():
+    """Check if Ollama host is reachable and responding."""
+    client = get_ollama_client(async_client=True)
+    try:
+        import asyncio
+        # Try to list models as a lightweight heartbeat with a tight timeout
+        await asyncio.wait_for(client.list(), timeout=2.0)
+        return True
+    except:
+        return False
+
 async def expand_query(user_msg: str, client) -> str:
     """Expand simple queries with technical synonyms for better recall (Suggestion 6)."""
     prompt = (

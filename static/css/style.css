@@ -65,19 +65,22 @@ main.container {
 /* --- Layout Components --- */
 .navbar {
     height: var(--header-height);
+    background: transparent !important;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    border-bottom: 1px solid transparent !important;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar.scrolled {
     background: rgba(var(--bg), 0.8) !important;
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-bottom: 1px solid var(--border) !important;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    transition: background 0.3s, backdrop-filter 0.3s;
-}
-
-.navbar.scrolled {
-    background: var(--bg) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
 }
 
 .navbar-brand {
@@ -91,19 +94,39 @@ main.container {
 }
 
 .nav-link {
-    font-weight: 600;
-    font-size: 0.9rem;
+    font-weight: 500;
+    font-size: 0.95rem;
     color: var(--text) !important;
     opacity: 0.6;
-    transition: 0.3s;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    padding: 8px 0;
+    margin: 0 15px;
 }
 
-.nav-link:hover,
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary);
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover {
+    opacity: 1;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+    width: 100%;
+}
+
 .nav-link.active {
     opacity: 1;
-    color: var(--primary) !important;
+    font-weight: 600;
 }
 
 .search-input-wrap {
@@ -333,6 +356,11 @@ body.ai-active {
     animation: pulse-ring 2s infinite;
 }
 
+.pulse.offline {
+    background: #ff3b30;
+    animation: pulse-ring-offline 2s infinite;
+}
+
 @keyframes pulse-ring {
     0% {
         box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.7);
@@ -344,6 +372,20 @@ body.ai-active {
 
     100% {
         box-shadow: 0 0 0 0 rgba(52, 199, 89, 0);
+    }
+}
+
+@keyframes pulse-ring-offline {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 59, 48, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 59, 48, 0);
     }
 }
 

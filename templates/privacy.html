@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %} | Privacy Policy{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold mb-3">Privacy Protocol</h1>
+            <p class="text-muted">Last updated: January 2026</p>
+        </div>
+
+        <div class="glass-card p-5 rounded-3 mb-5" style="background: var(--surface); border: 1px solid var(--border);">
+            <section class="mb-5">
+                <h3 class="h4 fw-bold mb-3">Data Collection</h3>
+                <p>Ding is a technical research platform. We collect minimal data necessary for functionality, primarily
+                    session cookies for AI context management and standard server logs.</p>
+            </section>
+
+            <section class="mb-5">
+                <h3 class="h4 fw-bold mb-3">AI & Intelligence</h3>
+                <p>All AI interactions are processed via local high-performance inference engines. Your queries remain
+                    within our controlled ecosystem and are not used for third-party training.</p>
+            </section>
+
+            <section class="mb-5">
+                <h3 class="h4 fw-bold mb-3">Security Infrastructure</h3>
+                <p>We leverage industry-standard encryption and Kubernetes-native security protocols to ensure the
+                    integrity of the platform and its data.</p>
+            </section>
+
+            <div class="mt-5 pt-4 border-top">
+                <p class="small text-muted mb-0">For technical inquiries regarding data handling, please refer to our <a
+                        href="https://github.com/Viktorpav/iooding" target="_blank"
+                        class="text-primary text-decoration-none">Source Repository</a>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

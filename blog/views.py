@@ -103,6 +103,12 @@ async def health_check(request):
     """Simplified health check for K8s probes - Async to avoid threadpool block"""
     return HttpResponse("ok", content_type="text/plain")
 
+async def ai_status(request):
+    """Endpoint to check the status of the local AI (Ollama)."""
+    from .ai_utils import check_ollama_status
+    is_online = await check_ollama_status()
+    return HttpResponse(json.dumps({'online': is_online}), content_type="application/json")
+
 # --- Optimized AI Agent (Async Direct Streaming) ---
 
 @csrf_exempt
@@ -177,6 +183,8 @@ async def chat_api(request):
                         
             except Exception as e:
                 yield f"data: {json.dumps({'error': f'AI Error: {str(e)}'})}\n\n"
+def privacy(request):
+    return render(request, 'privacy.html')
 
         response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
         response['X-Accel-Buffering'], response['Cache-Control'] = 'no', 'no-cache'
