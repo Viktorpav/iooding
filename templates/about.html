@@ -69,6 +69,23 @@
                 </div>
             </div>
 
+            <div class="mt-5">
+                <h3 class="h4 fw-bold mb-4 d-flex align-items-center">
+                    <span class="me-2">📊</span> Live Infrastructure Intelligence
+                    <span id="cluster-heartbeat"
+                        class="ms-3 badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-20"
+                        style="font-size: 0.65rem; letter-spacing: 0.1em;">SYSTEM NOMINAL</span>
+                </h3>
+
+                <div id="k8s-dashboard" class="row g-4">
+                    <!-- Dynamic Dashboard Injection -->
+                    <div class="col-12 text-center py-4 opacity-50">
+                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                        <span class="small">Syncing with Kubernetes API...</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="mt-5 text-center">
                 <p class="fw-bold">
                     Explore the source on <a href="https://github.com/Viktorpav/iooding" target="_blank"
@@ -78,4 +95,60 @@
         </div>
     </div>
 </div>
+
+<script>
+    async function updateK8sDashboard() {
+        const container = document.getElementById('k8s-dashboard');
+        const heartbeat = document.getElementById('cluster-heartbeat');
+
+        try {
+            const res = await fetch('/api/cluster/status/');
+            const data = await res.json();
+
+            let html = '';
+
+            // 1. Nodes Status
+            data.nodes.forEach(node => {
+                const isOnline = node.status === 'Online';
+                html += `
+                <div class="col-md-4">
+                    <div class="p-3 rounded-4 border ${isOnline ? 'border-success border-opacity-20' : 'border-danger border-opacity-20'}" style="background: rgba(var(--text), 0.02);">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="small fw-bold text-uppercase opacity-40">${node.role}</span>
+                            <span class="pulse ${isOnline ? '' : 'offline'}"></span>
+                        </div>
+                        <h6 class="fw-bold mb-1">${node.name}</h6>
+                        <p class="small mb-0 ${isOnline ? 'text-success' : 'text-danger'}">${node.status}</p>
+                    </div>
+                </div>
+            `;
+            });
+
+            // 2. Service health
+            html += `
+            <div class="col-md-4">
+                <div class="p-3 rounded-4 border border-primary border-opacity-20" style="background: rgba(var(--text), 0.02);">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="small fw-bold text-uppercase opacity-40">Orchestration</span>
+                        <span class="badge bg-primary rounded-pill" style="font-size: 0.6rem;">K8S</span>
+                    </div>
+                    <h6 class="fw-bold mb-1">iooding-blog</h6>
+                    <p class="small mb-0 opacity-70">${data.iooding_service}</p>
+                </div>
+            </div>
+        `;
+
+            container.innerHTML = html;
+            heartbeat.className = `ms-3 badge rounded-pill bg-${data.global_status === 'Healthy' ? 'success' : 'warning'} bg-opacity-10 text-${data.global_status === 'Healthy' ? 'success' : 'warning'} border border-${data.global_status === 'Healthy' ? 'success' : 'warning'} border-opacity-20`;
+            heartbeat.textContent = data.global_status.toUpperCase();
+
+        } catch (e) {
+            container.innerHTML = '<div class="col-12 text-center text-danger small">Monitoring Sync Failure: API Unreachable</div>';
+        }
+    }
+
+    // Initial pull and periodic refresh
+    updateK8sDashboard();
+    setInterval(updateK8sDashboard, 30000);
+</script>
 {% endblock %}

@@ -43,8 +43,7 @@
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
           </svg>
-          <input id="nav-search-field" type="search" value="{{ request.GET.q }}" name="q"
-            placeholder="Search the laboratory...">
+          <input id="nav-search-field" type="search" value="{{ request.GET.q }}" name="q" placeholder="Search">
         </form>
       </div>
 
@@ -83,6 +82,15 @@
         </div>
 
         <div class="footer-nav-minimal">
+          <div class="footer-section">
+            <h4 class="footer-tech-title">Laboratory Stack</h4>
+            <div class="tech-stack-flex mini mt-2">
+              <span class="tech-tag mini">Django 5.1</span>
+              <span class="tech-tag mini">Redis Stack</span>
+              <span class="tech-tag mini">K8s Orchestration</span>
+              <span class="tech-tag mini">Ollama RAG</span>
+            </div>
+          </div>
           <div class="footer-section">
             <ul class="footer-links horizontal">
               <li><a href="https://github.com/Viktorpav/iooding" target="_blank">Source</a></li>

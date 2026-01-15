@@ -12,5 +12,6 @@ urlpatterns = [
     path('<slug:post>/', views.post_detail, name="post_detail"),
     path('api/chat/', views.chat_api, name='chat_api'), # The AI Endpoint
     path('api/chat/status/', views.ai_status, name='ai_status'),
+    path('api/cluster/status/', views.cluster_status, name='cluster_status'),
     path('health/', views.health_check, name='health_check'),
 ]
