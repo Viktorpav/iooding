@@ -56,7 +56,7 @@ function toggleChat() {
     const isActivating = !sidebar.classList.contains('active');
     sidebar.classList.toggle('active');
     document.body.classList.toggle('ai-active');
-    document.getElementById('ai-edge-trigger').classList.toggle('hidden', !isActivating);
+    document.getElementById('ai-edge-trigger').classList.toggle('hidden', isActivating);
     if (isActivating) {
         scrollToBottom(true);
         document.getElementById('ai-user-input').focus();

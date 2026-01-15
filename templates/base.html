@@ -55,6 +55,9 @@
               <li><a class="dropdown-item" href="{% url 'blog:post_tag' tag_slug='django' %}">Django</a></li>
             </ul>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">About</a>
+          </li>
         </ul>
 
         <div class="d-flex align-items-center">
@@ -85,39 +88,24 @@
     <div class="container">
       <div class="footer-content">
         <div class="footer-brand">
-          <span class="brand-text">Ding<sup>&reg;</sup></span>
-          <p class="minimal-tagline">Engineering & Intelligence Laboratory.</p>
+          <span class="brand-text">Ding.</span>
+          <p class="minimal-tagline">AI-powered insights.</p>
         </div>
 
         <div class="footer-nav-minimal">
           <div class="footer-section">
-            <h4>Repository</h4>
             <ul class="footer-links horizontal">
               <li><a href="{% url 'blog:post_list' %}">Archive</a></li>
-              <li><a href="{% url 'blog:post_tag' tag_slug='python' %}">Python</a></li>
-              <li><a href="{% url 'blog:post_tag' tag_slug='django' %}">Django</a></li>
-              <li><a href="{% url 'blog:post_tag' tag_slug='linux' %}">Linux</a></li>
+              <li><a href="https://github.com/Viktorpav/iooding" target="_blank">Source</a></li>
+              <li><a href="#">Privacy</a></li>
             </ul>
-          </div>
-
-          <div class="footer-section">
-            <h4>Infrastructure</h4>
-            <div class="tech-stack-flex">
-              <span class="tech-tag mini">Django 5.1</span>
-              <span class="tech-tag mini">HNSW Vector Search</span>
-              <span class="tech-tag mini">Kubernetes Node</span>
-            </div>
           </div>
         </div>
       </div>
 
       <div class="footer-bottom">
-        <div class="status-badge-premium">
-          <span class="pulse"></span>
-          <span class="status-msg">STABLE • ALL SYSTEMS NOMINAL</span>
-        </div>
         <div class="footer-legal">
-          <span>&copy; {% now "Y" %} DING ENGINE. VOL 5.0</span>
+          <span>&copy; {% now "Y" %} DING ENGINE</span>
         </div>
       </div>
     </div>
@@ -131,6 +119,10 @@
       let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
       let scrolled = (winScroll / height) * 100;
       document.getElementById("scroll-progress").style.width = scrolled + "%";
+
+      const nav = document.querySelector('.navbar');
+      if (winScroll > 50) nav.classList.add('scrolled');
+      else nav.classList.remove('scrolled');
     };
   </script>
 </body>
