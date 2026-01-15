@@ -1,277 +1,522 @@
 {% extends "base.html" %}
 
-{% block title %} | Internal Architecture{% endblock %}
+{% block title %} | Architecture & Laboratory{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-lg-11">
-        <!-- Hero Header -->
+    <div class="col-lg-12">
+        <!-- Hero Section -->
         <header class="text-center mb-5 mt-4">
-            <h1 class="display-3 fw-bold mb-3 gradient-text">Architecture Insight</h1>
-            <p class="lead text-muted mx-auto" style="max-width: 800px;">
-                Deep-dive into the high-performance orchestration of a distributed laboratory.
-                From silicon-native inference to containerized persistence.
+            <h1 class="display-2 fw-bold mb-3 gradient-text">Architecture Ledger</h1>
+            <p class="lead text-muted mx-auto" style="max-width: 900px;">
+                A comprehensive analysis of the <strong>Ding Infrastructure</strong>.
+                Built on a distributed Kubernetes foundation, optimized for silicon-native AI inference.
             </p>
         </header>
 
-        <!-- System Architecture Diagram Section -->
+        <!-- Advanced Topology Map -->
         <div class="glass-card p-5 rounded-4 mb-5 border-0 shadow-lg"
-            style="background: var(--surface); position: relative; overflow: hidden;">
-            <div class="d-flex justify-content-between align-items-center mb-5">
-                <div>
-                    <h3 class="h4 fw-bold mb-1">System Topology</h3>
-                    <p class="small text-muted mb-0 text-uppercase letter-spacing-1">Live Logic Mapping</p>
+            style="background: var(--surface); position: relative; overflow: visible;">
+            <div class="mb-5">
+                <h3 class="h2 fw-bold mb-1">System Topology</h3>
+                <p class="text-muted text-uppercase letter-spacing-2 smallest">Full Cluster Logic Visualization</p>
+            </div>
+
+            <div class="topology-wrapper mb-5"
+                style="background: rgba(var(--text), 0.02); border-radius: 30px; padding: 40px; border: 1px solid var(--border);">
+                <!-- Legend -->
+                <div class="d-flex gap-4 mb-4 justify-content-center small opacity-60">
+                    <div class="d-flex align-items-center gap-2"><span
+                            style="width:12px; height:12px; background:var(--primary); border-radius:3px;"></span> Core
+                        Service</div>
+                    <div class="d-flex align-items-center gap-2"><span
+                            style="width:12px; height:2px; border-bottom:2px dashed var(--primary);"></span> Logical
+                        Flow</div>
+                    <div class="d-flex align-items-center gap-2"><span
+                            style="width:12px; height:12px; background:#10b981; border-radius:50%;"></span> Master Node
+                    </div>
                 </div>
-                <div class="status-indicator-wrap p-2 px-3 rounded-pill bg-black bg-opacity-5 border">
-                    <span class="smallest fw-bold opacity-50 me-2">NETWORK SYNC:</span>
-                    <span class="text-success smallest fw-bold">ACTIVE</span>
+
+                <div class="svg-container" style="position: relative;">
+                    <svg id="main-topology" viewBox="0 0 1000 500" class="w-100 h-auto">
+                        <defs>
+                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="3" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+
+                        <!-- Layers -->
+                        <!-- 1. Infrastructure (Base) -->
+                        <g class="infra-layer">
+                            <!-- Master -->
+                            <rect x="50" y="200" width="120" height="100" rx="15" class="topo-node"
+                                data-title="Mac-Master-01"
+                                data-desc="Control plane node running ETCD and API Server. Optimized for Silicon performance." />
+                            <text x="110" y="255" text-anchor="middle" class="node-label">MASTER</text>
+
+                            <!-- Worker 1 -->
+                            <rect x="250" y="100" width="120" height="100" rx="15" class="topo-node"
+                                data-title="Worker-01 (Inference)"
+                                data-desc="Dedicated silicon worker for AI workloads and Ollama inference models." />
+                            <text x="310" y="155" text-anchor="middle" class="node-label">WORKER 01</text>
+
+                            <!-- Worker 2 -->
+                            <rect x="250" y="300" width="120" height="100" rx="15" class="topo-node"
+                                data-title="Worker-02 (Storage)"
+                                data-desc="Storage-optimized worker hosting the Longhorn replicated volumes and Databases." />
+                            <text x="310" y="355" text-anchor="middle" class="node-label">WORKER 02</text>
+                        </g>
+
+                        <!-- 2. Networking (Connectors) -->
+                        <g class="network-layer" stroke="var(--primary)" stroke-width="1.5" fill="none">
+                            <path d="M170,250 L250,150" class="flow-path" />
+                            <path d="M170,250 L250,350" class="flow-path" />
+
+                            <!-- External Traffic -->
+                            <path d="M0,250 Q100,250 170,250" stroke-dasharray="5,5" class="flow-path animated" />
+                        </g>
+
+                        <!-- 3. Service Mesh -->
+                        <g class="service-layer">
+                            <!-- MetalLB -->
+                            <circle cx="210" cy="250" r="25" class="topo-service" data-title="MetalLB"
+                                data-desc="BGP-based Load Balancer providing internal IP allocation for the cluster." />
+                            <text x="210" y="254" text-anchor="middle" font-size="8" fill="white">LB</text>
+
+                            <!-- Calico -->
+                            <rect x="180" y="100" width="60" height="30" rx="5" class="topo-node-alt"
+                                data-title="Calico CNI"
+                                data-desc="High-performance container networking with BGP routing and network policies." />
+                            <text x="210" y="120" text-anchor="middle" font-size="6" fill="var(--primary)">CNI</text>
+
+                            <!-- ArgoCD -->
+                            <rect x="50" y="50" width="80" height="40" rx="10" class="topo-service" data-title="ArgoCD"
+                                data-desc="The GitOps brain. Synchronizes GitHub manifests with the physical cluster state." />
+                            <text x="90" y="75" text-anchor="middle" font-size="8" fill="white">GITOPS</text>
+
+                            <!-- Ingress -->
+                            <rect x="420" y="200" width="100" height="100" rx="20" class="topo-node-primary"
+                                data-title="Nginx Ingress"
+                                data-desc="The main traffic gateway handles SSL termination and Route53 DNS synchronization." />
+                            <text x="470" y="255" text-anchor="middle" class="node-label" fill="white">INGRESS</text>
+
+                            <!-- Cert Manager -->
+                            <rect x="430" y="80" width="80" height="40" rx="8" class="topo-node-alt"
+                                data-title="Cert-Manager"
+                                data-desc="Automated TLS certificate management using Let's Encrypt and custom CA." />
+                            <text x="470" y="105" text-anchor="middle" font-size="7" fill="var(--primary)">TLS
+                                SYNC</text>
+
+                            <!-- Longhorn -->
+                            <rect x="430" y="380" width="80" height="40" rx="8" class="topo-node-alt"
+                                data-title="Longhorn Storage"
+                                data-desc="High-availability block storage with distributed replication across worker nodes." />
+                            <text x="470" y="405" text-anchor="middle" font-size="7"
+                                fill="var(--primary)">STORAGE</text>
+                        </g>
+
+                        <!-- 4. Application Stack -->
+                        <g class="app-layer">
+                            <rect x="650" y="180" width="140" height="140" rx="25" class="topo-app"
+                                data-title="iooding-blog"
+                                data-desc="The Django 5.1 core application running in high-availability mode." />
+                            <text x="720" y="245" text-anchor="middle" class="node-label">APP CORE</text>
+
+                            <!-- AI Hub -->
+                            <circle cx="720" cy="120" r="35" class="topo-service-ai" data-title="Ollama"
+                                data-desc="Local AI inference hub serving Qwen and Llama models via internal API." />
+                            <text x="720" y="124" text-anchor="middle" font-size="8" fill="white">AI</text>
+
+                            <!-- Redis -->
+                            <circle cx="850" cy="250" r="30" class="topo-service" data-title="Redis Stack"
+                                data-desc="Vector database and caching layer for sub-100ms retrieval." />
+                            <text x="850" y="254" text-anchor="middle" font-size="8" fill="white">REDIS</text>
+                        </g>
+                    </svg>
+
+                    <!-- Tooltip Box -->
+                    <div id="topo-tooltip" class="topo-tooltip">
+                        <h5 id="topo-tool-title"></h5>
+                        <p id="topo-tool-desc"></p>
+                    </div>
                 </div>
             </div>
 
-            <!-- SVG Architecture Diagram (Interactive) -->
-            <div class="diagram-container py-4 text-center">
-                <svg id="architecture-svg" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet" class="w-100"
-                    style="max-height: 500px;">
-                    <!-- Connections -->
-                    <g class="connections" stroke="var(--primary)" stroke-width="1.5" stroke-dasharray="4,4">
-                        <path d="M100,200 L250,200" class="flow-line">
-                            <animate attributeName="stroke-dashoffset" from="24" to="0" dur="2s"
-                                repeatCount="indefinite" />
-                        </path>
-                        <path d="M350,200 L500,120" class="flow-line" />
-                        <path d="M350,200 L500,280" class="flow-line" />
-                        <path d="M600,120 L750,120" class="flow-line" />
-                        <path d="M600,280 L750,280" class="flow-line" />
-                    </g>
-
-                    <!-- Nodes -->
-                    <g class="nodes">
-                        <!-- User -->
-                        <circle cx="100" cy="200" r="40" fill="var(--bg)" stroke="var(--primary)" stroke-width="2" />
-                        <text x="100" y="205" text-anchor="middle" font-size="12" fill="var(--text)"
-                            font-weight="bold">USER</text>
-
-                        <!-- Ingress -->
-                        <rect x="250" y="160" width="100" height="80" rx="10" fill="var(--bg)" stroke="var(--primary)"
-                            stroke-width="2" />
-                        <text x="300" y="195" text-anchor="middle" font-size="10" fill="var(--text)"
-                            font-weight="bold">NGINX</text>
-                        <text x="300" y="215" text-anchor="middle" font-size="8" fill="var(--text)"
-                            opacity="0.6">INGRESS</text>
-
-                        <!-- Django Core -->
-                        <rect x="500" y="80" width="100" height="80" rx="10" fill="var(--primary)" />
-                        <text x="550" y="125" text-anchor="middle" font-size="10" fill="white"
-                            font-weight="bold">DJANGO</text>
-                        <text x="550" y="140" text-anchor="middle" font-size="8" fill="white"
-                            opacity="0.8">ENGINE</text>
-
-                        <!-- AI Backend -->
-                        <rect x="500" y="240" width="100" height="80" rx="10" fill="var(--primary)" />
-                        <text x="550" y="285" text-anchor="middle" font-size="10" fill="white"
-                            font-weight="bold">OLLAMA</text>
-                        <text x="550" y="300" text-anchor="middle" font-size="8" fill="white" opacity="0.8">LLM
-                            CORE</text>
-
-                        <!-- Storage/Redis -->
-                        <rect x="700" y="85" width="70" height="70" rx="35" fill="var(--bg)" stroke="var(--primary)"
-                            stroke-width="2" />
-                        <text x="735" y="125" text-anchor="middle" font-size="10" fill="var(--text)"
-                            font-weight="bold">REDIS</text>
-
-                        <!-- Database -->
-                        <polygon points="735,240 770,260 770,300 735,320 700,300 700,260" fill="var(--bg)"
-                            stroke="var(--primary)" stroke-width="2" />
-                        <text x="735" y="285" text-anchor="middle" font-size="10" fill="var(--text)"
-                            font-weight="bold">DB</text>
-                    </g>
-                </svg>
-            </div>
-
-            <div class="row g-4 mt-5">
+            <!-- Detailed Specs Grid -->
+            <div class="row g-4">
                 <div class="col-md-3">
-                    <h6 class="fw-bold mb-2">01. Traffic Gateway</h6>
-                    <p class="smallest text-muted">Ingress-Nginx handles TLS termination and dynamic routing to the
-                        cluster services.</p>
+                    <div class="p-4 rounded-4 bg-primary bg-opacity-5 h-100 border border-primary border-opacity-10">
+                        <i class="mb-3 d-block text-primary">01</i>
+                        <h6 class="fw-bold">GitOps Flow</h6>
+                        <p class="smallest text-muted mb-0">Declarative deployments via ArgoCD ensure the cluster stays
+                            in its desired state automatically.</p>
+                    </div>
                 </div>
                 <div class="col-md-3">
-                    <h6 class="fw-bold mb-2">02. Inference Layer</h6>
-                    <p class="smallest text-muted">Ollama operates as a sidecar/service, providing raw LLM tokens for
-                        RAG-enhanced responses.</p>
+                    <div class="p-4 rounded-4 bg-primary bg-opacity-5 h-100 border border-primary border-opacity-10">
+                        <i class="mb-3 d-block text-primary">02</i>
+                        <h6 class="fw-bold">Silicon Native</h6>
+                        <p class="smallest text-muted mb-0">M-series optimization reduces inference latency by 40%
+                            compared to traditional cloud CPU rigs.</p>
+                    </div>
                 </div>
                 <div class="col-md-3">
-                    <h6 class="fw-bold mb-2">03. Vector Matrix</h6>
-                    <p class="smallest text-muted">Redis Stack functions as our primary vector database, storing HNSW
-                        indexes for instant recall.</p>
+                    <div class="p-4 rounded-4 bg-primary bg-opacity-5 h-100 border border-primary border-opacity-10">
+                        <i class="mb-3 d-block text-primary">03</i>
+                        <h6 class="fw-bold">Encryption Edge</h6>
+                        <p class="smallest text-muted mb-0">Automated TLS management by Cert-Manager secures every
+                            internal and external endpoint.</p>
+                    </div>
                 </div>
                 <div class="col-md-3">
-                    <h6 class="fw-bold mb-2">04. Persistent Core</h6>
-                    <p class="smallest text-muted">PostgreSQL stores the relational metadata and blog state with
-                        Longhorn HA storage.</p>
+                    <div class="p-4 rounded-4 bg-primary bg-opacity-5 h-100 border border-primary border-opacity-10">
+                        <i class="mb-3 d-block text-primary">04</i>
+                        <h6 class="fw-bold">Self-Healing</h6>
+                        <p class="smallest text-muted mb-0">Kubernetes health probes automatically restart failed
+                            containers within 10 seconds of detection.</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Mini Game Section: Cluster Balancer -->
-        <div class="glass-card p-5 rounded-4 mb-5 border-0 shadow-lg"
-            style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
-            <div class="text-center mb-5">
-                <span class="badge bg-primary px-3 py-2 mb-3">MINI-GAME: LABORATORY STABILITY</span>
-                <h3 class="fw-bold h2 mb-2">Balance the Cluster</h3>
-                <p class="opacity-70">A traffic spike is coming. Allocate resources to keep the service online!</p>
+        <!-- Chaos Engineer Game -->
+        <div class="glass-card mb-5 p-5 rounded-4 border-0 shadow-lg text-white"
+            style="background: #0f172a; overflow: hidden;">
+            <div class="row align-items-center mb-5">
+                <div class="col-md-7">
+                    <span class="badge bg-danger px-3 py-2 mb-3">SIMULATION: CHAOS ENGINEER</span>
+                    <h2 class="fw-bold mb-3">Defend the Infrastructure</h2>
+                    <p class="opacity-70 lead mb-0">A massive traffic spike and storage failures are hitting the
+                        cluster. Manual intervention required!</p>
+                </div>
+                <div class="col-md-5 text-end">
+                    <div
+                        class="game-scoreboard p-3 rounded-4 bg-white bg-opacity-5 border border-white border-opacity-10">
+                        <div class="row g-0">
+                            <div class="col-4 text-center border-end">
+                                <div class="smallest opacity-50 mb-1">UPTIME</div>
+                                <div id="game-v2-time" class="h4 mb-0 fw-bold">0s</div>
+                            </div>
+                            <div class="col-4 text-center border-end">
+                                <div class="smallest opacity-50 mb-1">PODS</div>
+                                <div id="game-v2-pods" class="h4 mb-0 fw-bold">0</div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="smallest opacity-50 mb-1">CPU LOAD</div>
+                                <div id="game-v2-load" class="h4 mb-0 fw-bold text-success">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div id="game-container"
-                class="game-board p-4 rounded-4 bg-black bg-opacity-20 border border-white border-opacity-10 position-relative"
-                style="min-height: 350px;">
-                <div id="game-stats"
-                    class="d-flex justify-content-between mb-4 border-bottom border-white border-opacity-10 pb-3">
-                    <div>LOAD: <span id="game-load" class="text-primary fw-bold">0%</span></div>
-                    <div>HEALTH: <span id="game-health" class="text-success fw-bold">100%</span></div>
-                    <div>SURVIVAL: <span id="game-time" class="fw-bold">0s</span></div>
+            <div id="chaos-game-container" class="position-relative rounded-4"
+                style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); min-height: 450px;">
+                <div id="game-start-screen"
+                    class="position-absolute top-50 start-50 translate-middle text-center w-100 p-4">
+                    <div class="mb-4 display-5">⚡️</div>
+                    <button id="start-chaos-btn"
+                        class="btn btn-primary btn-lg px-5 py-3 fw-bold rounded-pill">INITIALIZE CLUSTER</button>
+                    <p class="mt-3 smallest opacity-40">GOAL: Don't let the CPU Load reach 100%.</p>
                 </div>
 
-                <div id="game-canvas" class="d-flex justify-content-center align-items-center flex-wrap gap-3 py-5">
-                    <button onclick="startGame()" class="btn btn-primary btn-lg px-5">INITIALIZE PODS</button>
+                <!-- Game Grid -->
+                <div id="chaos-grid" class="d-none p-5 row row-cols-4 g-4 h-100 align-content-center">
+                    <!-- Pods will spawn here -->
                 </div>
-            </div>
-
-            <div class="mt-4 text-center smallest opacity-50">
-                INSTRUCTIONS: Click the red "LATENCY" nodes before they overwhelm the cluster pods.
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    .gradient-text {
-        background: linear-gradient(90deg, var(--primary), #818cf8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+    .topo-node {
+        fill: var(--bg);
+        stroke: var(--border);
+        stroke-width: 2;
+        transition: 0.3s;
+        cursor: help;
     }
 
-    .diagram-container {
-        background: rgba(var(--text), 0.01);
-        border-radius: 20px;
+    .topo-node:hover {
+        stroke: var(--primary);
+        fill: rgba(var(--primary-rgb), 0.05);
+        filter: url(#glow);
     }
 
-    .flow-line {
-        filter: drop-shadow(0 0 2px var(--primary));
+    .topo-node-primary {
+        fill: var(--primary);
+        transition: 0.3s;
+        cursor: help;
     }
 
-    .feature-card-premium {
-        background: rgba(var(--text), 0.02);
-        border: 1px solid var(--border);
-        transition: all 0.3s ease;
+    .topo-node-primary:hover {
+        filter: contrast(1.2) brightness(1.1);
     }
 
-    .feature-card-premium:hover {
-        transform: translateY(-5px);
+    .topo-node-alt {
+        fill: transparent;
+        stroke: var(--primary);
+        stroke-width: 1.5;
+        stroke-dasharray: 2, 2;
+        cursor: help;
+    }
+
+    .topo-app {
+        fill: var(--bg);
+        stroke: var(--primary);
+        stroke-width: 3;
+        cursor: help;
+    }
+
+    .topo-service {
+        fill: #1e293b;
+        stroke: #334155;
+        stroke-width: 2;
+        cursor: help;
+    }
+
+    .topo-service-ai {
+        fill: #6366f1;
+        stroke: #818cf8;
+        stroke-width: 2;
+        cursor: help;
+    }
+
+    .node-label {
+        font-size: 10px;
+        font-weight: 700;
+        fill: var(--text);
+        pointer-events: none;
+    }
+
+    .topo-tooltip {
+        position: absolute;
+        display: none;
         background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        width: 220px;
+        z-index: 100;
+        pointer-events: none;
     }
 
-    /* Game Styles */
-    .game-node {
-        width: 60px;
-        height: 60px;
+    .topo-tooltip h5 {
+        font-size: 0.9rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: var(--primary);
+    }
+
+    .topo-tooltip p {
+        font-size: 0.75rem;
+        margin-bottom: 0;
+        opacity: 0.7;
+    }
+
+    .flow-path.animated {
+        stroke-dasharray: 5, 5;
+        animation: flowDash 2s linear infinite;
+    }
+
+    @keyframes flowDash {
+        to {
+            stroke-dashoffset: -20;
+        }
+    }
+
+    /* Game v2 Styles */
+    .chaos-pod {
+        height: 80px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        font-weight: bold;
-        font-size: 0.7rem;
         transition: all 0.2s;
-        animation: spawn 0.3s ease-out;
-        user-select: none;
+        position: relative;
     }
 
-    .node-latency {
-        border: 2px solid #ef4444;
+    .chaos-pod:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .chaos-pod.failed {
+        border-color: #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+        animation: shake 0.5s infinite;
+    }
+
+    .chaos-pod.failed::after {
+        content: "RESTART";
+        position: absolute;
+        bottom: 5px;
+        font-size: 0.6rem;
+        font-weight: bold;
         color: #ef4444;
-        box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
     }
 
-    .node-latency:active {
-        transform: scale(0.9);
+    .chaos-pod i {
+        font-size: 1.2rem;
+        margin-bottom: 4px;
     }
 
-    @keyframes spawn {
-        from {
-            transform: scale(0);
-            opacity: 0;
+    @keyframes shake {
+        0% {
+            transform: translate(0);
         }
 
-        to {
-            transform: scale(1);
-            opacity: 1;
+        25% {
+            transform: translate(2px);
+        }
+
+        50% {
+            transform: translate(-2px);
+        }
+
+        75% {
+            transform: translate(2px);
+        }
+
+        100% {
+            transform: translate(0);
         }
     }
 </style>
 
 <script>
-    let gameActive = false;
-    let gameHealth = 100;
-    let gameTime = 0;
-    let gameInt, timerInt;
+    // Topology Tooltips
+    const tooltip = document.getElementById('topo-tooltip');
+    const nodes = document.querySelectorAll('.topo-node, .topo-node-primary, .topo-node-alt, .topo-app, .topo-service, .topo-service-ai');
 
-    function startGame() {
-        if (gameActive) return;
-        gameActive = true;
-        gameHealth = 100;
-        gameTime = 0;
-        document.getElementById('game-canvas').innerHTML = '';
-        document.getElementById('game-health').textContent = '100%';
-        document.getElementById('game-health').className = 'text-success fw-bold';
+    nodes.forEach(node => {
+        node.addEventListener('mouseenter', (e) => {
+            const title = node.getAttribute('data-title');
+            const desc = node.getAttribute('data-desc');
+            document.getElementById('topo-tool-title').innerText = title;
+            document.getElementById('topo-tool-desc').innerText = desc;
 
-        timerInt = setInterval(() => {
-            gameTime++;
-            document.getElementById('game-time').textContent = gameTime + 's';
-            document.getElementById('game-load').textContent = Math.min(100, (gameTime * 2)) + '%';
+            tooltip.style.display = 'block';
+            updateTooltipPos(e);
+        });
+
+        node.addEventListener('mousemove', updateTooltipPos);
+
+        node.addEventListener('mouseleave', () => {
+            tooltip.style.display = 'none';
+        });
+    });
+
+    function updateTooltipPos(e) {
+        const rect = document.querySelector('.svg-container').getBoundingClientRect();
+        tooltip.style.left = (e.clientX - rect.left + 20) + 'px';
+        tooltip.style.top = (e.clientY - rect.top + 20) + 'px';
+    }
+
+    // Chaos Engineer Game v2
+    let chaosGameActive = false;
+    let chaosUptime = 0;
+    let chaosPods = 8;
+    let chaosFailed = 0;
+    let chaosInterval, chaosTimer;
+    const chaosGrid = document.getElementById('chaos-grid');
+
+    document.getElementById('start-chaos-btn').addEventListener('click', startChaosGame);
+
+    function startChaosGame() {
+        chaosGameActive = true;
+        chaosUptime = 0;
+        chaosFailed = 0;
+        document.getElementById('game-start-screen').classList.add('d-none');
+        chaosGrid.classList.remove('d-none');
+
+        renderPods();
+
+        chaosTimer = setInterval(() => {
+            chaosUptime++;
+            document.getElementById('game-v2-time').innerText = chaosUptime + 's';
+
+            // Randomly fail pods
+            if (Math.random() < 0.2 + (chaosUptime / 100)) {
+                triggerPodFailure();
+            }
+
+            updateLoad();
         }, 1000);
-
-        gameInt = setInterval(spawnNode, 800 - Math.min(500, gameTime * 10));
     }
 
-    function spawnNode() {
-        const canvas = document.getElementById('game-canvas');
-        if (canvas.children.length > 15) {
-            updateHealth(-10);
-            return;
+    function renderPods() {
+        chaosGrid.innerHTML = '';
+        for (let i = 0; i < 8; i++) {
+            const pod = document.createElement('div');
+            pod.className = 'col';
+            pod.innerHTML = `
+            <div class="chaos-pod" id="pod-\${i}" onclick="restartPod(\${i})">
+                <i class="opacity-50">📦</i>
+                <span class="smallest opacity-80">pod-v\${i}</span>
+            </div>
+        `;
+            chaosGrid.appendChild(pod);
+        }
+        document.getElementById('game-v2-pods').innerText = 8;
+    }
+
+    function triggerPodFailure() {
+        const livePods = [];
+        for (let i = 0; i < 8; i++) {
+            const p = document.getElementById(`pod-\${i}`);
+            if (!p.classList.contains('failed')) livePods.push(p);
         }
 
-        const node = document.createElement('div');
-        node.className = 'game-node node-latency';
-        node.innerHTML = 'LAG';
-        node.onclick = () => {
-            node.remove();
-        };
-
-        canvas.appendChild(node);
-    }
-
-    function updateHealth(val) {
-        gameHealth += val;
-        const h = document.getElementById('game-health');
-        h.textContent = gameHealth + '%';
-        if (gameHealth < 50) h.className = 'text-warning fw-bold';
-        if (gameHealth < 25) h.className = 'text-danger fw-bold';
-
-        if (gameHealth <= 0) {
-            endGame();
+        if (livePods.length > 0) {
+            const target = livePods[Math.floor(Math.random() * livePods.length)];
+            target.classList.add('failed');
+            target.querySelector('i').innerText = '⚠️';
+            chaosFailed++;
         }
     }
 
-    function endGame() {
-        gameActive = false;
-        clearInterval(gameInt);
-        clearInterval(timerInt);
-        document.getElementById('game-canvas').innerHTML = `
-        <div class="text-center">
-            <h4 class="text-danger mb-3">CLUSTER CRITICAL FAILURE</h4>
-            <p>You maintained uptime for ${gameTime} seconds.</p>
-            <button onclick="startGame()" class="btn btn-primary mt-3">REBOOT SYSTEM</button>
-        </div>
+    function restartPod(id) {
+        const pod = document.getElementById(`pod-\${id}`);
+        if (pod.classList.contains('failed')) {
+            pod.classList.remove('failed');
+            pod.querySelector('i').innerText = '📦';
+            chaosFailed--;
+            updateLoad();
+        }
+    }
+
+    function updateLoad() {
+        const load = Math.round((chaosFailed / 8) * 100);
+        const loadEl = document.getElementById('game-v2-load');
+        loadEl.innerText = load + '%';
+
+        if (load < 40) loadEl.className = 'h4 mb-0 fw-bold text-success';
+        else if (load < 80) loadEl.className = 'h4 mb-0 fw-bold text-warning';
+        else loadEl.className = 'h4 mb-0 fw-bold text-danger';
+
+        if (load >= 100) {
+            endChaosGame();
+        }
+    }
+
+    function endChaosGame() {
+        chaosGameActive = false;
+        clearInterval(chaosTimer);
+        chaosGrid.classList.add('d-none');
+        const startScreen = document.getElementById('game-start-screen');
+        startScreen.classList.remove('d-none');
+        startScreen.innerHTML = `
+        <h2 class="text-danger fw-bold mb-3">CLUSTER OVERFLOW</h2>
+        <p class="mb-4 lead">Uptime: \${chaosUptime} seconds. Infrastructure collapsed under load.</p>
+        <button onclick="location.reload()" class="btn btn-outline-light px-5 py-3 rounded-pill fw-bold">RETRY ARCHITECTURE</button>
     `;
     }
 </script>
