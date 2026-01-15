@@ -29,7 +29,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: viktor2003/iooding:v61
+          image: viktor2003/iooding:v63
           command: ["sh", "-c", "/app/docker-entrypoint.sh deploy"]
           env:
             - name: DJANGO_SUPERUSER_USERNAME
@@ -77,13 +77,14 @@ spec:
         - { key: "node.kubernetes.io/not-ready", operator: "Exists", effect: "NoExecute", tolerationSeconds: 10 }
         - { key: "node.kubernetes.io/unreachable", operator: "Exists", effect: "NoExecute", tolerationSeconds: 10 }
       securityContext: { runAsNonRoot: true, runAsUser: 100, fsGroup: 100 }
+      serviceAccountName: iooding-sa
       initContainers:
         - name: wait-for-db
           image: alpine:latest
           command: ["sh", "-c", "until nc -z postgres 5432; do sleep 1; done"]
       containers:
         - name: iooding
-          image: viktor2003/iooding:v61
+          image: viktor2003/iooding:v63
           ports: [{ containerPort: 8000 }]
           env:
             - name: DB_PASSWORD

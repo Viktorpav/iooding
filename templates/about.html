@@ -15,78 +15,96 @@
 
         <div class="glass-card p-5 rounded-4 mb-5"
             style="background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); position: relative; overflow: hidden;">
-            <div class="row g-5 align-items-center mb-5">
-                <div class="col-md-6">
-                    <h3 class="h4 fw-bold mb-4 text-primary">Technical Mission</h3>
-                    <p class="mb-0">
-                        Ding is not just a blog; it is a live-monitored research platform. We specialize in building
-                        resilient technical architectures using non-traditional hardware, specifically leveraging
-                        M1/M2/M3 Silicon to run high-density containerized workloads.
+
+            <!-- Technical Mission -->
+            <div class="row g-5 align-items-center mb-5 position-relative" style="z-index: 2;">
+                <div class="col-md-7">
+                    <h3 class="h4 fw-bold mb-4 text-primary d-flex align-items-center">
+                        <span class="me-2">🧩</span> The Engineering Core
+                    </h3>
+                    <p class="mb-4">
+                        Ding is a high-performance inference laboratory where distributed systems meet modern AI
+                        architecture.
+                        Unlike traditional search-based blogs, Ding utilizes <strong>Neural Path Mapping</strong> to
+                        connect disparate technical concepts across the infrastructure landscape.
                     </p>
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <span
+                            class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-2">HNSW
+                            Vector Search</span>
+                        <span
+                            class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-2">Async
+                            RAG Pipeline</span>
+                        <span
+                            class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-2">M1/M3
+                            Silicon Optimized</span>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="p-4 rounded-4 bg-black bg-opacity-5 border border-white border-opacity-10">
-                        <code class="small text-primary">
-                            $ kubectl get nodes<br>
-                            NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATUS&nbsp;&nbsp;&nbsp;ROLES&nbsp;&nbsp;&nbsp;AGE<br>
-                            master-1&nbsp;&nbsp;&nbsp;Ready&nbsp;&nbsp;&nbsp;&nbsp;cp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Stable<br>
-                            worker-1&nbsp;&nbsp;&nbsp;Ready&nbsp;&nbsp;&nbsp;&nbsp;worker&nbsp;&nbsp;Online
+                <div class="col-md-5">
+                    <div class="p-4 rounded-4 bg-black bg-opacity-5 border border-white border-opacity-10 backdrop-blur"
+                        style="backdrop-filter: blur(10px);">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="small fw-bold opacity-50">NODE METADATA</span>
+                            <span class="pulse"></span>
+                        </div>
+                        <code class="small text-primary"
+                            style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">
+                            PLATFORM: Apple Silicon<br>
+                            KERNEL: Darwin-K8s<br>
+                            INFERENCE: Local Ollama<br>
+                            VERSION: 6.0.0-Nexus
                         </code>
                     </div>
                 </div>
             </div>
 
-            <div class="row g-4 mb-5">
+            <!-- Reach Features: Grid -->
+            <div class="row g-4 mb-5 position-relative" style="z-index: 2;">
                 <div class="col-md-4">
-                    <div class="p-4 rounded-4 h-100"
-                        style="background: rgba(var(--text), 0.03); border: 1px solid var(--border);">
-                        <h5 class="fw-bold mb-3 d-flex align-items-center">
-                            <span class="me-2">⚡</span> Low Latency
-                        </h5>
-                        <p class="small text-muted mb-0">Engineered with Redis Stack and HNSW vector search for
-                            sub-100ms technical retrieval.</p>
+                    <div class="p-4 rounded-4 h-100 feature-card-premium">
+                        <div class="fs-3 mb-3">🧠</div>
+                        <h5 class="fw-bold mb-3">Neural Inference</h5>
+                        <p class="small text-muted mb-0">Local execution of Qwen-Coder models within our cluster,
+                            ensuring 100% data sovereignty and zero-latency technical assistance.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="p-4 rounded-4 h-100"
-                        style="background: rgba(var(--text), 0.03); border: 1px solid var(--border);">
-                        <h5 class="fw-bold mb-3 d-flex align-items-center">
-                            <span class="me-2">🤖</span> Local AI
-                        </h5>
-                        <p class="small text-muted mb-0">Powered by Ollama and Qwen-7B, ensuring your technical data
-                            never leaves the cluster.</p>
+                    <div class="p-4 rounded-4 h-100 feature-card-premium">
+                        <div class="fs-3 mb-3">🔌</div>
+                        <h5 class="fw-bold mb-3">Nexus Search</h5>
+                        <p class="small text-muted mb-0">A hybrid retrieval system combining classic keyword precision
+                            with deep semantic understanding via Redis Vector Similarity.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="p-4 rounded-4 h-100"
-                        style="background: rgba(var(--text), 0.03); border: 1px solid var(--border);">
-                        <h5 class="fw-bold mb-3 d-flex align-items-center">
-                            <span class="me-2">🏗️</span> K8s Native
-                        </h5>
-                        <p class="small text-muted mb-0">Horizontal scaling, self-healing, and declarative management
-                            across the entire stack.</p>
+                    <div class="p-4 rounded-4 h-100 feature-card-premium">
+                        <div class="fs-3 mb-3">🍏</div>
+                        <h5 class="fw-bold mb-3">Mac-Native K8s</h5>
+                        <p class="small text-muted mb-0">High-density containerization optimized for the
+                            Power/Performance ratio of M-series chips, achieving enterprise stability.</p>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-5">
+            <!-- Monitoring Dashboard -->
+            <div class="mt-5 position-relative" style="z-index: 2;">
                 <h3 class="h4 fw-bold mb-4 d-flex align-items-center">
                     <span class="me-2">📊</span> Live Infrastructure Intelligence
                     <span id="cluster-heartbeat"
                         class="ms-3 badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-20"
-                        style="font-size: 0.65rem; letter-spacing: 0.1em;">SYSTEM NOMINAL</span>
+                        style="font-size: 0.65rem; letter-spacing: 0.1em;">SYNCING...</span>
                 </h3>
 
                 <div id="k8s-dashboard" class="row g-4">
                     <!-- Dynamic Dashboard Injection -->
                     <div class="col-12 text-center py-4 opacity-50">
                         <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                        <span class="small">Syncing with Kubernetes API...</span>
+                        <span class="small">Connecting to Architecture API...</span>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-5 text-center">
+            <div class="mt-5 text-center position-relative" style="z-index: 2;">
                 <p class="fw-bold">
                     Explore the source on <a href="https://github.com/Viktorpav/iooding" target="_blank"
                         class="text-primary text-decoration-none">GitHub Repository</a>
@@ -95,6 +113,26 @@
         </div>
     </div>
 </div>
+
+<style>
+    .feature-card-premium {
+        background: rgba(var(--text), 0.02);
+        border: 1px solid var(--border);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .feature-card-premium:hover {
+        background: var(--surface);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        border-color: var(--primary-opacity-20);
+    }
+
+    .backdrop-blur {
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+    }
+</style>
 
 <script>
     async function updateK8sDashboard() {
@@ -106,6 +144,12 @@
             const data = await res.json();
 
             let html = '';
+
+            if (data.nodes.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-warning small p-4">RBAC Handshake Timeout: API connection pending.</div>';
+                heartbeat.textContent = 'CONNECTING';
+                return;
+            }
 
             // 1. Nodes Status
             data.nodes.forEach(node => {
@@ -139,16 +183,18 @@
         `;
 
             container.innerHTML = html;
-            heartbeat.className = `ms-3 badge rounded-pill bg-${data.global_status === 'Healthy' ? 'success' : 'warning'} bg-opacity-10 text-${data.global_status === 'Healthy' ? 'success' : 'warning'} border border-${data.global_status === 'Healthy' ? 'success' : 'warning'} border-opacity-20`;
+            const globalHealthy = data.global_status === 'Healthy';
+            heartbeat.className = `ms-3 badge rounded-pill bg-${globalHealthy ? 'success' : 'warning'} bg-opacity-10 text-${globalHealthy ? 'success' : 'warning'} border border-${globalHealthy ? 'success' : 'warning'} border-opacity-20`;
             heartbeat.textContent = data.global_status.toUpperCase();
 
         } catch (e) {
             container.innerHTML = '<div class="col-12 text-center text-danger small">Monitoring Sync Failure: API Unreachable</div>';
+            heartbeat.textContent = 'MAINTENANCE';
         }
     }
 
     // Initial pull and periodic refresh
     updateK8sDashboard();
-    setInterval(updateK8sDashboard, 30000);
+    setInterval(updateK8sDashboard, 15000);
 </script>
 {% endblock %}

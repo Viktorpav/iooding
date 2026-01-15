@@ -32,7 +32,7 @@
         <ul class="navbar-nav d-none d-lg-flex">
           <li class="nav-item">
             <a class="nav-link {% if '/tag/linux/' in request.path %}active{% endif %}"
-              href="{% url 'blog:post_tag' tag_slug='linux' %}">Linux</a>
+              href="{% url 'blog:post_tag' tag_slug='linux' %}">Nexus</a>
           </li>
         </ul>
       </div>
@@ -82,15 +82,6 @@
         </div>
 
         <div class="footer-nav-minimal">
-          <div class="footer-section">
-            <h4 class="footer-tech-title">Laboratory Stack</h4>
-            <div class="tech-stack-flex mini mt-2">
-              <span class="tech-tag mini">Django 5.1</span>
-              <span class="tech-tag mini">Redis Stack</span>
-              <span class="tech-tag mini">K8s Orchestration</span>
-              <span class="tech-tag mini">Ollama RAG</span>
-            </div>
-          </div>
           <div class="footer-section">
             <ul class="footer-links horizontal">
               <li><a href="https://github.com/Viktorpav/iooding" target="_blank">Source</a></li>
