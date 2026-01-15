@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %} | About the Platform{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold mb-3">Ding Architecture</h1>
+            <p class="lead text-muted">A High-Performance Inference Laboratory & Technical Repository.</p>
+        </div>
+
+        <div class="glass-card p-5 rounded-4 mb-5"
+            style="background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow);">
+            <div class="row g-5">
+                <div class="col-md-6">
+                    <h3 class="h4 fw-bold mb-3 text-primary">What is Ding?</h3>
+                    <p>Ding is a sophisticated engineering platform designed to bridge technical discourse with advanced
+                        AI capabilities. It serves as both a repository for high-level software engineering insights and
+                        a testing ground for containerized AI workflows.</p>
+                </div>
+                <div class="col-md-6">
+                    <h3 class="h4 fw-bold mb-3 text-primary">The Core Tech</h3>
+                    <p>Built on <strong>Django 5.1</strong>, our infrastructure leverages <strong>Kubernetes</strong>
+                        for orchestration and <strong>Redis Stack</strong> for ultra-fast HNSW vector search, enabling
+                        complex RAG interactions in real-time.</p>
+                </div>
+            </div>
+
+            <hr class="my-5 opacity-10">
+
+            <div class="mb-5">
+                <h3 class="h4 fw-bold mb-4">How to use the Interface</h3>
+                <div class="row g-4">
+                    <div class="col-md-4 text-center">
+                        <div class="p-4 rounded-3 border bg-white dark:bg-black h-100">
+                            <span class="fs-2 mb-3 d-block">🔍</span>
+                            <h5 class="fw-bold">Semantic Search</h5>
+                            <p class="small text-muted">Use the search bar to find technical posts indexed by both
+                                keywords and deep semantic meaning.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="p-4 rounded-3 border bg-white dark:bg-black h-100">
+                            <span class="fs-2 mb-3 d-block">🤖</span>
+                            <h5 class="fw-bold">AI Assistant</h5>
+                            <p class="small text-muted">The integrated assistant uses local LLMs to summarize posts,
+                                explain code, and answer technical queries.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="p-4 rounded-3 border bg-white dark:bg-black h-100">
+                            <span class="fs-2 mb-3 d-block">⚡</span>
+                            <h5 class="fw-bold">Real-time Docs</h5>
+                            <p class="small text-muted">Access live technical documentation and system architecture maps
+                                directly through the assistant.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-20 text-center">
+                <p class="mb-0 fw-bold">Ding is open for technical exploration. Check the <a
+                        href="https://github.com/Viktorpav/iooding" target="_blank"
+                        class="text-primary text-decoration-none border-bottom border-primary">GitHub Repository</a> for
+                    full source code.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

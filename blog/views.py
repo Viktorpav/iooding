@@ -183,8 +183,6 @@ async def chat_api(request):
                         
             except Exception as e:
                 yield f"data: {json.dumps({'error': f'AI Error: {str(e)}'})}\n\n"
-def privacy(request):
-    return render(request, 'privacy.html')
 
         response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
         response['X-Accel-Buffering'], response['Cache-Control'] = 'no', 'no-cache'
@@ -192,3 +190,13 @@ def privacy(request):
             
     except Exception as e:
          return HttpResponse(json.dumps({'error': str(e)}), status=500, content_type="application/json")
+
+
+def privacy(request):
+    """Render the Privacy Protocol page."""
+    return render(request, 'privacy.html')
+
+
+def about(request):
+    """Render the technical About page."""
+    return render(request, 'about.html')
