@@ -181,29 +181,29 @@
         </div>
 
         <!-- Chaos Engineer Game -->
-        <div class="glass-card mb-5 p-5 rounded-4 border-0 shadow-lg text-white"
-            style="background: #0f172a; overflow: hidden;">
-            <div class="row align-items-center mb-5">
-                <div class="col-md-7">
-                    <span class="badge bg-danger px-3 py-2 mb-3">SIMULATION: CHAOS ENGINEER</span>
-                    <h2 class="fw-bold mb-3">Defend the Infrastructure</h2>
-                    <p class="opacity-70 lead mb-0">A massive traffic spike and storage failures are hitting the
-                        cluster. Manual intervention required!</p>
+        <div class="glass-card mb-5 p-5 rounded-4 border-0 shadow-lg"
+            style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+            <div class="row align-items-center mb-4">
+                <div class="col-md-8">
+                    <span class="badge bg-danger px-3 py-2 mb-3">🔥 CHAOS STRESS TEST</span>
+                    <h2 class="fw-bold mb-2 text-white">Chaos Engineer v2.0</h2>
+                    <p class="opacity-70 text-white mb-0">Simulate real-world infrastructure failures. Keep the pods
+                        running while the system tries to bring them down!</p>
                 </div>
-                <div class="col-md-5 text-end">
-                    <div
-                        class="game-scoreboard p-3 rounded-4 bg-white bg-opacity-5 border border-white border-opacity-10">
-                        <div class="row g-0">
-                            <div class="col-4 text-center border-end">
+                <div class="col-md-4">
+                    <div id="chaos-stats" class="p-3 rounded-4"
+                        style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                        <div class="row g-0 text-white">
+                            <div class="col-4 text-center border-end border-secondary">
                                 <div class="smallest opacity-50 mb-1">UPTIME</div>
                                 <div id="game-v2-time" class="h4 mb-0 fw-bold">0s</div>
                             </div>
-                            <div class="col-4 text-center border-end">
+                            <div class="col-4 text-center border-end border-secondary">
                                 <div class="smallest opacity-50 mb-1">PODS</div>
-                                <div id="game-v2-pods" class="h4 mb-0 fw-bold">0</div>
+                                <div id="game-v2-pods" class="h4 mb-0 fw-bold">8</div>
                             </div>
                             <div class="col-4 text-center">
-                                <div class="smallest opacity-50 mb-1">CPU LOAD</div>
+                                <div class="smallest opacity-50 mb-1">LOAD</div>
                                 <div id="game-v2-load" class="h4 mb-0 fw-bold text-success">0%</div>
                             </div>
                         </div>
@@ -211,313 +211,1116 @@
                 </div>
             </div>
 
-            <div id="chaos-game-container" class="position-relative rounded-4"
-                style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); min-height: 450px;">
-                <div id="game-start-screen"
-                    class="position-absolute top-50 start-50 translate-middle text-center w-100 p-4">
-                    <div class="mb-4 display-5">⚡️</div>
-                    <button id="start-chaos-btn"
-                        class="btn btn-primary btn-lg px-5 py-3 fw-bold rounded-pill">INITIALIZE CLUSTER</button>
-                    <p class="mt-3 smallest opacity-40">GOAL: Don't let the CPU Load reach 100%.</p>
+            <div id="chaos-game-container" class="rounded-4 p-4"
+                style="background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.1); position: relative; min-height: 300px;">
+                <div id="chaos-start-screen" class="text-center py-5">
+                    <div class="mb-4" style="font-size: 4rem;">☢️</div>
+                    <h3 class="text-white fw-bold mb-3">Begin Stress Test</h3>
+                    <p class="text-white opacity-70 mb-4">Pods will randomly fail. Click on failed (red) pods to restart
+                        them before the cluster load reaches 100%.</p>
+                    <button id="start-chaos-btn" class="btn btn-lg px-5 py-3 fw-bold rounded-pill btn-danger">START
+                        CHAOS</button>
                 </div>
-
-                <!-- Game Grid -->
-                <div id="chaos-grid" class="d-none p-5 row row-cols-4 g-4 h-100 align-content-center">
-                    <!-- Pods will spawn here -->
+                <div id="chaos-grid" class="row row-cols-2 row-cols-md-4 g-4 d-none">
+                    <!-- Pods injected here -->
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<style>
-    .topo-node {
-        fill: var(--bg);
-        stroke: var(--border);
-        stroke-width: 2;
-        transition: 0.3s;
-        cursor: help;
-    }
+        <!-- Kubernetes Tower Defense Game -->
+        <div class="glass-card mb-5 p-5 rounded-4 border-0 shadow-lg"
+            style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); overflow: hidden; position: relative;">
 
-    .topo-node:hover {
-        stroke: var(--primary);
-        fill: rgba(var(--primary-rgb), 0.05);
-        filter: url(#glow);
-    }
+            <!-- Background Pattern -->
+            <div
+                style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.05; background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px);">
+            </div>
 
-    .topo-node-primary {
-        fill: var(--primary);
-        transition: 0.3s;
-        cursor: help;
-    }
+            <div class="position-relative" style="z-index: 1;">
+                <!-- Game Header -->
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-8">
+                        <span class="badge px-3 py-2 mb-3"
+                            style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-weight: 700;">⚡
+                            K8S TOWER DEFENSE</span>
+                        <h2 class="fw-bold mb-2 text-white">Defend Your Cluster</h2>
+                        <p class="opacity-70 text-white mb-0">Deploy pods strategically to defend against traffic
+                            spikes, DDoS attacks, and resource leaks!</p>
+                    </div>
+                    <div class="col-md-4">
+                        <div id="game-stats" class="p-3 rounded-4"
+                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                            <div class="row g-0 text-white">
+                                <div class="col-4 text-center border-end border-secondary">
+                                    <div class="smallest opacity-50 mb-1">HEALTH</div>
+                                    <div id="cluster-health" class="h4 mb-0 fw-bold text-success">100</div>
+                                </div>
+                                <div class="col-4 text-center border-end border-secondary">
+                                    <div class="smallest opacity-50 mb-1">WAVE</div>
+                                    <div id="current-wave" class="h4 mb-0 fw-bold">0</div>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <div class="smallest opacity-50 mb-1">CPU</div>
+                                    <div id="cpu-credits" class="h4 mb-0 fw-bold" style="color: #fbbf24;">100</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    .topo-node-primary:hover {
-        filter: contrast(1.2) brightness(1.1);
-    }
+                <!-- Game Container -->
+                <div id="k8s-game-container" class="rounded-4"
+                    style="background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.1); position: relative; height: 600px;">
 
-    .topo-node-alt {
-        fill: transparent;
-        stroke: var(--primary);
-        stroke-width: 1.5;
-        stroke-dasharray: 2, 2;
-        cursor: help;
-    }
+                    <!-- Start Screen -->
+                    <div id="game-start-screen"
+                        class="position-absolute top-50 start-50 translate-middle text-center w-100 p-4"
+                        style="z-index: 100;">
+                        <div class="mb-4" style="font-size: 5rem;">🎯</div>
+                        <h3 class="text-white fw-bold mb-3">Initialize Cluster Defense</h3>
+                        <p class="text-white opacity-70 mb-4">Deploy pods on the grid to stop incoming attacks. Each pod
+                            type has unique abilities.</p>
+                        <button id="start-k8s-game" class="btn btn-lg px-5 py-3 fw-bold rounded-pill"
+                            style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none;">
+                            START DEFENSE
+                        </button>
+                    </div>
 
-    .topo-app {
-        fill: var(--bg);
-        stroke: var(--primary);
-        stroke-width: 3;
-        cursor: help;
-    }
+                    <!-- Game Grid -->
+                    <div id="k8s-game-grid" class="d-none h-100 position-relative">
+                        <!-- Path Layer -->
+                        <svg id="path-layer" class="position-absolute"
+                            style="width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+                            <path id="attack-path" d="" stroke="#ef4444" stroke-width="3" fill="none"
+                                stroke-dasharray="10,5" opacity="0.3" />
+                        </svg>
 
-    .topo-service {
-        fill: #1e293b;
-        stroke: #334155;
-        stroke-width: 2;
-        cursor: help;
-    }
+                        <!-- Tower Grid -->
+                        <div id="tower-grid" class="position-absolute"
+                            style="top: 0; left: 0; right: 0; bottom: 0; z-index: 2;"></div>
 
-    .topo-service-ai {
-        fill: #6366f1;
-        stroke: #818cf8;
-        stroke-width: 2;
-        cursor: help;
-    }
+                        <!-- Enemy Layer -->
+                        <div id="enemy-layer" class="position-absolute"
+                            style="top: 0; left: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none;"></div>
 
-    .node-label {
-        font-size: 10px;
-        font-weight: 700;
-        fill: var(--text);
-        pointer-events: none;
-    }
+                        <!-- Wave Info -->
+                        <div id="wave-info"
+                            class="position-absolute top-0 start-50 translate-middle-x mt-3 px-4 py-2 rounded-pill text-white fw-bold"
+                            style="background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.2); z-index: 10;">
+                            <span id="wave-status">Preparing Wave 1...</span>
+                        </div>
+                    </div>
 
-    .topo-tooltip {
-        position: absolute;
-        display: none;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        padding: 15px;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        width: 220px;
-        z-index: 100;
-        pointer-events: none;
-    }
+                    <!-- Game Over Screen -->
+                    <div id="game-over-screen"
+                        class="d-none position-absolute top-50 start-50 translate-middle text-center w-100 p-4"
+                        style="z-index: 100;">
+                        <div class="mb-4" style="font-size: 5rem;">💥</div>
+                        <h3 class="text-danger fw-bold mb-3">CLUSTER OVERLOADED</h3>
+                        <p class="text-white mb-2">Wave Survived: <span id="final-wave" class="fw-bold">0</span></p>
+                        <p class="text-white opacity-70 mb-4">Your cluster couldn't handle the load. Optimize your pod
+                            deployment strategy!</p>
+                        <button onclick="location.reload()"
+                            class="btn btn-outline-light px-5 py-3 rounded-pill fw-bold">
+                            RETRY DEFENSE
+                        </button>
+                    </div>
 
-    .topo-tooltip h5 {
-        font-size: 0.9rem;
-        font-weight: bold;
-        margin-bottom: 5px;
-        color: var(--primary);
-    }
+                    <!-- Victory Screen -->
+                    <div id="victory-screen"
+                        class="d-none position-absolute top-50 start-50 translate-middle text-center w-100 p-4"
+                        style="z-index: 100;">
+                        <div class="mb-4" style="font-size: 5rem;">🏆</div>
+                        <h3 class="text-success fw-bold mb-3">CLUSTER SECURED!</h3>
+                        <p class="text-white mb-2">All waves defended successfully!</p>
+                        <p class="text-white opacity-70 mb-4">Your infrastructure is now production-ready!</p>
+                        <button onclick="location.reload()" class="btn px-5 py-3 rounded-pill fw-bold"
+                            style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none;">
+                            PLAY AGAIN
+                        </button>
+                    </div>
+                </div>
 
-    .topo-tooltip p {
-        font-size: 0.75rem;
-        margin-bottom: 0;
-        opacity: 0.7;
-    }
+                <!-- Pod Shop -->
+                <div id="pod-shop" class="d-none mt-4">
+                    <h5 class="text-white fw-bold mb-3">📦 Deploy Pods</h5>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="pod-card p-3 rounded-3 h-100" data-pod="nginx" data-cost="20"
+                                style="background: rgba(59, 130, 246, 0.1); border: 2px solid #3b82f6; cursor: pointer; transition: all 0.2s;">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span style="font-size: 1.5rem;">🔵</span>
+                                    <span class="badge bg-primary">20 CPU</span>
+                                </div>
+                                <h6 class="text-white fw-bold mb-1">Nginx Pod</h6>
+                                <p class="smallest text-white opacity-70 mb-0">Fast attacks, low cost. Basic defense
+                                    unit.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="pod-card p-3 rounded-3 h-100" data-pod="redis" data-cost="35"
+                                style="background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444; cursor: pointer; transition: all 0.2s;">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span style="font-size: 1.5rem;">🔴</span>
+                                    <span class="badge bg-danger">35 CPU</span>
+                                </div>
+                                <h6 class="text-white fw-bold mb-1">Redis Pod</h6>
+                                <p class="smallest text-white opacity-70 mb-0">Area damage. Slows multiple enemies.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="pod-card p-3 rounded-3 h-100" data-pod="database" data-cost="50"
+                                style="background: rgba(168, 85, 247, 0.1); border: 2px solid #a855f7; cursor: pointer; transition: all 0.2s;">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span style="font-size: 1.5rem;">🟣</span>
+                                    <span class="badge bg-purple" style="background: #a855f7;">50 CPU</span>
+                                </div>
+                                <h6 class="text-white fw-bold mb-1">Database Pod</h6>
+                                <p class="smallest text-white opacity-70 mb-0">Heavy damage, slow fire rate. Boss
+                                    killer.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="pod-card p-3 rounded-3 h-100" data-pod="loadbalancer" data-cost="80"
+                                style="background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; cursor: pointer; transition: all 0.2s;">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span style="font-size: 1.5rem;">🟢</span>
+                                    <span class="badge bg-success">80 CPU</span>
+                                </div>
+                                <h6 class="text-white fw-bold mb-1">Load Balancer</h6>
+                                <p class="smallest text-white opacity-70 mb-0">Multi-target attacks. Ultimate defense.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    .flow-path.animated {
-        stroke-dasharray: 5, 5;
-        animation: flowDash 2s linear infinite;
-    }
-
-    @keyframes flowDash {
-        to {
-            stroke-dashoffset: -20;
-        }
-    }
-
-    /* Game v2 Styles */
-    .chaos-pod {
-        height: 80px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s;
-        position: relative;
-    }
-
-    .chaos-pod:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-2px);
-    }
-
-    .chaos-pod.failed {
-        border-color: #ef4444;
-        background: rgba(239, 68, 68, 0.1);
-        animation: shake 0.5s infinite;
-    }
-
-    .chaos-pod.failed::after {
-        content: "RESTART";
-        position: absolute;
-        bottom: 5px;
-        font-size: 0.6rem;
-        font-weight: bold;
-        color: #ef4444;
-    }
-
-    .chaos-pod i {
-        font-size: 1.2rem;
-        margin-bottom: 4px;
-    }
-
-    @keyframes shake {
-        0% {
-            transform: translate(0);
-        }
-
-        25% {
-            transform: translate(2px);
-        }
-
-        50% {
-            transform: translate(-2px);
-        }
-
-        75% {
-            transform: translate(2px);
-        }
-
-        100% {
-            transform: translate(0);
-        }
-    }
-</style>
-
-<script>
-    // Topology Tooltips
-    const tooltip = document.getElementById('topo-tooltip');
-    const nodes = document.querySelectorAll('.topo-node, .topo-node-primary, .topo-node-alt, .topo-app, .topo-service, .topo-service-ai');
-
-    nodes.forEach(node => {
-        node.addEventListener('mouseenter', (e) => {
-            const title = node.getAttribute('data-title');
-            const desc = node.getAttribute('data-desc');
-            document.getElementById('topo-tool-title').innerText = title;
-            document.getElementById('topo-tool-desc').innerText = desc;
-
-            tooltip.style.display = 'block';
-            updateTooltipPos(e);
-        });
-
-        node.addEventListener('mousemove', updateTooltipPos);
-
-        node.addEventListener('mouseleave', () => {
-            tooltip.style.display = 'none';
-        });
-    });
-
-    function updateTooltipPos(e) {
-        const rect = document.querySelector('.svg-container').getBoundingClientRect();
-        tooltip.style.left = (e.clientX - rect.left + 20) + 'px';
-        tooltip.style.top = (e.clientY - rect.top + 20) + 'px';
-    }
-
-    // Chaos Engineer Game v2
-    let chaosGameActive = false;
-    let chaosUptime = 0;
-    let chaosPods = 8;
-    let chaosFailed = 0;
-    let chaosInterval, chaosTimer;
-    const chaosGrid = document.getElementById('chaos-grid');
-
-    document.getElementById('start-chaos-btn').addEventListener('click', startChaosGame);
-
-    function startChaosGame() {
-        chaosGameActive = true;
-        chaosUptime = 0;
-        chaosFailed = 0;
-        document.getElementById('game-start-screen').classList.add('d-none');
-        chaosGrid.classList.remove('d-none');
-
-        renderPods();
-
-        chaosTimer = setInterval(() => {
-            chaosUptime++;
-            document.getElementById('game-v2-time').innerText = chaosUptime + 's';
-
-            // Randomly fail pods
-            if (Math.random() < 0.2 + (chaosUptime / 100)) {
-                triggerPodFailure();
+        <style>
+            .topo-node {
+                fill: var(--bg);
+                stroke: var(--border);
+                stroke-width: 2;
+                transition: 0.3s;
+                cursor: help;
             }
 
-            updateLoad();
-        }, 1000);
-    }
+            .topo-node:hover {
+                stroke: var(--primary);
+                fill: rgba(var(--primary-rgb), 0.05);
+                filter: url(#glow);
+            }
 
-    function renderPods() {
-        chaosGrid.innerHTML = '';
-        for (let i = 0; i < 8; i++) {
-            const pod = document.createElement('div');
-            pod.className = 'col';
-            pod.innerHTML = `
-            <div class="chaos-pod" id="pod-\${i}" onclick="restartPod(\${i})">
-                <i class="opacity-50">📦</i>
-                <span class="smallest opacity-80">pod-v\${i}</span>
-            </div>
-        `;
-            chaosGrid.appendChild(pod);
-        }
-        document.getElementById('game-v2-pods').innerText = 8;
-    }
+            .topo-node-primary {
+                fill: var(--primary);
+                transition: 0.3s;
+                cursor: help;
+            }
 
-    function triggerPodFailure() {
-        const livePods = [];
-        for (let i = 0; i < 8; i++) {
-            const p = document.getElementById(`pod-\${i}`);
-            if (!p.classList.contains('failed')) livePods.push(p);
-        }
+            .topo-node-primary:hover {
+                filter: contrast(1.2) brightness(1.1);
+            }
 
-        if (livePods.length > 0) {
-            const target = livePods[Math.floor(Math.random() * livePods.length)];
-            target.classList.add('failed');
-            target.querySelector('i').innerText = '⚠️';
-            chaosFailed++;
-        }
-    }
+            .topo-node-alt {
+                fill: transparent;
+                stroke: var(--primary);
+                stroke-width: 1.5;
+                stroke-dasharray: 2, 2;
+                cursor: help;
+            }
 
-    function restartPod(id) {
-        const pod = document.getElementById(`pod-\${id}`);
-        if (pod.classList.contains('failed')) {
-            pod.classList.remove('failed');
-            pod.querySelector('i').innerText = '📦';
-            chaosFailed--;
-            updateLoad();
-        }
-    }
+            .topo-app {
+                fill: var(--bg);
+                stroke: var(--primary);
+                stroke-width: 3;
+                cursor: help;
+            }
 
-    function updateLoad() {
-        const load = Math.round((chaosFailed / 8) * 100);
-        const loadEl = document.getElementById('game-v2-load');
-        loadEl.innerText = load + '%';
+            .topo-service {
+                fill: #1e293b;
+                stroke: #334155;
+                stroke-width: 2;
+                cursor: help;
+            }
 
-        if (load < 40) loadEl.className = 'h4 mb-0 fw-bold text-success';
-        else if (load < 80) loadEl.className = 'h4 mb-0 fw-bold text-warning';
-        else loadEl.className = 'h4 mb-0 fw-bold text-danger';
+            .topo-service-ai {
+                fill: #6366f1;
+                stroke: #818cf8;
+                stroke-width: 2;
+                cursor: help;
+            }
 
-        if (load >= 100) {
-            endChaosGame();
-        }
-    }
+            .node-label {
+                font-size: 10px;
+                font-weight: 700;
+                fill: var(--text);
+                pointer-events: none;
+            }
 
-    function endChaosGame() {
-        chaosGameActive = false;
-        clearInterval(chaosTimer);
-        chaosGrid.classList.add('d-none');
-        const startScreen = document.getElementById('game-start-screen');
-        startScreen.classList.remove('d-none');
-        startScreen.innerHTML = `
-        <h2 class="text-danger fw-bold mb-3">CLUSTER OVERFLOW</h2>
-        <p class="mb-4 lead">Uptime: \${chaosUptime} seconds. Infrastructure collapsed under load.</p>
-        <button onclick="location.reload()" class="btn btn-outline-light px-5 py-3 rounded-pill fw-bold">RETRY ARCHITECTURE</button>
+            .topo-tooltip {
+                position: absolute;
+                display: none;
+                background: var(--surface);
+                border: 1px solid var(--border);
+                padding: 15px;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                width: 220px;
+                z-index: 100;
+                pointer-events: none;
+            }
+
+            .topo-tooltip h5 {
+                font-size: 0.9rem;
+                font-weight: bold;
+                margin-bottom: 5px;
+                color: var(--primary);
+            }
+
+            .topo-tooltip p {
+                font-size: 0.75rem;
+                margin-bottom: 0;
+                opacity: 0.7;
+            }
+
+            .flow-path.animated {
+                stroke-dasharray: 5, 5;
+                animation: flowDash 2s linear infinite;
+            }
+
+            @keyframes flowDash {
+                to {
+                    stroke-dashoffset: -20;
+                }
+            }
+
+            /* Game v2 Styles */
+            .chaos-pod {
+                height: 80px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 12px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.2s;
+                position: relative;
+            }
+
+            .chaos-pod:hover {
+                background: rgba(255, 255, 255, 0.1);
+                transform: translateY(-2px);
+            }
+
+            .chaos-pod.failed {
+                border-color: #ef4444;
+                background: rgba(239, 68, 68, 0.1);
+                animation: shake 0.5s infinite;
+            }
+
+            .chaos-pod.failed::after {
+                content: "RESTART";
+                position: absolute;
+                bottom: 5px;
+                font-size: 0.6rem;
+                font-weight: bold;
+                color: #ef4444;
+            }
+
+            .chaos-pod i {
+                font-size: 1.2rem;
+                margin-bottom: 4px;
+            }
+
+            @keyframes shake {
+                0% {
+                    transform: translate(0);
+                }
+
+                25% {
+                    transform: translate(2px);
+                }
+
+                50% {
+                    transform: translate(-2px);
+                }
+
+                75% {
+                    transform: translate(2px);
+                }
+
+                100% {
+                    transform: translate(0);
+                }
+            }
+
+            /* ========================================
+   KUBERNETES TOWER DEFENSE GAME STYLES
+   ======================================== */
+
+            .pod-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            }
+
+            .pod-card.selected {
+                box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+                transform: scale(1.05);
+            }
+
+            .grid-cell {
+                position: absolute;
+                width: 60px;
+                height: 60px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
+                transition: all 0.2s;
+                cursor: pointer;
+            }
+
+            .grid-cell:hover {
+                background: rgba(255, 255, 255, 0.1);
+                border-color: rgba(255, 255, 255, 0.3);
+            }
+
+            .grid-cell.path {
+                background: rgba(239, 68, 68, 0.1);
+                cursor: not-allowed;
+            }
+
+            .grid-cell.has-tower {
+                cursor: not-allowed;
+            }
+
+            .tower {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 2rem;
+                border-radius: 8px;
+                position: relative;
+            }
+
+            .tower.nginx {
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+            }
+
+            .tower.redis {
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+            }
+
+            .tower.database {
+                background: linear-gradient(135deg, #a855f7, #9333ea);
+            }
+
+            .tower.loadbalancer {
+                background: linear-gradient(135deg, #10b981, #059669);
+            }
+
+            .tower-range {
+                position: absolute;
+                border: 2px solid rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                pointer-events: none;
+                display: none;
+            }
+
+            .tower:hover .tower-range {
+                display: block;
+                animation: rangePulse 2s infinite;
+            }
+
+            @keyframes rangePulse {
+
+                0%,
+                100% {
+                    opacity: 0.3;
+                }
+
+                50% {
+                    opacity: 0.6;
+                }
+            }
+
+            .enemy {
+                position: absolute;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.2rem;
+                transition: transform 0.1s;
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+            }
+
+            .enemy.traffic {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+            }
+
+            .enemy.ddos {
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+            }
+
+            .enemy.leak {
+                background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            }
+
+            .enemy.boss {
+                width: 40px;
+                height: 40px;
+                font-size: 1.6rem;
+                background: linear-gradient(135deg, #dc2626, #991b1b);
+                animation: bossPulse 1s infinite;
+            }
+
+            @keyframes bossPulse {
+
+                0%,
+                100% {
+                    transform: scale(1);
+                }
+
+                50% {
+                    transform: scale(1.1);
+                }
+            }
+
+            .health-bar {
+                position: absolute;
+                top: -8px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 100%;
+                height: 4px;
+                background: rgba(0, 0, 0, 0.5);
+                border-radius: 2px;
+                overflow: hidden;
+            }
+
+            .health-bar-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #10b981, #059669);
+                transition: width 0.2s;
+            }
+
+            .projectile {
+                position: absolute;
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: #fbbf24;
+                box-shadow: 0 0 10px #fbbf24;
+                pointer-events: none;
+                z-index: 5;
+            }
+
+            .damage-popup {
+                position: absolute;
+                font-size: 0.9rem;
+                font-weight: bold;
+                color: #fbbf24;
+                pointer-events: none;
+                animation: damageFloat 0.8s ease-out forwards;
+                z-index: 10;
+                text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+            }
+
+            @keyframes damageFloat {
+                0% {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+
+                100% {
+                    opacity: 0;
+                    transform: translateY(-40px);
+                }
+            }
+
+            .wave-indicator {
+                animation: slideIn 0.5s ease-out;
+            }
+
+            @keyframes slideIn {
+                from {
+                    transform: translateX(-50%) translateY(-20px);
+                    opacity: 0;
+                }
+
+                to {
+                    transform: translateX(-50%) translateY(0);
+                    opacity: 1;
+                }
+            }
+        </style>
+
+        <script>
+            // Topology Tooltips
+            const tooltip = document.getElementById('topo-tooltip');
+            const nodes = document.querySelectorAll('.topo-node, .topo-node-primary, .topo-node-alt, .topo-app, .topo-service, .topo-service-ai');
+
+            nodes.forEach(node => {
+                node.addEventListener('mouseenter', (e) => {
+                    const title = node.getAttribute('data-title');
+                    const desc = node.getAttribute('data-desc');
+                    document.getElementById('topo-tool-title').innerText = title;
+                    document.getElementById('topo-tool-desc').innerText = desc;
+
+                    tooltip.style.display = 'block';
+                    updateTooltipPos(e);
+                });
+
+                node.addEventListener('mousemove', updateTooltipPos);
+
+                node.addEventListener('mouseleave', () => {
+                    tooltip.style.display = 'none';
+                });
+            });
+
+            function updateTooltipPos(e) {
+                const rect = document.querySelector('.svg-container').getBoundingClientRect();
+                tooltip.style.left = (e.clientX - rect.left + 20) + 'px';
+                tooltip.style.top = (e.clientY - rect.top + 20) + 'px';
+            }
+
+            // Chaos Engineer Game v2
+            let chaosGameActive = false;
+            let chaosUptime = 0;
+            let chaosPods = 8;
+            let chaosFailed = 0;
+            let chaosInterval, chaosTimer;
+            const chaosGrid = document.getElementById('chaos-grid');
+            const chaosStartScreen = document.getElementById('chaos-start-screen');
+
+            document.getElementById('start-chaos-btn').addEventListener('click', startChaosGame);
+
+            function startChaosGame() {
+                chaosGameActive = true;
+                chaosUptime = 0;
+                chaosFailed = 0;
+                chaosStartScreen.classList.add('d-none');
+                chaosGrid.classList.remove('d-none');
+
+                renderPods();
+
+                chaosTimer = setInterval(() => {
+                    chaosUptime++;
+                    document.getElementById('game-v2-time').innerText = chaosUptime + 's';
+
+                    // Randomly fail pods
+                    if (Math.random() < 0.2 + (chaosUptime / 100)) {
+                        triggerPodFailure();
+                    }
+
+                    updateLoad();
+                }, 1000);
+            }
+
+            function renderPods() {
+                chaosGrid.innerHTML = '';
+                for (let i = 0; i < 8; i++) {
+                    const pod = document.createElement('div');
+                    pod.className = 'col';
+                    pod.innerHTML = `
+                        <div class="chaos-pod" id="pod-${i}" onclick="restartPod(${i})">
+                            <i class="opacity-50">📦</i>
+                            <span class="smallest opacity-80">pod-v${i}</span>
+                        </div>
+                    `;
+                    chaosGrid.appendChild(pod);
+                }
+                document.getElementById('game-v2-pods').innerText = 8;
+            }
+
+            function triggerPodFailure() {
+                const livePods = [];
+                for (let i = 0; i < 8; i++) {
+                    const p = document.getElementById(`pod-${i}`);
+                    if (!p.classList.contains('failed')) livePods.push(p);
+                }
+
+                if (livePods.length > 0) {
+                    const target = livePods[Math.floor(Math.random() * livePods.length)];
+                    target.classList.add('failed');
+                    target.querySelector('i').innerText = '⚠️';
+                    chaosFailed++;
+                }
+            }
+
+            function restartPod(id) {
+                const pod = document.getElementById(`pod-${id}`);
+                if (pod.classList.contains('failed')) {
+                    pod.classList.remove('failed');
+                    pod.querySelector('i').innerText = '📦';
+                    chaosFailed--;
+                    updateLoad();
+                }
+            }
+
+            function updateLoad() {
+                const load = Math.round((chaosFailed / 8) * 100);
+                const loadEl = document.getElementById('game-v2-load');
+                loadEl.innerText = load + '%';
+
+                if (load < 40) loadEl.className = 'h4 mb-0 fw-bold text-success';
+                else if (load < 80) loadEl.className = 'h4 mb-0 fw-bold text-warning';
+                else loadEl.className = 'h4 mb-0 fw-bold text-danger';
+
+                if (load >= 100) {
+                    endChaosGame();
+                }
+            }
+
+            function endChaosGame() {
+                chaosGameActive = false;
+                clearInterval(chaosTimer);
+                chaosGrid.classList.add('d-none');
+                chaosStartScreen.classList.remove('d-none');
+                chaosStartScreen.innerHTML = `
+                    <h2 class="text-danger fw-bold mb-3">CLUSTER OVERFLOW</h2>
+                    <p class="mb-4 lead text-white">Uptime: ${chaosUptime} seconds. Infrastructure collapsed under load.</p>
+                    <button id="retry-chaos-btn" onclick="startChaosGame()" class="btn btn-outline-light px-5 py-3 rounded-pill fw-bold">RETRY ARCHITECTURE</button>
+                `;
+            }
+
+            // A full-featured tower defense game where you defend your Kubernetes cluster from incoming traffic spikes, DDoS attacks, and 
+            // resource leaks. Deploy pods (towers), manage resources, and survive waves of attacks!
+            const K8S_GAME = {
+                active: false,
+                wave: 0,
+                health: 100,
+                credits: 100,
+                selectedPod: null,
+                towers: [],
+                enemies: [],
+                projectiles: [],
+                grid: { rows: 9, cols: 15, cellSize: 60 },
+                path: [],
+                waveInProgress: false,
+                enemiesSpawned: 0,
+                enemiesKilled: 0,
+
+                podTypes: {
+                    nginx: { cost: 20, damage: 10, range: 120, fireRate: 500, icon: '🔵' },
+                    redis: { cost: 35, damage: 8, range: 100, fireRate: 400, icon: '🔴', aoe: 50 },
+                    database: { cost: 50, damage: 30, range: 140, fireRate: 1200, icon: '🟣' },
+                    loadbalancer: { cost: 80, damage: 15, range: 180, fireRate: 300, icon: '🟢', multiTarget: 2 }
+                },
+
+                enemyTypes: {
+                    traffic: { health: 50, speed: 1.5, reward: 10, icon: '🟠' },
+                    ddos: { health: 100, speed: 2, reward: 15, icon: '🔴' },
+                    leak: { health: 80, speed: 1, reward: 12, icon: '🟣' },
+                    boss: { health: 300, speed: 0.8, reward: 50, icon: '💀' }
+                }
+            };
+
+            // Initialize game
+            document.getElementById('start-k8s-game').addEventListener('click', () => {
+                document.getElementById('game-start-screen').classList.add('d-none');
+                document.getElementById('k8s-game-grid').classList.remove('d-none');
+                document.getElementById('pod-shop').classList.remove('d-none');
+                K8S_GAME.active = true;
+                initGame();
+            });
+
+            function initGame() {
+                createGrid();
+                createPath();
+                setupPodSelection();
+                startWave();
+                gameLoop();
+            }
+
+            // Create game grid
+            function createGrid() {
+                const grid = document.getElementById('tower-grid');
+                grid.innerHTML = '';
+
+                for (let row = 0; row < K8S_GAME.grid.rows; row++) {
+                    for (let col = 0; col < K8S_GAME.grid.cols; col++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'grid-cell';
+                        cell.style.left = (col * K8S_GAME.grid.cellSize) + 'px';
+                        cell.style.top = (row * K8S_GAME.grid.cellSize) + 'px';
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+
+                        cell.addEventListener('click', () => placeTower(row, col, cell));
+                        grid.appendChild(cell);
+                    }
+                }
+            }
+
+            // Create attack path
+            function createPath() {
+                K8S_GAME.path = [
+                    { x: -30, y: 270 },
+                    { x: 120, y: 270 },
+                    { x: 120, y: 150 },
+                    { x: 360, y: 150 },
+                    { x: 360, y: 390 },
+                    { x: 600, y: 390 },
+                    { x: 600, y: 210 },
+                    { x: 780, y: 210 },
+                    { x: 780, y: 330 },
+                    { x: 950, y: 330 }
+                ];
+
+                // Draw path
+                const pathStr = K8S_GAME.path.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                document.getElementById('attack-path').setAttribute('d', pathStr);
+
+                // Mark path cells
+                K8S_GAME.path.forEach(point => {
+                    const col = Math.floor(point.x / K8S_GAME.grid.cellSize);
+                    const row = Math.floor(point.y / K8S_GAME.grid.cellSize);
+                    const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                    if (cell) cell.classList.add('path');
+                });
+            }
+
+            // Pod selection
+            function setupPodSelection() {
+                document.querySelectorAll('.pod-card').forEach(card => {
+                    card.addEventListener('click', function () {
+                        document.querySelectorAll('.pod-card').forEach(c => c.classList.remove('selected'));
+                        this.classList.add('selected');
+                        K8S_GAME.selectedPod = this.dataset.pod;
+                    });
+                });
+            }
+
+            // Place tower
+            function placeTower(row, col, cell) {
+                if (!K8S_GAME.selectedPod || cell.classList.contains('path') || cell.classList.contains('has-tower')) {
+                    return;
+                }
+
+                const podType = K8S_GAME.podTypes[K8S_GAME.selectedPod];
+
+                if (K8S_GAME.credits < podType.cost) {
+                    showMessage('Not enough CPU credits!', 'danger');
+                    return;
+                }
+
+                K8S_GAME.credits -= podType.cost;
+                updateStats();
+
+                const tower = {
+                    type: K8S_GAME.selectedPod,
+                    row, col,
+                    x: col * K8S_GAME.grid.cellSize + 30,
+                    y: row * K8S_GAME.grid.cellSize + 30,
+                    lastFire: Date.now(),
+                    ...podType
+                };
+
+                K8S_GAME.towers.push(tower);
+
+                cell.classList.add('has-tower');
+                cell.innerHTML = `
+        <div class="tower ${K8S_GAME.selectedPod}">
+            <span>${podType.icon}</span>
+            <div class="tower-range" style="width: ${tower.range * 2}px; height: ${tower.range * 2}px; left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
+        </div>
     `;
-    }
-</script>
-{% endblock %}
+
+                K8S_GAME.selectedPod = null;
+                document.querySelectorAll('.pod-card').forEach(c => c.classList.remove('selected'));
+            }
+
+            // Start wave
+            function startWave() {
+                if (K8S_GAME.wave >= 15) {
+                    victory();
+                    return;
+                }
+
+                K8S_GAME.wave++;
+                K8S_GAME.waveInProgress = true;
+                K8S_GAME.enemiesSpawned = 0;
+                K8S_GAME.enemiesKilled = 0;
+
+                updateStats();
+                document.getElementById('wave-status').textContent = `Wave ${K8S_GAME.wave} - Incoming!`;
+
+                const waveConfig = getWaveConfig(K8S_GAME.wave);
+                spawnWave(waveConfig);
+            }
+
+            function getWaveConfig(wave) {
+                const configs = {
+                    easy: { count: 5 + wave, types: ['traffic'], interval: 1500 },
+                    medium: { count: 8 + wave, types: ['traffic', 'ddos'], interval: 1200 },
+                    hard: { count: 10 + wave, types: ['traffic', 'ddos', 'leak'], interval: 1000 },
+                    boss: { count: 3, types: ['boss'], interval: 3000 }
+                };
+
+                if (wave % 5 === 0) return configs.boss;
+                if (wave > 10) return configs.hard;
+                if (wave > 5) return configs.medium;
+                return configs.easy;
+            }
+
+            function spawnWave(config) {
+                const spawnInterval = setInterval(() => {
+                    if (K8S_GAME.enemiesSpawned >= config.count) {
+                        clearInterval(spawnInterval);
+                        return;
+                    }
+
+                    const type = config.types[Math.floor(Math.random() * config.types.length)];
+                    spawnEnemy(type);
+                    K8S_GAME.enemiesSpawned++;
+                }, config.interval);
+            }
+
+            function spawnEnemy(type) {
+                const enemyData = K8S_GAME.enemyTypes[type];
+                const enemy = {
+                    type,
+                    health: enemyData.health,
+                    maxHealth: enemyData.health,
+                    speed: enemyData.speed,
+                    reward: enemyData.reward,
+                    icon: enemyData.icon,
+                    pathIndex: 0,
+                    x: K8S_GAME.path[0].x,
+                    y: K8S_GAME.path[0].y,
+                    slow: 1
+                };
+
+                K8S_GAME.enemies.push(enemy);
+
+                const enemyEl = document.createElement('div');
+                enemyEl.className = `enemy ${type}`;
+                enemyEl.innerHTML = `
+        ${enemy.icon}
+        <div class="health-bar">
+            <div class="health-bar-fill" style="width: 100%"></div>
+        </div>
+    `;
+                enemy.element = enemyEl;
+                document.getElementById('enemy-layer').appendChild(enemyEl);
+            }
+
+            // Game loop
+            function gameLoop() {
+                if (!K8S_GAME.active) return;
+
+                updateEnemies();
+                updateTowers();
+                updateProjectiles();
+                checkWaveComplete();
+
+                requestAnimationFrame(gameLoop);
+            }
+
+            function updateEnemies() {
+                K8S_GAME.enemies.forEach((enemy, index) => {
+                    if (enemy.health <= 0) {
+                        killEnemy(enemy, index);
+                        return;
+                    }
+
+                    // Move enemy along path
+                    const target = K8S_GAME.path[enemy.pathIndex + 1];
+                    if (!target) {
+                        // Reached end - damage cluster
+                        K8S_GAME.health -= 10;
+                        updateStats();
+                        enemy.element.remove();
+                        K8S_GAME.enemies.splice(index, 1);
+                        K8S_GAME.enemiesKilled++;
+
+                        if (K8S_GAME.health <= 0) {
+                            gameOver();
+                        }
+                        return;
+                    }
+
+                    const dx = target.x - enemy.x;
+                    const dy = target.y - enemy.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 5) {
+                        enemy.pathIndex++;
+                    } else {
+                        const moveSpeed = enemy.speed * enemy.slow;
+                        enemy.x += (dx / dist) * moveSpeed;
+                        enemy.y += (dy / dist) * moveSpeed;
+                    }
+
+                    enemy.element.style.left = enemy.x + 'px';
+                    enemy.element.style.top = enemy.y + 'px';
+
+                    // Update health bar
+                    const healthPercent = (enemy.health / enemy.maxHealth) * 100;
+                    enemy.element.querySelector('.health-bar-fill').style.width = healthPercent + '%';
+
+                    // Reset slow
+                    enemy.slow = Math.min(enemy.slow + 0.05, 1);
+                });
+            }
+
+            function updateTowers() {
+                const now = Date.now();
+
+                K8S_GAME.towers.forEach(tower => {
+                    if (now - tower.lastFire < tower.fireRate) return;
+
+                    // Find targets in range
+                    const targets = K8S_GAME.enemies.filter(enemy => {
+                        const dx = enemy.x - tower.x;
+                        const dy = enemy.y - tower.y;
+                        return Math.sqrt(dx * dx + dy * dy) <= tower.range;
+                    });
+
+                    if (targets.length === 0) return;
+
+                    const targetsToHit = tower.multiTarget ? targets.slice(0, tower.multiTarget) : [targets[0]];
+
+                    targetsToHit.forEach(target => {
+                        createProjectile(tower, target);
+                    });
+
+                    tower.lastFire = now;
+                });
+            }
+
+            function createProjectile(tower, target) {
+                const projectile = {
+                    x: tower.x,
+                    y: tower.y,
+                    target,
+                    damage: tower.damage,
+                    speed: 5,
+                    aoe: tower.aoe || 0
+                };
+
+                K8S_GAME.projectiles.push(projectile);
+
+                const projEl = document.createElement('div');
+                projEl.className = 'projectile';
+                projectile.element = projEl;
+                document.getElementById('enemy-layer').appendChild(projEl);
+            }
+
+            function updateProjectiles() {
+                K8S_GAME.projectiles.forEach((proj, index) => {
+                    if (!proj.target || proj.target.health <= 0) {
+                        proj.element.remove();
+                        K8S_GAME.projectiles.splice(index, 1);
+                        return;
+                    }
+
+                    const dx = proj.target.x - proj.x;
+                    const dy = proj.target.y - proj.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 10) {
+                        // Hit target
+                        damageEnemy(proj.target, proj.damage);
+
+                        // AOE damage
+                        if (proj.aoe > 0) {
+                            K8S_GAME.enemies.forEach(enemy => {
+                                if (enemy === proj.target) return;
+                                const edx = enemy.x - proj.target.x;
+                                const edy = enemy.y - proj.target.y;
+                                const edist = Math.sqrt(edx * edx + edy * edy);
+                                if (edist <= proj.aoe) {
+                                    damageEnemy(enemy, proj.damage * 0.5);
+                                    enemy.slow = 0.5; // Slow effect
+                                }
+                            });
+                        }
+
+                        proj.element.remove();
+                        K8S_GAME.projectiles.splice(index, 1);
+                    } else {
+                        proj.x += (dx / dist) * proj.speed;
+                        proj.y += (dy / dist) * proj.speed;
+                        proj.element.style.left = proj.x + 'px';
+                        proj.element.style.top = proj.y + 'px';
+                    }
+                });
+            }
+
+            function damageEnemy(enemy, damage) {
+                enemy.health -= damage;
+
+                // Show damage popup
+                const popup = document.createElement('div');
+                popup.className = 'damage-popup';
+                popup.textContent = `-${Math.round(damage)}`;
+                popup.style.left = enemy.x + 'px';
+                popup.style.top = enemy.y + 'px';
+                document.getElementById('enemy-layer').appendChild(popup);
+                setTimeout(() => popup.remove(), 800);
+            }
+
+            function killEnemy(enemy, index) {
+                K8S_GAME.credits += enemy.reward;
+                K8S_GAME.enemiesKilled++;
+                updateStats();
+                enemy.element.remove();
+                K8S_GAME.enemies.splice(index, 1);
+            }
+
+            function checkWaveComplete() {
+                if (K8S_GAME.waveInProgress &&
+                    K8S_GAME.enemiesSpawned > 0 &&
+                    K8S_GAME.enemies.length === 0) {
+
+                    K8S_GAME.waveInProgress = false;
+                    document.getElementById('wave-status').textContent = `Wave ${K8S_GAME.wave} Complete! Next wave in 3s...`;
+
+                    setTimeout(() => {
+                        if (K8S_GAME.active) startWave();
+                    }, 3000);
+                }
+            }
+
+            function updateStats() {
+                document.getElementById('cluster-health').textContent = K8S_GAME.health;
+                document.getElementById('current-wave').textContent = K8S_GAME.wave;
+                document.getElementById('cpu-credits').textContent = K8S_GAME.credits;
+
+                // Update health color
+                const healthEl = document.getElementById('cluster-health');
+                if (K8S_GAME.health > 60) healthEl.className = 'h4 mb-0 fw-bold text-success';
+                else if (K8S_GAME.health > 30) healthEl.className = 'h4 mb-0 fw-bold text-warning';
+                else healthEl.className = 'h4 mb-0 fw-bold text-danger';
+            }
+
+            function showMessage(text, type) {
+                const msg = document.createElement('div');
+                msg.className = `alert alert-${type} position-fixed top-0 start-50 translate-middle-x mt-5`;
+                msg.style.zIndex = '10000';
+                msg.textContent = text;
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 2000);
+            }
+
+            function gameOver() {
+                K8S_GAME.active = false;
+                document.getElementById('final-wave').textContent = K8S_GAME.wave;
+                document.getElementById('game-over-screen').classList.remove('d-none');
+            }
+
+            function victory() {
+                K8S_GAME.active = false;
+                document.getElementById('victory-screen').classList.remove('d-none');
+            }
+
+        </script>
+        {% endblock %}

