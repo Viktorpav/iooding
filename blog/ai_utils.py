@@ -5,8 +5,11 @@ from blog.redis_vectors import (
     cache_embedding_async
 )
 
-# Skip RAG for these simple patterns
-SKIP_RAG_PATTERNS = {'hi', 'hello', 'hey', 'thanks', 'bye', 'ok', 'yes', 'no', 'sure'}
+# Skip RAG for these simple patterns or social queries
+SKIP_RAG_PATTERNS = {
+    'hi', 'hello', 'hey', 'thanks', 'bye', 'ok', 'yes', 'no', 'sure', 
+    'how are you', 'what is up', 'good morning', 'good evening', 'who are you'
+}
 
 # Shared clients to reduce latency from connection overhead
 _ollama_client = None

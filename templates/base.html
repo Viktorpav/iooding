@@ -27,51 +27,40 @@
 
   <nav class="navbar navbar-expand-lg">
     <div class="container">
-      <a class="navbar-brand" href="{% url 'blog:post_list' %}">Ding</a>
-
-      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
-        data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+      <div class="header-left">
+        <a class="navbar-brand" href="{% url 'blog:post_list' %}">Ding</a>
+        <ul class="navbar-nav d-none d-lg-flex">
           <li class="nav-item">
             <a class="nav-link {% if '/tag/linux/' in request.path %}active{% endif %}"
               href="{% url 'blog:post_tag' tag_slug='linux' %}">Linux</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link {% if '/tag/tips/' in request.path %}active{% endif %}"
-              href="{% url 'blog:post_tag' tag_slug='tips' %}">Tips</a>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-              Tutorial
-            </a>
-            <ul class="dropdown-menu border-0 shadow-lg" aria-labelledby="navbarDropdown">
-              <li><a class="dropdown-item" href="{% url 'blog:post_tag' tag_slug='python' %}">Python</a></li>
-              <li><a class="dropdown-item" href="{% url 'blog:post_tag' tag_slug='django' %}">Django</a></li>
-            </ul>
-          </li>
+        </ul>
+      </div>
+
+      <div class="header-center">
+        <form class="search-input-premium" action="{% url 'blog:post_list' %}" method="get">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <input id="nav-search-field" type="search" value="{{ request.GET.q }}" name="q"
+            placeholder="Search the laboratory...">
+        </form>
+      </div>
+
+      <div class="header-right">
+        <ul class="navbar-nav">
           <li class="nav-item">
             <a class="nav-link {% if request.resolver_match.view_name == 'blog:about' %}active{% endif %}"
               href="{% url 'blog:about' %}">About</a>
           </li>
         </ul>
-
-        <div class="d-flex align-items-center">
-          <form class="search-input-wrap me-3" action="{% url 'blog:post_list' %}" method="get">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              style="opacity:0.4">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-            <input id="nav-search-field" type="search" value="{{ request.GET.q }}" name="q"
-              placeholder="Search insights...">
-          </form>
-        </div>
+        <button class="navbar-toggler border-0 ms-2" type="button" data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
       </div>
     </div>
   </nav>

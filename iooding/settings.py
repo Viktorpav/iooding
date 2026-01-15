@@ -143,9 +143,29 @@ CKEDITOR_5_CONFIGS = {
         }
     },
     'extends': {
+        'blockToolbar': [
+            'paragraph', 'heading1', 'heading2', 'heading3',
+            '|', 'bulletedList', 'numberedList', 'blockQuote',
+        ],
         'toolbar': {
-            'items': ['heading', '|', 'bold', 'italic', 'link',
-                      'bulletedList', 'numberedList', 'blockQuote', 'imageUpload', ],
+            'items': [
+                'heading', '|', 'bold', 'italic', 'link', 'underline', 'strikethrough',
+                'code', 'codeBlock', '|', 'fontSize', 'fontColor', '|',
+                'bulletedList', 'numberedList', 'todoList', '|',
+                'outdent', 'indent', '|', 'alignment', '|',
+                'imageUpload', 'blockQuote', 'insertTable', 'sourceEditing',
+            ],
+            'shouldNotGroupWhenFull': True
+        },
+        'codeBlock': {
+            'languages': [
+                { 'language': 'python', 'label': 'Python' },
+                { 'language': 'javascript', 'label': 'JavaScript' },
+                { 'language': 'html', 'label': 'HTML' },
+                { 'language': 'css', 'label': 'CSS' },
+                { 'language': 'yaml', 'label': 'YAML' },
+                { 'language': 'bash', 'label': 'Bash' },
+            ]
         }
     }
 }
