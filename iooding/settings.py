@@ -1,32 +1,20 @@
 from pathlib import Path
 import os
-import boto3
-from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Try to get parameters from SSM if configured, otherwise rely on env vars
-def get_ssm_param(name, default=None):
-    try:
-        ssm = boto3.client('ssm', region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'))
-        return ssm.get_parameter(Name=name, WithDecryption=True)['Parameter']['Value']
-    except (BotoCoreError, ClientError, NoCredentialsError):
-        return default
-
-prefix = 'iooding'
-
-# Fetch required secrets - prioritize env vars, then SSM
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or get_ssm_param(f'{prefix}_django_secret_key') or 'django-insecure-local-dev-key'
-DB_PASSWORD = os.environ.get('DB_PASSWORD') or get_ssm_param(f'{prefix}_db_password') or 'postgres'
+# ─── Core secrets (injected by Sealed Secrets → K8s Secret → env) ────────────
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-local-dev-key')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
 OLLAMA_HOST = os.environ.get('OLLAMA_HOST', 'http://192.168.0.18:11434')
 
-DEBUG = os.environ.get("DEBUG", "False") == "True"
-# In a container/K8s environment, the Ingress (Nginx) handles domain security.
-# Using '*' allows K8s health checks and various internal IPs to work without complex scripts.
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+# Ingress-nginx handles external hostname validation; '*' keeps health-checks simple.
 ALLOWED_HOSTS = ['*']
 SITE_ID = 1
 
-# Application definition
+# ─── Applications ─────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -41,15 +29,17 @@ INSTALLED_APPS = [
     'taggit',
 ]
 
+# ─── Middleware ────────────────────────────────────────────────────────────────
+# WhiteNoise must come directly after SecurityMiddleware for best performance.
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'iooding.urls'
@@ -72,8 +62,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'iooding.wsgi.application'
 
-# Database - simplified to single PostgreSQL instance
-# Vector storage is now handled by Redis Stack
+# ─── Database (single PostgreSQL) ─────────────────────────────────────────────
 DATABASES = {
     'default': {
         'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'),
@@ -84,33 +73,36 @@ DATABASES = {
         'PORT': os.environ.get('DB_PORT', '5432'),
         'OPTIONS': {
             'connect_timeout': 5,
-        }
-    }
-}
-
-# No database router needed - Redis handles vectors
-
-
-# Redis Configuration
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.environ.get('REDIS_URL', "redis://redis:6379/1"),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
-        "KEY_PREFIX": "iooding",
+        # Reuse DB connections; avoids per-request TCP handshake overhead.
+        'CONN_MAX_AGE': 60,
     }
 }
 
-# Use Redis for sessions with DB fallback
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "default"
+# ─── Cache (Redis) ────────────────────────────────────────────────────────────
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://redis:6379/1'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'SOCKET_CONNECT_TIMEOUT': 5,
+            'SOCKET_TIMEOUT': 5,
+            'IGNORE_EXCEPTIONS': True,   # degrade gracefully if Redis is down
+        },
+        'KEY_PREFIX': 'iooding',
+        'TIMEOUT': 300,
+    }
+}
 
-SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+SESSION_COOKIE_AGE = 1_209_600   # 2 weeks
 SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_NAME = 'iooding_sessionid'
+SESSION_COOKIE_SAMESITE = 'Lax'
 
-# Password validation
+# ─── Password validation ───────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -118,28 +110,30 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# Internationalization
+# ─── Internationalisation ──────────────────────────────────────────────────────
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files
+# ─── Static & Media ───────────────────────────────────────────────────────────
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+}
 
-# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# CKEditor 5 Configuration
+# ─── CKEditor 5 ───────────────────────────────────────────────────────────────
 CKEDITOR_5_CONFIGS = {
     'default': {
         'toolbar': {
             'items': ['heading', '|', 'bold', 'italic', 'link',
-                      'bulletedList', 'numberedList', 'blockQuote', 'imageUpload', ],
+                      'bulletedList', 'numberedList', 'blockQuote', 'imageUpload'],
         }
     },
     'extends': {
@@ -155,81 +149,72 @@ CKEDITOR_5_CONFIGS = {
                 'outdent', 'indent', '|', 'alignment', '|',
                 'imageUpload', 'blockQuote', 'insertTable', 'sourceEditing',
             ],
-            'shouldNotGroupWhenFull': True
+            'shouldNotGroupWhenFull': True,
         },
         'codeBlock': {
             'languages': [
-                { 'language': 'python', 'label': 'Python' },
-                { 'language': 'javascript', 'label': 'JavaScript' },
-                { 'language': 'html', 'label': 'HTML' },
-                { 'language': 'css', 'label': 'CSS' },
-                { 'language': 'yaml', 'label': 'YAML' },
-                { 'language': 'bash', 'label': 'Bash' },
+                {'language': 'python',     'label': 'Python'},
+                {'language': 'javascript', 'label': 'JavaScript'},
+                {'language': 'html',       'label': 'HTML'},
+                {'language': 'css',        'label': 'CSS'},
+                {'language': 'yaml',       'label': 'YAML'},
+                {'language': 'bash',       'label': 'Bash'},
             ]
-        }
-    }
+        },
+    },
 }
 
-# Trust the ingress-nginx proxy
+# ─── Proxy & Security ─────────────────────────────────────────────────────────
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Security settings
-# In production (DEBUG=False), we want these True.
-# In local (DEBUG=True), we might want them False if not using https locally.
-HTTPS_ENABLED = os.environ.get('HTTPS_ENABLED', 'False') == 'True'
+_production = not DEBUG
+SECURE_SSL_REDIRECT          = _production
+SESSION_COOKIE_SECURE        = _production
+CSRF_COOKIE_SECURE           = _production
+SECURE_BROWSER_XSS_FILTER    = True
+SECURE_CONTENT_TYPE_NOSNIFF  = True
+SECURE_HSTS_SECONDS          = 31_536_000 if _production else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = _production
+SECURE_HSTS_PRELOAD          = _production
+X_FRAME_OPTIONS              = 'DENY'
 
-SECURE_SSL_REDIRECT = not DEBUG or HTTPS_ENABLED
-SESSION_COOKIE_SECURE = not DEBUG or HTTPS_ENABLED
-CSRF_COOKIE_SECURE = not DEBUG or HTTPS_ENABLED
-
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SAMESITE = 'Lax'
-
-# Security Headers
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
-
-# Trusted origins for CSRF
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', "https://iooding.local").split(',')
-
-# Cookie settings
-SESSION_COOKIE_DOMAIN = None
-CSRF_COOKIE_DOMAIN = None
-SESSION_COOKIE_NAME = 'iooding_sessionid'
-CSRF_COOKIE_NAME = 'iooding_csrftoken'
+CSRF_COOKIE_SAMESITE    = 'Lax'
+CSRF_COOKIE_NAME        = 'iooding_csrftoken'
+CSRF_TRUSTED_ORIGINS    = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS', 'https://iooding.local'
+).split(',')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Logging configuration for Kubernetes (stdout)
+# ─── Logging (stdout → cluster log aggregation) ───────────────────────────────
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
+        'json': {
+            'format': '{"level":"%(levelname)s","time":"%(asctime)s","module":"%(module)s","msg":"%(message)s"}',
         },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+            'formatter': 'json',
         },
     },
     'root': {
         'handlers': ['console'],
-        'level': 'INFO',
+        'level': 'WARNING',
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
             'level': 'INFO',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'WARNING',   # suppress SQL noise in production
             'propagate': False,
         },
     },

@@ -1,53 +1,45 @@
-# Builder stage
+# ─── Builder ──────────────────────────────────────────────────────────────────
 FROM python:3.12-alpine AS builder
 
 WORKDIR /app
 
-# Install build dependencies
-RUN apk add --no-cache \
-    gcc \
-    musl-dev \
-    postgresql-dev \
-    jpeg-dev \
-    zlib-dev
+# Install build deps in a single layer
+RUN apk add --no-cache gcc musl-dev postgresql-dev jpeg-dev zlib-dev
 
-# Install python dependencies to a temporary location
 COPY requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-# Runner stage
+# ─── Runtime ──────────────────────────────────────────────────────────────────
 FROM python:3.12-alpine
 
 WORKDIR /app
 
-# Create a non-root user
+# Create non-root user
 RUN addgroup -S django && adduser -S django -G django
 
-# Install runtime dependencies only
-RUN apk add --no-cache \
-    libpq \
-    jpeg \
-    zlib \
-    bash
+# Runtime libs only (no build tools)
+RUN apk add --no-cache libpq jpeg zlib
 
-# Copy installed python dependencies from builder
+# Copy installed packages from builder
 COPY --from=builder /install /usr/local
 
-# Copy application code
-COPY . .
+# Copy application code (owned by root, read by django)
+COPY --chown=django:django . .
 
-# Copy entrypoint script and set permissions
-COPY docker-entrypoint.sh /app/
-RUN chmod +x /app/docker-entrypoint.sh && \
-    chown -R django:django /app
+RUN chmod +x /app/docker-entrypoint.sh
 
-# Expose port for the app
 EXPOSE 8000
 
-# Switch to non-root user
 USER django
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-# --log-level critical to reduce noise, access log processing handled by ingress/sidecars
-# Use straight uvicorn for better streaming support without gunicorn buffering layers
-CMD ["uvicorn", "iooding.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+
+# 2 workers is right for low-RAM K8s; tune via GUNICORN_WORKERS env var if needed
+CMD ["gunicorn", "iooding.asgi:application", \
+     "-k", "uvicorn.workers.UvicornWorker", \
+     "--bind", "0.0.0.0:8000", \
+     "--workers", "2", \
+     "--worker-tmp-dir", "/dev/shm", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-", \
+     "--log-level", "warning"]

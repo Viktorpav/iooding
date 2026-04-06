@@ -1,8 +1,11 @@
 import hashlib
 import json
+import logging
 from django.conf import settings
 from django.core.cache import cache
 import redis
+
+logger = logging.getLogger(__name__)
 import redis.asyncio as async_redis
 from redis.commands.search.field import VectorField, TextField, NumericField
 from redis.commands.search.index_definition import IndexDefinition, IndexType
@@ -40,13 +43,13 @@ def get_schema():
         NumericField("$.post_id", as_name="post_id"),
         VectorField(
             "$.embedding",
-            "HNSW", # Optimized for speed and scale
+            "HNSW",
             {
                 "TYPE": "FLOAT32",
                 "DIM": VECTOR_DIM,
                 "DISTANCE_METRIC": "COSINE",
-                "M": 16,
-                "EF_CONSTRUCTION": 200,
+                "M": 8,            # lower → less RAM on small datasets
+                "EF_CONSTRUCTION": 100,
             },
             as_name="embedding"
         )
@@ -64,7 +67,7 @@ def ensure_index_exists():
             client.ft(INDEX_NAME).create_index(get_schema(), definition=definition)
             return True
         except Exception as e:
-            print(f"Failed to create Redis index: {e}")
+            logger.error('Failed to create Redis index: %s', e)
             return False
 
 async def ensure_index_exists_async():
@@ -117,7 +120,7 @@ async def text_search_async(keyword: str, top_k: int = 5) -> list:
             for doc in results.docs
         ]
     except Exception as e:
-        print(f"Text search error: {e}")
+        logger.warning('Redis text search error: %s', e)
         return []
 
 async def search_similar_async(query_embedding: list, top_k: int = 5, max_distance: float = 0.7) -> list:
@@ -151,7 +154,7 @@ async def search_similar_async(query_embedding: list, top_k: int = 5, max_distan
         parsed = [parse_doc(doc) for doc in results.docs]
         return [p for p in parsed if p and p['distance'] < max_distance]
     except Exception as e:
-        print(f"Async Redis search error: {e}")
+        logger.warning('Async Redis vector search error: %s', e)
         return []
 
 def search_similar(query_embedding: list, top_k: int = 5, max_distance: float = 0.7) -> list:

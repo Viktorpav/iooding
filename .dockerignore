@@ -2,28 +2,53 @@
 **/*.pyc
 **/*.pyo
 **/*.pyd
-.Python
 *.so
 *.egg
 *.egg-info
-dist
-build
+dist/
+build/
+
+# Version control
 .git
 .gitignore
+.gitattributes
+
+# Local environment
 .env
 .venv
 venv/
 env/
+
+# Local databases
 *.sqlite3
 db.sqlite3
+
+# User-uploaded content (served via PVC in K8s)
 media/
+
+# Logs
 *.log
+
+# OS artefacts
 .DS_Store
 Thumbs.db
-.idea
-.vscode
+
+# Editor configs
+.idea/
+.vscode/
 *.swp
 *.swo
 *~
-nginx/
+
+# Docs & infra (not needed in image)
 README.md
+nginx/
+
+# Test & typing
+.mypy_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Compiled static (collected fresh in container)
+staticfiles/

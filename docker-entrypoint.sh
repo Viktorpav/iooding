@@ -1,52 +1,75 @@
 #!/bin/sh
-set -e
+set -euo pipefail
 
-# Function to run database migrations
+# ─── Helpers ──────────────────────────────────────────────────────────────────
+log() { echo "[entrypoint] $*"; }
+
+wait_for_db() {
+    log "Waiting for PostgreSQL at ${DB_HOST:-postgres}:${DB_PORT:-5432}..."
+    until python -c "
+import sys, os
+import psycopg2
+try:
+    psycopg2.connect(
+        host=os.environ.get('DB_HOST','postgres'),
+        port=os.environ.get('DB_PORT','5432'),
+        dbname=os.environ.get('DB_NAME','iooding'),
+        user=os.environ.get('DB_USER','iooding'),
+        password=os.environ.get('DB_PASSWORD','postgres'),
+        connect_timeout=3,
+    ).close()
+    sys.exit(0)
+except Exception:
+    sys.exit(1)
+" 2>/dev/null; do
+        log "  ...not ready, retrying in 3s"
+        sleep 3
+    done
+    log "PostgreSQL is ready."
+}
+
 run_migrate() {
-    echo "Running database migrations..."
+    wait_for_db
+    log "Running migrations..."
     python manage.py migrate --noinput
-    
-    echo "Indexing blog posts to Redis for RAG..."
-    python manage.py index_posts || echo "Indexing failed (no Ollama/Redis), skipping..."
 
-    
-    if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then
-        echo "Ensuring superuser exists..."
-        python manage.py shell << pyEOF
+    log "Attempting RAG index sync..."
+    python manage.py index_posts 2>/dev/null || log "  Skipped (Ollama/Redis unavailable)"
+
+    if [ -n "${DJANGO_SUPERUSER_USERNAME-}" ] && [ -n "${DJANGO_SUPERUSER_PASSWORD-}" ]; then
+        log "Ensuring superuser '${DJANGO_SUPERUSER_USERNAME}' exists..."
+        python manage.py shell -c "
 from django.contrib.auth import get_user_model
 import os
 User = get_user_model()
-username = os.environ["DJANGO_SUPERUSER_USERNAME"]
-password = os.environ["DJANGO_SUPERUSER_PASSWORD"]
-email = "admin@iooding.local"
-if not User.objects.filter(username=username).exists():
-    User.objects.create_superuser(username=username, email=email, password=password)
-    print(f"Created superuser {username}")
+u = os.environ['DJANGO_SUPERUSER_USERNAME']
+if not User.objects.filter(username=u).exists():
+    User.objects.create_superuser(u, 'admin@iooding.local', os.environ['DJANGO_SUPERUSER_PASSWORD'])
+    print(f'Created superuser {u}')
 else:
-    print(f"Superuser {username} already exists")
-pyEOF
+    print(f'Superuser {u} already exists')
+"
     fi
 }
 
-# Function to collect static files
 run_static() {
-    echo "Collecting static files..."
-    python manage.py collectstatic --noinput
+    log "Collecting static files..."
+    python manage.py collectstatic --noinput --clear
 }
 
-# Command dispatch
-case "$1" in
-    "migrate")
+# ─── Command dispatch ─────────────────────────────────────────────────────────
+case "${1:-}" in
+    migrate)
         run_migrate
         ;;
-    "static")
+    static)
         run_static
         ;;
-    "deploy")
-        echo "Starting full deployment task [$(date)]"
+    deploy)
+        log "=== Full deploy start ==="
         run_migrate
         run_static
-        echo "Deployment task finished [$(date)]"
+        log "=== Full deploy complete ==="
         ;;
     *)
         exec "$@"
