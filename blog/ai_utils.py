@@ -82,22 +82,47 @@ class LMStudioAsyncClient:
                 start_time = __import__('time').time()
                 generated_tokens = 0
                 actual_chunks = 0
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"AI Stream initiated at {start_time}")
+                
                 try:
-                    async for chunk in resp:
-                        if hasattr(chunk, 'usage') and chunk.usage:
-                            generated_tokens = chunk.usage.completion_tokens
-
-                        if chunk.choices and len(chunk.choices) > 0:
-                            content = chunk.choices[0].delta.content or ""
-                            if content:
-                                actual_chunks += 1
-                                yield {"message": {"content": content}, "done": False}
+                    import httpx
+                    import json
+                    # Build absolute URL safely
+                    base_url = str(self.client.base_url)
+                    url = f"{base_url.rstrip('/')}/chat/completions"
+                    headers = {"Authorization": f"Bearer {self.client.api_key}"}
+                    
+                    async with httpx.AsyncClient(timeout=60.0) as http_client:
+                        async with http_client.stream("POST", url, json=kwargs, headers=headers) as response:
+                            logger.warning(f"AI Stream HTTP headers received at {__import__('time').time() - start_time:.2f}s")
+                            async for line in response.aiter_lines():
+                                if not line.startswith("data: "):
+                                    continue
+                                data_str = line[6:]
+                                if data_str.strip() == "[DONE]":
+                                    break
+                                
+                                chunk = json.loads(data_str)
+                                if 'usage' in chunk and chunk['usage']:
+                                    generated_tokens = chunk['usage'].get('completion_tokens', 0)
+                                    
+                                if 'choices' in chunk and len(chunk['choices']) > 0:
+                                    delta = chunk['choices'][0].get('delta', {})
+                                    content = delta.get('content', '')
+                                    if content:
+                                        if actual_chunks == 0:
+                                            logger.warning(f"AI Stream FIRST token received at {__import__('time').time() - start_time:.2f}s: '{content}'")
+                                        actual_chunks += 1
+                                        yield {"message": {"content": content}, "done": False}
                     
                     if not generated_tokens or generated_tokens < actual_chunks:
                         generated_tokens = actual_chunks
                         
                     end_time = __import__('time').time()
                     duration_ns = int((end_time - start_time) * 1e9)
+                    logger.warning(f"AI Stream completed. {actual_chunks} chunks in {(end_time - start_time):.2f}s")
                     
                     yield {
                         "done": True, 
