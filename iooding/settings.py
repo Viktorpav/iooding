@@ -6,7 +6,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ─── Core secrets (injected by Sealed Secrets → K8s Secret → env) ────────────
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-local-dev-key')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
-OLLAMA_HOST = os.environ.get('OLLAMA_HOST', 'http://192.168.0.18:11434')
+LM_STUDIO_HOST = os.environ.get('LM_STUDIO_HOST', 'http://lm-studio:1234/v1')
+LM_STUDIO_API_KEY = os.environ.get('LM_STUDIO_API_KEY', 'lm-studio')
+LM_STUDIO_COMPLETION_MODEL = os.environ.get('LM_STUDIO_COMPLETION_MODEL', 'local-model')
+LM_STUDIO_EMBEDDING_MODEL = os.environ.get('LM_STUDIO_EMBEDDING_MODEL', 'nomic-embed-text')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 

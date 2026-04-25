@@ -15,27 +15,77 @@ SKIP_RAG_PATTERNS = {
 _ollama_client = None
 _ollama_async_client = None
 
+class OpenAIAyncClientMock:
+    def __init__(self, host, api_key):
+        from openai import AsyncOpenAI
+        from django.conf import settings
+        self.client = AsyncOpenAI(base_url=host, api_key=api_key)
+        self.completion_model = settings.LM_STUDIO_COMPLETION_MODEL
+        self.embedding_model = settings.LM_STUDIO_EMBEDDING_MODEL
+
+    async def list(self):
+        return await self.client.models.list()
+
+    async def generate(self, model, prompt, options=None):
+        m = self.completion_model
+        messages = [{"role": "user", "content": prompt}]
+        resp = await self.client.chat.completions.create(
+            model=m, 
+            messages=messages, 
+            temperature=options.get("temperature", 0.7) if options else 0.7
+        )
+        return {"response": resp.choices[0].message.content}
+
+    async def embeddings(self, model, prompt):
+        m = self.embedding_model
+        resp = await self.client.embeddings.create(input=[prompt], model=m)
+        return {"embedding": resp.data[0].embedding}
+
+    async def chat(self, model, messages, stream, options=None):
+        m = self.completion_model
+        resp = await self.client.chat.completions.create(
+            model=m,
+            messages=messages,
+            stream=stream,
+            temperature=options.get("temperature", 0.7) if options else 0.7
+        )
+        if stream:
+            async def generate_chunks():
+                start_time = __import__('time').time()
+                try:
+                    async for chunk in resp:
+                        if chunk.choices and len(chunk.choices) > 0:
+                            content = chunk.choices[0].delta.content or ""
+                            yield {"message": {"content": content}, "done": False}
+                    end_time = __import__('time').time()
+                    yield {"done": True, "total_duration": (end_time - start_time) * 1e9, "eval_count": 100, "eval_duration": (end_time - start_time) * 1e9}
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).error(f"Stream error: {e}")
+            return generate_chunks()
+        else:
+            return {"message": {"content": resp.choices[0].message.content}}
+
 def get_ollama_client(async_client=False):
-    """Factory for Ollama clients - reuses instances to minimize latency."""
-    import ollama
-    global _ollama_client, _ollama_async_client
-    host = settings.OLLAMA_HOST
+    """Factory for LM Studio clients disguised as Ollama to minimize changes."""
+    global _ollama_async_client
     
     if async_client:
         if _ollama_async_client is None:
-            _ollama_async_client = ollama.AsyncClient(host=host)
+            _ollama_async_client = OpenAIAyncClientMock(
+                host=settings.LM_STUDIO_HOST,
+                api_key=settings.LM_STUDIO_API_KEY
+            )
         return _ollama_async_client
     else:
-        if _ollama_client is None:
-            _ollama_client = ollama.Client(host=host)
-        return _ollama_client
+        # Not implemented for synchronous, shouldn't be needed based on usage
+        raise NotImplementedError("Sync client not mapped for LM Studio yet")
 
 async def check_ollama_status():
-    """Check if Ollama host is reachable and responding."""
+    """Check if LM Studio host is reachable and responding."""
     client = get_ollama_client(async_client=True)
     try:
         import asyncio
-        # Try to list models as a lightweight heartbeat with a tight timeout
         await asyncio.wait_for(client.list(), timeout=2.0)
         return True
     except:
