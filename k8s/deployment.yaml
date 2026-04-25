@@ -30,7 +30,7 @@ spec:
       securityContext: { runAsNonRoot: true, runAsUser: 100, fsGroup: 100 }
       containers:
         - name: migrate
-          image: viktor2003/iooding:v69
+          image: viktor2003/iooding:v70
           command: ["sh", "-c", "/app/docker-entrypoint.sh deploy"]
           env:
             - name: DJANGO_SUPERUSER_USERNAME
@@ -43,6 +43,10 @@ spec:
               value: postgres
             - name: DJANGO_SECRET_KEY
               valueFrom: { secretKeyRef: { name: postgres-secret, key: django_secret_key } }
+            - name: LM_STUDIO_HOST
+              value: "http://192.168.0.16:1234/v1"
+            - name: LM_STUDIO_API_KEY
+              valueFrom: { secretKeyRef: { name: iooding-admin-secret, key: lm_studio_api_key } }
           resources:
             requests: { cpu: 50m, memory: 256Mi }
             limits: { cpu: 500m, memory: 512Mi }
@@ -84,7 +88,7 @@ spec:
           command: ["sh", "-c", "until nc -z postgres 5432; do sleep 1; done"]
       containers:
         - name: iooding
-          image: viktor2003/iooding:v69
+          image: viktor2003/iooding:v70
           ports: [{ containerPort: 8000 }]
           env:
             - name: DB_PASSWORD
@@ -101,6 +105,10 @@ spec:
               value: "https://iooding.local"
             - name: DJANGO_SECRET_KEY
               valueFrom: { secretKeyRef: { name: postgres-secret, key: django_secret_key } }
+            - name: LM_STUDIO_HOST
+              value: "http://192.168.0.16:1234/v1"
+            - name: LM_STUDIO_API_KEY
+              valueFrom: { secretKeyRef: { name: iooding-admin-secret, key: lm_studio_api_key } }
           volumeMounts:
             - { name: media-storage, mountPath: /app/media }
             - { name: tmp-volume, mountPath: /tmp }
