@@ -67,6 +67,8 @@ class LMStudioAsyncClient:
             "temperature": options.get("temperature", 0.7),
             "top_p": options.get("top_p", 1.0),
         }
+        if stream:
+            kwargs["stream_options"] = {"include_usage": True}
         
         try:
             resp = await self.client.chat.completions.create(**kwargs)
