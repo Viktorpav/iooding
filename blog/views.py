@@ -140,6 +140,9 @@ async def chat_api(request):
 
         async def stream_response():
             try:
+                # Force flush any 16KB proxy buffers now that gzip is fully disabled
+                yield f": {' ' * 17000}\n\n"
+                
                 yield f"data: {json.dumps({'thinking': 'Analyzing intent...'})}\n\n"
 
                 context_text = await generate_rag_context(user_msg, client)
