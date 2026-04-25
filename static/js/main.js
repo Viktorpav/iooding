@@ -208,6 +208,8 @@ async function sendMessage() {
 
         aiDiv.querySelector('.msg-content').innerHTML = '';
 
+        let renderPending = false;
+
         while (true) {
             const { value, done } = await reader.read();
             if (done) break;
@@ -227,21 +229,27 @@ async function sendMessage() {
                 }
                 if (data.content) {
                     fullContent += data.content;
-                    const now = Date.now();
-                    if (now - lastRenderTime > 50) {
-                        aiDiv.querySelector('.msg-content').innerHTML = marked.parse(fullContent);
-                        lastRenderTime = now;
-                    }
                 }
                 if (data.done && data.metrics) {
                     aiDiv.querySelector('.msg-content').innerHTML = marked.parse(fullContent);
                     aiDiv.querySelectorAll('pre code').forEach(hljs.highlightElement);
                     const m = data.metrics;
-                    const speed = m.tokens_per_sec ? m.tokens_per_sec.toFixed(1) : (m.eval_count / m.total_duration).toFixed(1);
-                    aiDiv.querySelector('.msg-metrics').innerHTML = `<span>${m.eval_count} tokens</span> • <span>${speed} t/s</span> • <span>${m.total_duration.toFixed(2)}s</span>`;
+                    const speed = (m.tokens_per_sec != null && !isNaN(m.tokens_per_sec)) ? m.tokens_per_sec.toFixed(1) : (m.eval_count / (m.total_duration || 0.001)).toFixed(1);
+                    aiDiv.querySelector('.msg-metrics').innerHTML = `<span>${m.eval_count} tokens</span> • <span>${speed} t/s</span> • <span>${(m.total_duration || 0).toFixed(2)}s</span>`;
                     document.getElementById('ai-stats-realtime').textContent = `${speed} t/s`;
                 }
                 scrollToBottom();
+            }
+
+            if (fullContent && !renderPending) {
+                renderPending = true;
+                requestAnimationFrame(() => {
+                    if (currentAiDiv) {
+                        currentAiDiv.querySelector('.msg-content').innerHTML = marked.parse(fullContent);
+                        scrollToBottom();
+                    }
+                    renderPending = false;
+                });
             }
         }
         if (fullContent) { aiDiv.appendChild(createActionButtons(fullContent, false)); saveHistory(text, fullContent); }
