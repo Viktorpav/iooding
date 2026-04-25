@@ -204,6 +204,7 @@ async function sendMessage() {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        let lastRenderTime = 0;
 
         aiDiv.querySelector('.msg-content').innerHTML = '';
 
@@ -226,12 +227,17 @@ async function sendMessage() {
                 }
                 if (data.content) {
                     fullContent += data.content;
-                    aiDiv.querySelector('.msg-content').innerHTML = marked.parse(fullContent);
-                    aiDiv.querySelectorAll('pre code').forEach(hljs.highlightElement);
+                    const now = Date.now();
+                    if (now - lastRenderTime > 50) {
+                        aiDiv.querySelector('.msg-content').innerHTML = marked.parse(fullContent);
+                        lastRenderTime = now;
+                    }
                 }
                 if (data.done && data.metrics) {
+                    aiDiv.querySelector('.msg-content').innerHTML = marked.parse(fullContent);
+                    aiDiv.querySelectorAll('pre code').forEach(hljs.highlightElement);
                     const m = data.metrics;
-                    const speed = (m.eval_count / m.eval_duration).toFixed(1);
+                    const speed = m.tokens_per_sec ? m.tokens_per_sec.toFixed(1) : (m.eval_count / m.total_duration).toFixed(1);
                     aiDiv.querySelector('.msg-metrics').innerHTML = `<span>${m.eval_count} tokens</span> • <span>${speed} t/s</span> • <span>${m.total_duration.toFixed(2)}s</span>`;
                     document.getElementById('ai-stats-realtime').textContent = `${speed} t/s`;
                 }
