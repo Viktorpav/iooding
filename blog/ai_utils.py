@@ -12,10 +12,10 @@ SKIP_RAG_PATTERNS = {
 }
 
 # Shared clients to reduce latency from connection overhead
-_ollama_client = None
-_ollama_async_client = None
+_ai_client = None
+_ai_async_client = None
 
-class OpenAIAyncClientMock:
+class LMStudioAsyncClient:
     def __init__(self, host, api_key):
         from openai import AsyncOpenAI
         from django.conf import settings
@@ -43,22 +43,47 @@ class OpenAIAyncClientMock:
 
     async def chat(self, model, messages, stream, options=None):
         m = self.completion_model
-        resp = await self.client.chat.completions.create(
-            model=m,
-            messages=messages,
-            stream=stream,
-            temperature=options.get("temperature", 0.7) if options else 0.7
-        )
+        options = options or {}
+        # Map parameters to OpenAI format
+        kwargs = {
+            "model": m,
+            "messages": messages,
+            "stream": stream,
+            "temperature": options.get("temperature", 0.7),
+            "top_p": options.get("top_p", 1.0),
+            "presence_penalty": options.get("presence_penalty", 0.0),
+            "frequency_penalty": options.get("repeat_penalty", 1.0) - 1.0 if "repeat_penalty" in options else 0.0,
+        }
+        if stream:
+            kwargs["stream_options"] = {"include_usage": True}
+        
+        resp = await self.client.chat.completions.create(**kwargs)
+        
         if stream:
             async def generate_chunks():
                 start_time = __import__('time').time()
+                generated_tokens = 0
                 try:
                     async for chunk in resp:
+                        if hasattr(chunk, 'usage') and chunk.usage:
+                            generated_tokens = chunk.usage.completion_tokens
+
                         if chunk.choices and len(chunk.choices) > 0:
                             content = chunk.choices[0].delta.content or ""
-                            yield {"message": {"content": content}, "done": False}
+                            if content:
+                                if not generated_tokens:
+                                    generated_tokens += 1
+                                yield {"message": {"content": content}, "done": False}
+                    
                     end_time = __import__('time').time()
-                    yield {"done": True, "total_duration": (end_time - start_time) * 1e9, "eval_count": 100, "eval_duration": (end_time - start_time) * 1e9}
+                    duration_ns = int((end_time - start_time) * 1e9)
+                    
+                    yield {
+                        "done": True, 
+                        "total_duration": duration_ns, 
+                        "eval_count": generated_tokens, 
+                        "eval_duration": duration_ns
+                    }
                 except Exception as e:
                     import logging
                     logging.getLogger(__name__).error(f"Stream error: {e}")
@@ -66,24 +91,51 @@ class OpenAIAyncClientMock:
         else:
             return {"message": {"content": resp.choices[0].message.content}}
 
-def get_ollama_client(async_client=False):
-    """Factory for LM Studio clients disguised as Ollama to minimize changes."""
-    global _ollama_async_client
+class LMStudioSyncClient:
+    def __init__(self, host, api_key):
+        from openai import OpenAI
+        from django.conf import settings
+        self.client = OpenAI(base_url=host, api_key=api_key)
+        self.completion_model = settings.LM_STUDIO_COMPLETION_MODEL
+        self.embedding_model = settings.LM_STUDIO_EMBEDDING_MODEL
+
+    def generate(self, model, prompt, options=None):
+        m = self.completion_model
+        messages = [{"role": "user", "content": prompt}]
+        resp = self.client.chat.completions.create(
+            model=m, 
+            messages=messages, 
+            temperature=options.get("temperature", 0.7) if options else 0.7
+        )
+        return {"response": resp.choices[0].message.content}
+
+    def embeddings(self, model, prompt):
+        m = self.embedding_model
+        resp = self.client.embeddings.create(input=[prompt], model=m)
+        return {"embedding": resp.data[0].embedding}
+
+def get_ai_client(async_client=False):
+    """Factory for LM Studio clients."""
+    global _ai_client, _ai_async_client
     
     if async_client:
-        if _ollama_async_client is None:
-            _ollama_async_client = OpenAIAyncClientMock(
+        if _ai_async_client is None:
+            _ai_async_client = LMStudioAsyncClient(
                 host=settings.LM_STUDIO_HOST,
                 api_key=settings.LM_STUDIO_API_KEY
             )
-        return _ollama_async_client
+        return _ai_async_client
     else:
-        # Not implemented for synchronous, shouldn't be needed based on usage
-        raise NotImplementedError("Sync client not mapped for LM Studio yet")
+        if _ai_client is None:
+            _ai_client = LMStudioSyncClient(
+                host=settings.LM_STUDIO_HOST,
+                api_key=settings.LM_STUDIO_API_KEY
+            )
+        return _ai_client
 
-async def check_ollama_status():
-    """Check if LM Studio host is reachable and responding."""
-    client = get_ollama_client(async_client=True)
+async def check_ai_status():
+    """Check if AI host is reachable and responding."""
+    client = get_ai_client(async_client=True)
     try:
         import asyncio
         await asyncio.wait_for(client.list(), timeout=2.0)

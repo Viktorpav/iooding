@@ -1,16 +1,14 @@
 Django==5.2.7
 gunicorn==23.0.0
-uvicorn==0.32.1
-psycopg2-binary==2.9.9
+uvicorn==0.34.0
+psycopg2-binary==2.9.10
 Pillow==11.1.0
 django-taggit==6.1.0
 django-ckeditor-5==0.2.20
 django-redis==5.4.0
 whitenoise==6.8.2
 
-# AI & Vector Support
-ollama==0.4.7
-django-environ==0.11.2
-numpy==2.2.1
-redis>=5.0.0
+# AI & Configuration
 openai==1.61.1
+django-environ==0.11.2
+redis==5.2.1

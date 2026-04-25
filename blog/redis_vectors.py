@@ -125,7 +125,7 @@ async def text_search_async(keyword: str, top_k: int = 5) -> list:
 
 async def search_similar_async(query_embedding: list, top_k: int = 5, max_distance: float = 0.7) -> list:
     """Search for similar chunks using vector similarity (Async)."""
-    import numpy as np
+    import struct
     client = get_async_redis_client()
 
     # Ensure index exists before searching
@@ -142,7 +142,7 @@ async def search_similar_async(query_embedding: list, top_k: int = 5, max_distan
         except (ValueError, AttributeError):
             return None
 
-    query_vector = np.array(query_embedding, dtype=np.float32).tobytes()
+    query_vector = struct.pack(f'{len(query_embedding)}f', *query_embedding)
     q = (
         Query(f"*=>[KNN {top_k} @embedding $query_vector AS distance]")
         .sort_by("distance")
@@ -159,10 +159,10 @@ async def search_similar_async(query_embedding: list, top_k: int = 5, max_distan
 
 def search_similar(query_embedding: list, top_k: int = 5, max_distance: float = 0.7) -> list:
     """Search for similar chunks using vector similarity (Sync)."""
-    import numpy as np
+    import struct
     client = get_redis_client()
     if not ensure_index_exists(): return []
-    query_vector = np.array(query_embedding, dtype=np.float32).tobytes()
+    query_vector = struct.pack(f'{len(query_embedding)}f', *query_embedding)
     q = (
         Query(f"*=>[KNN {top_k} @embedding $query_vector AS distance]")
         .sort_by("distance")

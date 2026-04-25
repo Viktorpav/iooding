@@ -11,11 +11,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         from blog.models import Post
         from blog.redis_vectors import index_chunk, delete_post_chunks, ensure_index_exists, get_post_hash, set_post_hash
-        from blog.ai_utils import get_ollama_client
+        from blog.ai_utils import get_ai_client
 
         self.stdout.write("Building Neural Index (Section-Aware Mode)...")
         ensure_index_exists()
-        client = get_ollama_client()
+        client = get_ai_client()
         force = options.get('force')
         
         for post in Post.published.all():

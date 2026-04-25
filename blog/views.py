@@ -101,8 +101,8 @@ async def health_check(request):
 
 async def ai_status(request):
     """Check Ollama availability."""
-    from .ai_utils import check_ollama_status
-    is_online = await check_ollama_status()
+    from .ai_utils import check_ai_status
+    is_online = await check_ai_status()
     return HttpResponse(
         json.dumps({'online': is_online}),
         content_type='application/json',
@@ -135,8 +135,8 @@ async def chat_api(request):
                 content_type='application/json',
             )
 
-        from blog.ai_utils import get_ollama_client, generate_rag_context, get_rag_system_prompt
-        client = get_ollama_client(async_client=True)
+        from blog.ai_utils import get_ai_client, generate_rag_context, get_rag_system_prompt
+        client = get_ai_client(async_client=True)
 
         async def stream_response():
             try:
