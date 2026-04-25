@@ -184,8 +184,10 @@ async def chat_api(request):
                         yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
 
             except Exception as exc:
-                logger.error('chat_api stream error: %s', exc)
-                yield f"data: {json.dumps({'error': f'AI Error: {exc}'})}\n\n"
+                import traceback
+                error_msg = f"Stream Error: {type(exc).__name__}: {str(exc)}"
+                logger.error(error_msg)
+                yield f"data: {json.dumps({'error': error_msg, 'traceback': traceback.format_exc()})}\n\n"
 
         response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
         response['X-Accel-Buffering'] = 'no'
@@ -193,9 +195,11 @@ async def chat_api(request):
         return response
 
     except Exception as exc:
-        logger.exception('chat_api error')
+        import traceback
+        error_msg = f"{type(exc).__name__}: {str(exc)}"
+        logger.exception('chat_api error: %s', error_msg)
         return HttpResponse(
-            json.dumps({'error': str(exc)}),
+            json.dumps({'error': error_msg, 'traceback': traceback.format_exc()}),
             status=500,
             content_type='application/json',
         )
