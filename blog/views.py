@@ -148,14 +148,14 @@ async def chat_api(request):
                 context_text = await generate_rag_context(user_msg, client)
 
                 if context_text == 'NO_RAG_NEEDED':
-                    yield f"data: {json.dumps({'thinking': 'General query – responding directly...'})}\n\n"
+                    yield f"data: {json.dumps({'thinking': '\\nGeneral query – responding directly...'})}\n\n"
                     messages.insert(0, {'role': 'system', 'content': "You are 'Ding AI'. Be helpful and concise."})
                 elif context_text:
                     messages.insert(0, {'role': 'system', 'content': get_rag_system_prompt(context_text)})
-                    yield f"data: {json.dumps({'thinking': 'Knowledge retrieved – synthesizing answer...'})}\n\n"
+                    yield f"data: {json.dumps({'thinking': '\\nKnowledge retrieved – synthesizing answer...'})}\n\n"
                 else:
                     messages.insert(0, {'role': 'system', 'content': "You are 'Ding AI'. Context limited. Help generally."})
-                    yield f"data: {json.dumps({'thinking': 'Limited context – using latent knowledge...'})}\n\n"
+                    yield f"data: {json.dumps({'thinking': '\\nLimited context – using latent knowledge...'})}\n\n"
 
                 options = {
                     'temperature': 0.2,
