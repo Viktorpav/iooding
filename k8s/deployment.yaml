@@ -27,6 +27,7 @@ spec:
     spec:
       nodeSelector: { "node-role.kubernetes.io/storage": "true" }
       restartPolicy: OnFailure
+      securityContext: { runAsNonRoot: true, runAsUser: 100, fsGroup: 100 }
       containers:
         - name: migrate
           image: viktor2003/iooding:v68
