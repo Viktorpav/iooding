@@ -19,7 +19,13 @@ class LMStudioAsyncClient:
     def __init__(self, host, api_key):
         from openai import AsyncOpenAI
         from django.conf import settings
-        self.client = AsyncOpenAI(base_url=host, api_key=api_key)
+        # Ensure host ends with /v1 for LM Studio compatibility
+        base_url = host if host.endswith('/v1') else f"{host.rstrip('/')}/v1"
+        self.client = AsyncOpenAI(
+            base_url=base_url, 
+            api_key=api_key,
+            timeout=10.0,  # Add timeout for robustness
+        )
         self.completion_model = settings.LM_STUDIO_COMPLETION_MODEL
         self.embedding_model = settings.LM_STUDIO_EMBEDDING_MODEL
 
@@ -29,35 +35,45 @@ class LMStudioAsyncClient:
     async def generate(self, model, prompt, options=None):
         m = self.completion_model
         messages = [{"role": "user", "content": prompt}]
-        resp = await self.client.chat.completions.create(
-            model=m, 
-            messages=messages, 
-            temperature=options.get("temperature", 0.7) if options else 0.7
-        )
-        return {"response": resp.choices[0].message.content}
+        try:
+            resp = await self.client.chat.completions.create(
+                model=m, 
+                messages=messages, 
+                temperature=options.get("temperature", 0.7) if options else 0.7
+            )
+            return {"response": resp.choices[0].message.content}
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"LM Studio Sync Generate Error: {e}")
+            raise e
 
     async def embeddings(self, model, prompt):
         m = self.embedding_model
-        resp = await self.client.embeddings.create(input=[prompt], model=m)
-        return {"embedding": resp.data[0].embedding}
+        try:
+            resp = await self.client.embeddings.create(input=[prompt], model=m)
+            return {"embedding": resp.data[0].embedding}
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"LM Studio Embeddings Error: {e}")
+            raise e
 
     async def chat(self, model, messages, stream, options=None):
         m = self.completion_model
         options = options or {}
-        # Map parameters to OpenAI format
         kwargs = {
             "model": m,
             "messages": messages,
             "stream": stream,
             "temperature": options.get("temperature", 0.7),
             "top_p": options.get("top_p", 1.0),
-            "presence_penalty": options.get("presence_penalty", 0.0),
-            "frequency_penalty": options.get("repeat_penalty", 1.0) - 1.0 if "repeat_penalty" in options else 0.0,
         }
-        if stream:
-            kwargs["stream_options"] = {"include_usage": True}
         
-        resp = await self.client.chat.completions.create(**kwargs)
+        try:
+            resp = await self.client.chat.completions.create(**kwargs)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"LM Studio Chat Connection Error: {e}")
+            raise e
         
         if stream:
             async def generate_chunks():
@@ -95,7 +111,13 @@ class LMStudioSyncClient:
     def __init__(self, host, api_key):
         from openai import OpenAI
         from django.conf import settings
-        self.client = OpenAI(base_url=host, api_key=api_key)
+        # Ensure host ends with /v1 for LM Studio compatibility
+        base_url = host if host.endswith('/v1') else f"{host.rstrip('/')}/v1"
+        self.client = OpenAI(
+            base_url=base_url, 
+            api_key=api_key,
+            timeout=10.0
+        )
         self.completion_model = settings.LM_STUDIO_COMPLETION_MODEL
         self.embedding_model = settings.LM_STUDIO_EMBEDDING_MODEL
 
