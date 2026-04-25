@@ -140,6 +140,9 @@ async def chat_api(request):
 
         async def stream_response():
             try:
+                # Force flush Nginx/Ingress proxy buffers by sending 8KB of SSE comment padding
+                yield f": {' ' * 8192}\n\n"
+                
                 yield f"data: {json.dumps({'thinking': 'Analyzing intent...'})}\n\n"
 
                 context_text = await generate_rag_context(user_msg, client)
