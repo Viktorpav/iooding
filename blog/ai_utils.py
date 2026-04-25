@@ -81,6 +81,7 @@ class LMStudioAsyncClient:
             async def generate_chunks():
                 start_time = __import__('time').time()
                 generated_tokens = 0
+                actual_chunks = 0
                 try:
                     async for chunk in resp:
                         if hasattr(chunk, 'usage') and chunk.usage:
@@ -89,10 +90,12 @@ class LMStudioAsyncClient:
                         if chunk.choices and len(chunk.choices) > 0:
                             content = chunk.choices[0].delta.content or ""
                             if content:
-                                if not generated_tokens:
-                                    generated_tokens += 1
+                                actual_chunks += 1
                                 yield {"message": {"content": content}, "done": False}
                     
+                    if not generated_tokens or generated_tokens < actual_chunks:
+                        generated_tokens = actual_chunks
+                        
                     end_time = __import__('time').time()
                     duration_ns = int((end_time - start_time) * 1e9)
                     
@@ -331,52 +334,38 @@ async def generate_rag_context(user_msg: str, client) -> str:
         import logging
         logger = logging.getLogger(__name__)
 
-        # 1. Query Intelligence (Suggestion 1)
-        # Add a total timeout for reasoning (Circuit Breaker Suggestion 7)
-        try:
-            meta = await asyncio.wait_for(classify_query(user_msg, client), timeout=5.0)
-        except asyncio.TimeoutError:
-            return f"{site_meta}\n\n[Warning: Deep reasoning timed out. Using fast retrieval.]"
-            
-        if not meta["needs_rag"]:
+        # 1. Fast Intent Check (Heuristic)
+        msg_lower = user_msg.lower().strip()
+        if msg_lower in SKIP_RAG_PATTERNS or len(msg_lower) < 5:
             return "NO_RAG_NEEDED"
             
-        # 2. Query Expansion (Suggestion 6)
-        expanded_query = await expand_query(user_msg, client)
-        
-        # 3. Hybrid Retrieval with Cache (Suggestion 1)
-        top_k = 8 if meta["scope"] == "broad" else 5
+        # 2. Hybrid Retrieval with Cache (Fast)
+        top_k = 5
         
         # Keyword Search
         text_matches = await text_search_async(user_msg, top_k=3)
         
-        # Semantic Search (Using Cache)
-        embedding = await get_cached_embedding_async(expanded_query)
+        # Semantic Search
+        embedding = await get_cached_embedding_async(user_msg)
         if not embedding:
-            emb_resp = await client.embeddings(model='nomic-embed-text', prompt=expanded_query)
+            emb_resp = await client.embeddings(model='nomic-embed-text', prompt=user_msg)
             embedding = emb_resp['embedding']
-            await cache_embedding_async(expanded_query, embedding)
+            await cache_embedding_async(user_msg, embedding)
             
         vector_matches = await search_similar_async(embedding, top_k=top_k)
         
-        # 4. Hybrid Ranking
+        # 3. Hybrid Ranking
         ranked_chunks = await rank_search_results(user_msg, text_matches, vector_matches)
         
         raw_context = ""
         for m in ranked_chunks:
-            # Suggestion 5: Mention section titles in raw context
             raw_context += f"SOURCE: {m['title']}\nCONTENT: {m['content']}\n\n"
             
-        # 5. Context Distillation (Suggestion 3)
-        try:
-            distilled = await asyncio.wait_for(distill_context(raw_context, user_msg, client), timeout=8.0)
-        except asyncio.TimeoutError:
-            distilled = raw_context[:2000] # Fallback to raw if distillation is too slow
-        
-        if not distilled and not raw_context:
+        if not raw_context:
             logger.warning(f"RAG_EMPTY: No relevant docs found for: {user_msg}")
             
-        final_context = f"{site_meta}\n\n[CONTENT_MAP]\n{distilled or raw_context}"
+        final_context = f"{site_meta}\n\n[CONTENT_MAP]\n{raw_context[:3000]}"
+
         
         # Suggestion 4: Answer Verification Step
         # verified = await verify_answer(..., final_context, client) 
