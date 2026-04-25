@@ -4,7 +4,7 @@ uvicorn==0.32.1
 psycopg2-binary==2.9.9
 Pillow==11.1.0
 django-taggit==6.1.0
-django-ckeditor-5==0.2.16
+django-ckeditor-5==0.2.20
 django-redis==5.4.0
 whitenoise==6.8.2
 
