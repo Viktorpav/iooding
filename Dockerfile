@@ -23,8 +23,11 @@ RUN apk add --no-cache libpq jpeg zlib
 # Copy installed packages from builder
 COPY --from=builder /install /usr/local
 
-# Copy application code (owned by root, read by django)
+# Copy application code
 COPY --chown=django:django . .
+
+# Ensure static/media directories exist and are writable
+RUN mkdir -p /app/staticfiles /app/media && chown -R django:django /app
 
 RUN chmod +x /app/docker-entrypoint.sh
 
