@@ -54,7 +54,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 EXPOSE 8000
 
+# Switch to non-root user before running application commands
 USER django
+
+# Bake static files into the image securely as the django user
+RUN SECRET_KEY=dummy DATABASE_URL=sqlite:///:memory: python manage.py collectstatic --noinput --clear
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 

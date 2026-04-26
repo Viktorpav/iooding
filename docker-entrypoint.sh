@@ -68,7 +68,6 @@ case "${1:-}" in
     deploy)
         log "=== Full deploy start ==="
         run_migrate
-        run_static
         log "=== Full deploy complete ==="
         ;;
     *)

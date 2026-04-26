@@ -28,6 +28,9 @@ sitemaps = {
     'posts': PostSitemap,
 }
 
+from django.urls import re_path
+from django.views.static import serve
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('health/', include([
@@ -36,4 +39,7 @@ urlpatterns = [
     path('', include('blog.urls', namespace='blog')),
     path("ckeditor5/", include('django_ckeditor_5.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps},name='django.contrib.sitemaps.views.sitemap'),
-]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    
+    # Explicitly serve media files (user uploads) from the PersistentVolume in production
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+]
