@@ -183,7 +183,7 @@ USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 _production = not DEBUG
-SECURE_SSL_REDIRECT          = _production
+SECURE_SSL_REDIRECT          = False  # Handled by Ingress-NGINX at the edge
 SESSION_COOKIE_SECURE        = _production
 CSRF_COOKIE_SECURE           = _production
 SECURE_BROWSER_XSS_FILTER    = True
