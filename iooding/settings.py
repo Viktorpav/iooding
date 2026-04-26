@@ -77,9 +77,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'iooding.wsgi.application'
 
 # ─── Database (single PostgreSQL) ─────────────────────────────────────────────
+db_password = env('DB_PASSWORD', default='postgres')
+default_db_url = f'postgres://iooding:{db_password}@postgres:5432/iooding'
+
 DATABASES = {
     'default': {
-        **env.db('DATABASE_URL', default='postgres://iooding:postgres@postgres:5432/iooding'),
+        **env.db('DATABASE_URL', default=default_db_url),
         'OPTIONS': {
             'connect_timeout': 5,
         },
