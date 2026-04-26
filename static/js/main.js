@@ -2,6 +2,21 @@
 let chatHistory = [], lastEnterTime = 0, abortController = null, isGenerating = false, currentAiDiv = null;
 const MAX_HISTORY = 20;
 
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('ai-user-input');
 
@@ -220,7 +235,10 @@ async function sendMessage() {
     try {
         const res = await fetch('/api/chat/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('iooding_csrftoken')
+            },
             body: JSON.stringify({ message: text, messages: chatHistory }),
             signal: abortController.signal
         });

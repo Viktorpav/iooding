@@ -22,8 +22,8 @@ metadata:
 data:
   DB_HOST: postgres
   REDIS_URL: redis://redis:6379/1
-  ALLOWED_HOSTS: "*"
-  DEBUG: "True"
+  ALLOWED_HOSTS: "iooding.local"
+  DEBUG: "False"
   CSRF_TRUSTED_ORIGINS: "https://iooding.local"
   LM_STUDIO_HOST: "http://192.168.0.16:1234/v1"
 
@@ -94,10 +94,10 @@ spec:
       tolerations:
         - { key: "node.kubernetes.io/not-ready", operator: "Exists", effect: "NoExecute", tolerationSeconds: 10 }
         - { key: "node.kubernetes.io/unreachable", operator: "Exists", effect: "NoExecute", tolerationSeconds: 10 }
-      securityContext: { runAsNonRoot: true, runAsUser: 100, fsGroup: 100 }
+      securityContext: { runAsNonRoot: true, runAsUser: 100, fsGroup: 100, readOnlyRootFilesystem: false }
       initContainers:
         - name: wait-for-db
-          image: alpine:latest
+          image: alpine:3.20
           command: ["sh", "-c", "until nc -z postgres 5432; do sleep 1; done"]
       containers:
         - name: iooding
@@ -113,6 +113,13 @@ spec:
               valueFrom: { secretKeyRef: { name: postgres-secret, key: django_secret_key } }
             - name: LM_STUDIO_API_KEY
               valueFrom: { secretKeyRef: { name: iooding-admin-secret, key: lm_studio_api_key } }
+          resources:
+            requests:
+              cpu: 50m
+              memory: 192Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
           volumeMounts:
             - { name: media-storage, mountPath: /app/media }
             - { name: tmp-volume, mountPath: /tmp }

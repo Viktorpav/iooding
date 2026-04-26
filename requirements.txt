@@ -12,3 +12,4 @@ whitenoise==6.8.2
 openai==1.61.1
 django-environ==0.11.2
 redis==7.1.0
+python-json-logger==3.2.1

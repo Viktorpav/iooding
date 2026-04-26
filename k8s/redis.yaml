@@ -79,6 +79,7 @@ spec:
         name: redis-data
       spec:
         accessModes: ["ReadWriteOnce"]
+        storageClassName: "longhorn-storage"
         resources:
           requests:
             storage: 1Gi

@@ -25,9 +25,13 @@ def post_list(request, tag_slug=None):
 
     query = request.GET.get('q', '').strip()
     if query:
-        posts = posts.filter(
-            Q(title__icontains=query) | Q(tags__name__icontains=query)
-        ).distinct()
+        from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+        # Combine title and tags for robust search, ranking title higher
+        search_vector = SearchVector('title', weight='A') + SearchVector('tags__name', weight='B')
+        search_query = SearchQuery(query)
+        posts = posts.annotate(
+            rank=SearchRank(search_vector, search_query)
+        ).filter(rank__gte=0.1).order_by('-rank').distinct()
 
     paginator = Paginator(posts, POSTS_PER_PAGE)
     page = request.GET.get('page')
@@ -78,8 +82,18 @@ def post_detail(request, post):
     })
 
 
+from django.core.cache import cache
+
 @require_POST
 def reply_page(request):
+    """Save a comment reply with basic rate limiting."""
+    ip = request.META.get('REMOTE_ADDR')
+    cache_key = f"comment_rate:{ip}"
+    if cache.get(cache_key):
+        return HttpResponse('Rate limit exceeded. Please wait 30s.', status=429)
+    
+    cache.set(cache_key, True, timeout=30)
+
     form = CommentForm(request.POST)
     if form.is_valid():
         post_id = request.POST.get('post_id')
@@ -109,7 +123,6 @@ async def ai_status(request):
     )
 
 
-@csrf_exempt
 async def chat_api(request):
     """
     Async SSE endpoint for AI chat with RAG.
@@ -136,7 +149,7 @@ async def chat_api(request):
             )
 
         from blog.ai_utils import get_ai_client, generate_rag_context, get_rag_system_prompt
-        client = get_ai_client(async_client=True)
+        client = get_ai_client()
 
         async def stream_response():
             try:

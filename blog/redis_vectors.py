@@ -224,7 +224,7 @@ def set_post_hash(post_id: int, content_hash: str):
     client.set(get_post_hash_key(post_id), json.dumps({'hash': content_hash}))
 
 def get_embedding_cache_key(text: str) -> str:
-    return f"emb:{hashlib.md5(text.encode()).hexdigest()[:16]}"
+    return f"emb:{hashlib.sha256(text.encode()).hexdigest()[:24]}"
 
 async def get_cached_embedding_async(text: str) -> list | None:
     """Get cached embedding for text (Async)."""

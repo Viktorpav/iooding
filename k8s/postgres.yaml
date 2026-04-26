@@ -69,8 +69,6 @@ spec:
             - max_connections=50
             - -c
             - work_mem=8MB
-            - -c
-            - synchronous_commit=off
           resources:
             requests:
               memory: "256Mi"
@@ -111,16 +109,16 @@ spec:
 
           # Aggressive health checks for fast failure detection
           livenessProbe:
-            tcpSocket:
-              port: 5432
+            exec:
+              command: ["pg_isready", "-U", "iooding", "-d", "iooding"]
             initialDelaySeconds: 20
             periodSeconds: 5
             timeoutSeconds: 2
             failureThreshold: 3
 
           readinessProbe:
-            tcpSocket:
-              port: 5432
+            exec:
+              command: ["pg_isready", "-U", "iooding", "-d", "iooding"]
             initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 2

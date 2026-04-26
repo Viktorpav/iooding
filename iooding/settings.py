@@ -1,21 +1,32 @@
 from pathlib import Path
-import os
+import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ─── Environment (django-environ) ────────────────────────────────────────────
+# Reads from .env file in local dev; from K8s env vars in production.
+env = environ.Env(
+    DEBUG=(bool, False),
+    CONN_MAX_AGE=(int, 0),
+    ALLOWED_HOSTS=(list, ['iooding.local']),
+    LM_STUDIO_COMPLETION_MODEL=(str, 'local-model'),
+    LM_STUDIO_EMBEDDING_MODEL=(str, 'nomic-embed-text'),
+)
+environ.Env.read_env(BASE_DIR / '.env', overrides=False)
+
 # ─── Core secrets (injected by Sealed Secrets → K8s Secret → env) ────────────
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-local-dev-key')
-DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
-LM_STUDIO_HOST = os.environ.get('LM_STUDIO_HOST', 'http://192.168.0.16:1234/v1')
-LM_STUDIO_API_KEY = os.environ.get('LM_STUDIO_API_KEY', 'lm-studio')
-LM_STUDIO_COMPLETION_MODEL = os.environ.get('LM_STUDIO_COMPLETION_MODEL', 'local-model')
-LM_STUDIO_EMBEDDING_MODEL = os.environ.get('LM_STUDIO_EMBEDDING_MODEL', 'nomic-embed-text')
+SECRET_KEY = env('DJANGO_SECRET_KEY', default='django-insecure-local-dev-key')
+DEBUG = env('DEBUG')
 
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
-
-# Ingress-nginx handles external hostname validation; '*' keeps health-checks simple.
-ALLOWED_HOSTS = ['*']
+# Ingress-nginx handles external hostname validation; ALLOWED_HOSTS adds defense-in-depth.
+ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 SITE_ID = 1
+
+# ─── AI / LM Studio ──────────────────────────────────────────────────────────
+LM_STUDIO_HOST = env('LM_STUDIO_HOST', default='http://192.168.0.16:1234/v1')
+LM_STUDIO_API_KEY = env('LM_STUDIO_API_KEY', default='lm-studio')
+LM_STUDIO_COMPLETION_MODEL = env('LM_STUDIO_COMPLETION_MODEL')
+LM_STUDIO_EMBEDDING_MODEL = env('LM_STUDIO_EMBEDDING_MODEL')
 
 # ─── Applications ─────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -68,17 +79,14 @@ WSGI_APPLICATION = 'iooding.wsgi.application'
 # ─── Database (single PostgreSQL) ─────────────────────────────────────────────
 DATABASES = {
     'default': {
-        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'),
-        'NAME': os.environ.get('DB_NAME', 'iooding'),
-        'USER': os.environ.get('DB_USER', 'iooding'),
-        'PASSWORD': DB_PASSWORD,
-        'HOST': os.environ.get('DB_HOST', 'postgres'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
+        **env.db('DATABASE_URL', default='postgres://iooding:postgres@postgres:5432/iooding'),
         'OPTIONS': {
             'connect_timeout': 5,
         },
-        # Reuse DB connections; avoids per-request TCP handshake overhead.
-        'CONN_MAX_AGE': 60,
+        # Persistent connections for ASGI workers — avoid per-request TCP overhead.
+        # None = keep alive for the lifetime of the worker process.
+        'CONN_MAX_AGE': None,
+        'CONN_HEALTH_CHECKS': True,  # Django 5.1+ validates stale connections
     }
 }
 
@@ -86,7 +94,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': os.environ.get('REDIS_URL', 'redis://redis:6379/1'),
+        'LOCATION': env('REDIS_URL', default='redis://redis:6379/1'),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'SOCKET_CONNECT_TIMEOUT': 5,
@@ -184,19 +192,18 @@ X_FRAME_OPTIONS              = 'DENY'
 
 CSRF_COOKIE_SAMESITE    = 'Lax'
 CSRF_COOKIE_NAME        = 'iooding_csrftoken'
-CSRF_TRUSTED_ORIGINS    = os.environ.get(
-    'CSRF_TRUSTED_ORIGINS', 'https://iooding.local'
-).split(',')
+CSRF_TRUSTED_ORIGINS    = env('CSRF_TRUSTED_ORIGINS', default='https://iooding.local').split(',')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# ─── Logging (stdout → cluster log aggregation) ───────────────────────────────
+# ─── Logging (structured JSON → stdout → cluster log aggregation) ─────────────
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'json': {
-            'format': '{"level":"%(levelname)s","time":"%(asctime)s","module":"%(module)s","msg":"%(message)s"}',
+            '()': 'pythonjsonlogger.json.JsonFormatter',
+            'format': '%(levelname)s %(asctime)s %(module)s %(message)s',
         },
     },
     'handlers': {
