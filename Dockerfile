@@ -7,13 +7,13 @@ WORKDIR /app
 ENV PIP_CACHE_DIR=/root/.cache/pip
 
 # Install build dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
-    musl-dev \
-    postgresql-dev \
-    jpeg-dev \
-    zlib-dev \
-    libffi-dev
+    libpq-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
@@ -26,10 +26,14 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # Create non-root user for security
-RUN addgroup -S django && adduser -S django -G django
+RUN groupadd -r django && useradd -r -g django django
 
 # Install only necessary runtime libraries
-RUN apk add --no-cache libpq jpeg zlib
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    libjpeg62-turbo \
+    zlib1g \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy pre-installed packages from builder
 COPY --from=builder /install /usr/local
