@@ -44,7 +44,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           tags: viktor2003/iooding:${{ steps.tag.outputs.sha_short }}, viktor2003/iooding:latest
           cache-from: type=registry,ref=viktor2003/iooding:buildcache
           cache-to: type=registry,ref=viktor2003/iooding:buildcache,mode=max
