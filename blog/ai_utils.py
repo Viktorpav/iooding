@@ -2,8 +2,18 @@ from django.conf import settings
 from blog.redis_vectors import (
     search_similar_async, 
     get_cached_embedding_async, 
-    cache_embedding_async
+    cache_embedding_async,
+    text_search_async
 )
+import time
+import json
+import logging
+import re
+import asyncio
+from openai import AsyncOpenAI, OpenAI
+from asgiref.sync import sync_to_async
+
+logger = logging.getLogger(__name__)
 
 # Skip RAG for these simple patterns or social queries
 SKIP_RAG_PATTERNS = {
@@ -17,8 +27,6 @@ _ai_async_client = None
 
 class LMStudioAsyncClient:
     def __init__(self, host, api_key):
-        from openai import AsyncOpenAI
-        from django.conf import settings
         # Ensure host ends with /v1 for LM Studio compatibility
         base_url = host if host.endswith('/v1') else f"{host.rstrip('/')}/v1"
         self.client = AsyncOpenAI(
@@ -79,7 +87,7 @@ class LMStudioAsyncClient:
         
         if stream:
             async def generate_chunks():
-                start_time = __import__('time').time()
+                start_time = time.time()
                 generated_tokens = 0
                 actual_chunks = 0
                 try:
@@ -96,7 +104,7 @@ class LMStudioAsyncClient:
                     if not generated_tokens or generated_tokens < actual_chunks:
                         generated_tokens = actual_chunks
                         
-                    end_time = __import__('time').time()
+                    end_time = time.time()
                     duration_ns = int((end_time - start_time) * 1e9)
                     
                     yield {
@@ -106,8 +114,7 @@ class LMStudioAsyncClient:
                         "eval_duration": duration_ns
                     }
                 except Exception as e:
-                    import logging
-                    logging.getLogger(__name__).error(f"Stream error: {e}")
+                    logger.error(f"Stream error: {e}")
             return generate_chunks()
         else:
             return {"message": {"content": resp.choices[0].message.content}}

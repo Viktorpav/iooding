@@ -31,7 +31,32 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollToBottom(true);
     initMobileGestures();
     checkAiStatus();
+    initScrollReveal();
+    initSearchShortcut();
 });
+
+function initScrollReveal() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}
+
+function initSearchShortcut() {
+    document.addEventListener('keydown', (e) => {
+        if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            const searchInput = document.getElementById('nav-search-field');
+            if (searchInput) searchInput.focus();
+        }
+    });
+}
 
 async function checkAiStatus() {
     const statusText = document.querySelector('.agent-status');

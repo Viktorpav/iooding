@@ -13,7 +13,7 @@
     {% endfor %}
 </div>
 
-<article class="mb-5">
+<article class="mb-5 reveal">
     <header class="mb-4">
         <h1 class="display-5 fw-bold mb-2">{{ post.title }}</h1>
         <div class="text-muted small">
@@ -41,7 +41,7 @@
 <div class="row g-4 mb-5">
     {% for post in similar_posts %}
     <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
+        <div class="card h-100 border-0 shadow-sm reveal">
             <div class="ratio ratio-16x9">
                 {% if post.image %}
                 <img src="{{ post.image.url }}" class="featured-image-list" alt="{{post.title}}">

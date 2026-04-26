@@ -10,16 +10,8 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
 
     nginx.ingress.kubernetes.io/proxy-body-size: "20m"
-    nginx.ingress.kubernetes.io/proxy-buffering: "off"
-    nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      gzip off;
-      proxy_cache off;
-      tcp_nopush off;
-      tcp_nodelay on;
-      chunked_transfer_encoding on;
 spec:
   ingressClassName: nginx
   tls:
