@@ -14,6 +14,20 @@ spec:
       storage: 1Gi
 
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: iooding-config
+  namespace: iooding
+data:
+  DB_HOST: postgres
+  REDIS_URL: redis://redis:6379/1
+  ALLOWED_HOSTS: "*"
+  DEBUG: "True"
+  CSRF_TRUSTED_ORIGINS: "https://iooding.local"
+  LM_STUDIO_HOST: "http://192.168.0.16:1234/v1"
+
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -32,6 +46,9 @@ spec:
         - name: migrate
           image: viktor2003/iooding:v84
           command: ["sh", "-c", "/app/docker-entrypoint.sh deploy"]
+          envFrom:
+            - configMapRef:
+                name: iooding-config
           env:
             - name: DJANGO_SUPERUSER_USERNAME
               valueFrom: { secretKeyRef: { name: iooding-admin-secret, key: username } }
@@ -39,12 +56,8 @@ spec:
               valueFrom: { secretKeyRef: { name: iooding-admin-secret, key: password } }
             - name: DB_PASSWORD
               valueFrom: { secretKeyRef: { name: postgres-secret, key: password } }
-            - name: DB_HOST
-              value: postgres
             - name: DJANGO_SECRET_KEY
               valueFrom: { secretKeyRef: { name: postgres-secret, key: django_secret_key } }
-            - name: LM_STUDIO_HOST
-              value: "http://192.168.0.16:1234/v1"
             - name: LM_STUDIO_API_KEY
               valueFrom: { secretKeyRef: { name: iooding-admin-secret, key: lm_studio_api_key } }
           resources:
@@ -90,23 +103,14 @@ spec:
         - name: iooding
           image: viktor2003/iooding:v84
           ports: [{ containerPort: 8000 }]
+          envFrom:
+            - configMapRef:
+                name: iooding-config
           env:
             - name: DB_PASSWORD
               valueFrom: { secretKeyRef: { name: postgres-secret, key: password } }
-            - name: DB_HOST
-              value: postgres
-            - name: REDIS_URL
-              value: redis://redis:6379/1
-            - name: ALLOWED_HOSTS
-              value: "*"
-            - name: DEBUG
-              value: "True"
-            - name: CSRF_TRUSTED_ORIGINS
-              value: "https://iooding.local"
             - name: DJANGO_SECRET_KEY
               valueFrom: { secretKeyRef: { name: postgres-secret, key: django_secret_key } }
-            - name: LM_STUDIO_HOST
-              value: "http://192.168.0.16:1234/v1"
             - name: LM_STUDIO_API_KEY
               valueFrom: { secretKeyRef: { name: iooding-admin-secret, key: lm_studio_api_key } }
           volumeMounts:

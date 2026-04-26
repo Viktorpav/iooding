@@ -1,5 +1,5 @@
 # ─── Builder ──────────────────────────────────────────────────────────────────
-FROM python:3.12-alpine AS builder
+FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
@@ -21,7 +21,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 
 # ─── Runtime ──────────────────────────────────────────────────────────────────
-FROM python:3.12-alpine
+FROM python:3.12-slim
 
 WORKDIR /app
 
@@ -55,10 +55,10 @@ ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
 # Tune workers for small footprint (2 is optimal for 512MB RAM)
 CMD ["gunicorn", "iooding.asgi:application", \
-     "-k", "uvicorn.workers.UvicornWorker", \
-     "--bind", "0.0.0.0:8000", \
-     "--workers", "2", \
-     "--worker-tmp-dir", "/dev/shm", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-", \
-     "--log-level", "warning"]
+    "-k", "uvicorn.workers.UvicornWorker", \
+    "--bind", "0.0.0.0:8000", \
+    "--workers", "2", \
+    "--worker-tmp-dir", "/dev/shm", \
+    "--access-logfile", "-", \
+    "--error-logfile", "-", \
+    "--log-level", "warning"]
