@@ -40,11 +40,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /install /usr/local
 
 # Copy application code with proper ownership
-COPY --chown=django:django . .
+COPY --chown=django:100 . .
 
 # Prepare directories and permissions in a single layer
 RUN mkdir -p /app/staticfiles /app/media && \
-    chown -R django:django /app && \
+    chown -R django:100 /app && \
     chmod +x /app/docker-entrypoint.sh
 
 # Environment variables for Python optimization
