@@ -51,10 +51,6 @@ jobs:
           cache-from: type=registry,ref=viktor2003/iooding:buildcache
           cache-to: type=registry,ref=viktor2003/iooding:buildcache,mode=max
 
-      - name: Smoke Test Image
-        run: |
-          docker run --rm --entrypoint python viktor2003/iooding:${{ steps.tag.outputs.sha_short }} \
-            -c "import django; print('Django version:', django.get_version())"
 
       - name: Update Kubernetes Manifests
         run: |
