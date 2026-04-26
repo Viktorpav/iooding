@@ -21,11 +21,9 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: |
-          cd iooding
           pip install -r requirements.txt
       - name: Run Tests
         run: |
-          cd iooding
           python manage.py test
 
   build-and-update-manifest:
@@ -59,8 +57,8 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: ./iooding
-          file: ./iooding/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: true
           platforms: linux/arm64
           tags: viktor2003/iooding:${{ steps.tag.outputs.sha_short }}, viktor2003/iooding:latest
@@ -74,13 +72,13 @@ jobs:
 
       - name: Update Kubernetes Manifests
         run: |
-          sed -i "s|image: viktor2003/iooding:.*|image: viktor2003/iooding:${{ steps.tag.outputs.sha_short }}|g" iooding/k8s/deployment.yaml
+          sed -i "s|image: viktor2003/iooding:.*|image: viktor2003/iooding:${{ steps.tag.outputs.sha_short }}|g" k8s/deployment.yaml
 
       - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add iooding/k8s/deployment.yaml
+          git add k8s/deployment.yaml
           
           if ! git diff --staged --quiet; then
             git commit -m "Deploy: Update image to ${{ steps.tag.outputs.sha_short }} [skip ci]"
