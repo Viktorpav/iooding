@@ -25,8 +25,9 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Create non-root user for security
-RUN groupadd -r -g 100 django && useradd -r -u 100 -g 100 django
+# Create non-root user for security (UID 100 is required by K8s securityContext)
+# In Debian slim, GID 100 already exists as the 'users' group.
+RUN useradd -r -u 100 -g 100 django
 
 # Install only necessary runtime libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
