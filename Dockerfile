@@ -26,7 +26,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # Create non-root user for security
-RUN groupadd -r django && useradd -r -g django django
+RUN groupadd -r -g 100 django && useradd -r -u 100 -g 100 django
 
 # Install only necessary runtime libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
