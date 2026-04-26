@@ -71,6 +71,15 @@
 {% endwith %}
 
 <div class="comment-section">
+    <div class="mb-5 bg-light p-4 rounded border">
+        <h4 class="mb-3">Leave a comment</h4>
+        <form method="post" action="">
+            {% csrf_token %}
+            {{ comment_form.as_p }}
+            <button type="submit" class="btn btn-primary">Post Comment</button>
+        </form>
+    </div>
+
     {% if not post.comments.all %}
     <p class="text-muted">No comments yet. Be the first to comment!</p>
     {% else %}

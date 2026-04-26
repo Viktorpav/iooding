@@ -49,6 +49,14 @@ def post_list(request, tag_slug=None):
     })
 
 
+from django.core.cache import cache
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR')
+
 def post_detail(request, post):
     post = get_object_or_404(
         Post.published.select_related('author').prefetch_related('tags'),
@@ -58,6 +66,12 @@ def post_detail(request, post):
     comment_form = CommentForm()
 
     if request.method == 'POST':
+        ip = get_client_ip(request)
+        cache_key = f"comment_rate:{ip}"
+        if cache.get(cache_key):
+            return HttpResponse('Rate limit exceeded. Please wait 30s.', status=429)
+        cache.set(cache_key, True, timeout=30)
+
         comment_form = CommentForm(data=request.POST)
         if comment_form.is_valid():
             new_comment = comment_form.save(commit=False)
@@ -87,7 +101,7 @@ from django.core.cache import cache
 @require_POST
 def reply_page(request):
     """Save a comment reply with basic rate limiting."""
-    ip = request.META.get('REMOTE_ADDR')
+    ip = get_client_ip(request)
     cache_key = f"comment_rate:{ip}"
     if cache.get(cache_key):
         return HttpResponse('Rate limit exceeded. Please wait 30s.', status=429)
