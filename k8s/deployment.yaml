@@ -22,7 +22,7 @@ metadata:
 data:
   DB_HOST: postgres
   REDIS_URL: redis://redis:6379/1
-  ALLOWED_HOSTS: "iooding.local"
+  ALLOWED_HOSTS: "*"
   DEBUG: "False"
   CSRF_TRUSTED_ORIGINS: "https://iooding.local"
   LM_STUDIO_HOST: "http://192.168.0.16:1234/v1"
