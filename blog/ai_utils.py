@@ -18,7 +18,8 @@ logger = logging.getLogger(__name__)
 # Skip RAG for these simple patterns or social queries
 SKIP_RAG_PATTERNS = {
     'hi', 'hello', 'hey', 'thanks', 'bye', 'ok', 'yes', 'no', 'sure', 
-    'how are you', 'what is up', 'good morning', 'good evening', 'who are you'
+    'how are you', 'what is up', 'good morning', 'good evening', 'who are you',
+    'whats up', "what's up", 'sup', 'yo', 'thank you', 'thx',
 }
 
 # Shared clients to reduce latency from connection overhead
@@ -51,8 +52,7 @@ class LMStudioAsyncClient:
             )
             return {"response": resp.choices[0].message.content}
         except Exception as e:
-            import logging
-            logging.getLogger(__name__).error(f"LM Studio Sync Generate Error: {e}")
+            logger.error(f"LM Studio Sync Generate Error: {e}")
             raise e
 
     async def embeddings(self, model, prompt):
@@ -61,8 +61,7 @@ class LMStudioAsyncClient:
             resp = await self.client.embeddings.create(input=[prompt], model=m)
             return {"embedding": resp.data[0].embedding}
         except Exception as e:
-            import logging
-            logging.getLogger(__name__).error(f"LM Studio Embeddings Error: {e}")
+            logger.error(f"LM Studio Embeddings Error: {e}")
             raise e
 
     async def chat(self, model, messages, stream, options=None):
@@ -81,8 +80,7 @@ class LMStudioAsyncClient:
         try:
             resp = await self.client.chat.completions.create(**kwargs)
         except Exception as e:
-            import logging
-            logging.getLogger(__name__).error(f"LM Studio Chat Connection Error: {e}")
+            logger.error(f"LM Studio Chat Connection Error: {e}")
             raise e
         
         if stream:
@@ -121,8 +119,6 @@ class LMStudioAsyncClient:
 
 class LMStudioSyncClient:
     def __init__(self, host, api_key):
-        from openai import OpenAI
-        from django.conf import settings
         # Ensure host ends with /v1 for LM Studio compatibility
         base_url = host if host.endswith('/v1') else f"{host.rstrip('/')}/v1"
         self.client = OpenAI(
@@ -171,241 +167,186 @@ async def check_ai_status():
     """Check if AI host is reachable and responding."""
     client = get_ai_client(async_client=True)
     try:
-        import asyncio
         await asyncio.wait_for(client.list(), timeout=2.0)
         return True
     except:
         return False
 
-async def expand_query(user_msg: str, client) -> str:
-    """Expand simple queries with technical synonyms for better recall (Suggestion 6)."""
-    prompt = (
-        f"User is asking about technical topics in a blog.\n"
-        f"QUERY: {user_msg}\n"
-        "Return 3-5 keywords or synonyms that would improve search results for this query. "
-        "Format: comma separated list. No intro."
-    )
-    try:
-        resp = await client.generate(model='qwen3-coder:latest', prompt=prompt, options={"temperature": 0.0})
-        expansion = resp['response'].strip()
-        return f"{user_msg}, {expansion}"
-    except:
-        return user_msg
 
-async def classify_query(user_msg: str, client) -> dict:
-    """Classify the user query to decide on retrieval strategy."""
-    import json
-    import logging
-    logger = logging.getLogger(__name__)
+# ─── RAG Pipeline (Optimized for Small Models like Gemma 2B) ─────────────────
 
-    prompt = (
-        f"Analyze this user query: '{user_msg}'\n"
-        "Return ONLY a JSON object with these keys:\n"
-        "- intent: greeting | navigation | explanation | code | opinion\n"
-        "- needs_rag: true | false\n"
-        "- scope: narrow | broad\n"
-        "- expected_depth: shallow | deep"
-    )
-    try:
-        resp = await client.generate(model='qwen3-coder:latest', prompt=prompt, options={"temperature": 0.0})
-        import re
-        match = re.search(r'\{.*\}', resp['response'], re.DOTALL)
-        if match:
-            return json.loads(match.group())
-        return {"intent": "explanation", "needs_rag": True, "scope": "narrow", "expected_depth": "deep"}
-    except Exception as e:
-        logger.error(f"Classification failure: {e}")
-        return {"intent": "explanation", "needs_rag": True, "scope": "narrow", "expected_depth": "deep"}
 
-async def get_post_recency_score(post_id: int) -> float:
-    """Calculate a boost score based on post age (Suggestion 3)."""
-    from django.utils import timezone
-    from blog.models import Post
-    from asgiref.sync import sync_to_async
-    
-    @sync_to_async
-    def _get_age():
-        try:
-            p = Post.objects.get(id=post_id)
-            days = (timezone.now() - p.publish).days
-            return max(0, 1 - (days / 365)) # Boost for posts < 1 year old
-        except: return 0.0
-    return await _get_age()
-
-async def rank_search_results(user_msg, text_matches, vector_matches):
-    """Hybrid ranker with Diversity Penalty and Recency Boost (Suggestion 2 & 3)."""
-    seen_chunks = {} # doc_id -> score
-    
-    # 1. Semantic Weights
-    for m in vector_matches:
-        doc_id = f"{m['post_id']}:{m['content'][:50]}"
-        score = (1.0 - m['distance']) * 2.5 # Weighting semantic higher
-        seen_chunks[doc_id] = {"score": score, "doc": m}
-        
-    # 2. Keyword & Recency Boosts
-    user_words = set(user_msg.lower().split())
-    for doc_id, data in seen_chunks.items():
-        m = data["doc"]
-        # Keyword Boost
-        if any(word in m['title'].lower() for word in user_words):
-            data["score"] += 1.2
-            
-        # Recency Boost (Suggestion 3)
-        recency = await get_post_recency_score(m['post_id'])
-        data["score"] += recency * 0.5
-
-    # 3. Diversity Filter (Suggestion 2)
-    ranked = sorted(seen_chunks.values(), key=lambda x: x['score'], reverse=True)
-    post_counts = {}
-    final_docs = []
-    
-    for r in ranked:
-        pid = r['doc']['post_id']
-        # Allow max 2 chunks from same post to ensure diversity
-        if post_counts.get(pid, 0) >= 2:
-            continue
-        final_docs.append(r['doc'])
-        post_counts[pid] = post_counts.get(pid, 0) + 1
-        if len(final_docs) >= 6: break
-        
-    return final_docs
-
-async def distill_context(context: str, query: str, client) -> str:
-    """Compress context into relevant facts (Suggestion 3)."""
-    if not context or len(context) < 300: return context
-    prompt = (
-        f"QUESTION: {query}\n\nRAW CONTEXT:\n{context}\n\n"
-        "INSTRUCTION: Extract ONLY factual bullet points from the context that answer the question. "
-        "Cite source titles in brackets like [Post Title]. If no info is relevant, return 'NO RELEVANT INFO'."
-    )
-    try:
-        resp = await client.generate(model='qwen3-coder:latest', prompt=prompt, options={"temperature": 0.1})
-        res = resp['response'].strip()
-        return res if "NO RELEVANT INFO" not in res else ""
-    except:
-        return context
-
-async def get_full_site_content() -> str:
-    """Fetches full content + rich metadata of all published posts."""
-    from asgiref.sync import sync_to_async
-    from blog.models import Post
-    import re
-    
-    @sync_to_async
-    def _fetch():
-        posts = Post.published.all()
-        return [
-            f"POST: {p.title}\nURL: {p.get_absolute_url()}\nDATE: {p.publish.strftime('%Y-%m-%d')}\n"
-            f"READ_TIME: {p.read_time} min\nCONTENT: {re.sub('<[^<]+?>', '', p.body)[:2500]}"
-            for p in posts
-        ]
-    
-    try:
-        contents = await _fetch()
-        return "\n\n---\n\n".join(contents)
-    except: return ""
-
-async def get_site_metadata() -> str:
-    """Compact site inventory for token efficiency (Suggestion 4)."""
-    from asgiref.sync import sync_to_async
+async def get_site_inventory() -> str:
+    """Compact site inventory: titles, tags, dates. Cheap to build, no LLM needed."""
     from blog.models import Post
     from taggit.models import Tag
     
     @sync_to_async
     def _fetch():
-        posts = list(Post.published.all().order_by('-publish'))
-        tags = Tag.objects.all().values_list('name', flat=True)
-        return posts, list(tags)
+        posts = list(Post.published.all().order_by('-publish')[:20])
+        tags = list(Tag.objects.all().values_list('name', flat=True))
+        return posts, tags
 
     try:
         posts, tags = await _fetch()
-        meta = "[SITE_INTEL]\n"
-        meta += f"Identity: DingAI | Inventory: {len(posts)} Posts | Tags: {', '.join(tags) if tags else 'None'}\n"
-        meta += "Titles: " + (", ".join([p.title for p in posts]) if posts else "None")
-        return len(posts), meta
-    except Exception:
-        return 0, "[SITE_INTEL] Error retrieving metadata."
+        if not posts:
+            return 0, ""
+        
+        lines = [f"Blog: iooding.local | {len(posts)} articles | Tags: {', '.join(tags[:15])}"]
+        for p in posts:
+            lines.append(f"- \"{p.title}\" ({p.publish.strftime('%Y-%m-%d')}) → {p.get_absolute_url()}")
+        
+        return len(posts), "\n".join(lines)
+    except Exception as e:
+        logger.error(f"Site inventory error: {e}")
+        return 0, ""
 
-async def generate_rag_context(user_msg: str, client) -> str:
-    """Advanced RAG Orchestrator (Suggestion 1, 2, 3, 6, 7)."""
-    from blog.redis_vectors import text_search_async, search_similar_async
-    import asyncio
+
+async def get_full_site_content() -> str:
+    """Fetches full content of all published posts. Used for small blogs (<=10 posts)."""
+    from blog.models import Post
+    
+    @sync_to_async
+    def _fetch():
+        posts = Post.published.all().order_by('-publish')
+        results = []
+        for p in posts:
+            clean_body = re.sub('<[^<]+?>', '', p.body)[:3000]
+            results.append(
+                f"## {p.title}\n"
+                f"URL: {p.get_absolute_url()}\n"
+                f"Date: {p.publish.strftime('%Y-%m-%d')} | Read time: {p.read_time} min\n\n"
+                f"{clean_body}"
+            )
+        return results
     
     try:
-        # 0. Fast Track for small blogs (Suggestion 7 Fallback)
-        post_count, site_meta = await get_site_metadata()
-        if 0 < post_count <= 10:
-             full_content = await get_full_site_content()
-             return f"{site_meta}\n\n--- SITE KNOWLEDGE ---\n{full_content}"
+        contents = await _fetch()
+        return "\n\n---\n\n".join(contents)
+    except:
+        return ""
 
-        import logging
-        logger = logging.getLogger(__name__)
 
-        # 1. Fast Intent Check (Heuristic)
-        msg_lower = user_msg.lower().strip()
-        if msg_lower in SKIP_RAG_PATTERNS or len(msg_lower) < 5:
-            return "NO_RAG_NEEDED"
-            
-        # 2. Hybrid Retrieval with Cache (Fast)
-        top_k = 2  # Reduced to prevent massive prompt-processing delays
-        
-        # Keyword Search
-        text_matches = await text_search_async(user_msg, top_k=2)
-        
-        # Semantic Search
-        embedding = await get_cached_embedding_async(user_msg)
-        if not embedding:
-            emb_resp = await client.embeddings(model='nomic-embed-text', prompt=user_msg)
-            embedding = emb_resp['embedding']
-            await cache_embedding_async(user_msg, embedding)
-            
-        vector_matches = await search_similar_async(embedding, top_k=top_k)
-        
-        # 3. Hybrid Ranking
-        ranked_chunks = await rank_search_results(user_msg, text_matches, vector_matches)
-        
-        raw_context = ""
-        for m in ranked_chunks[:2]:  # Only take top 2 chunks to minimize context length
-            raw_context += f"SOURCE: {m['title']}\nCONTENT: {m['content']}\n\n"
-            
-        if not raw_context:
-            logger.warning(f"RAG_EMPTY: No relevant docs found for: {user_msg}")
-            
-        # Drastically reduced context limit to 1000 chars to ensure < 300 tokens context
-        final_context = f"{site_meta}\n\n[CONTENT_MAP]\n{raw_context[:1000]}"
-
-        
-        # Suggestion 4: Answer Verification Step
-        # verified = await verify_answer(..., final_context, client) 
-        # (This is handled by prompt instructions for efficiency)
-        
-        return final_context
-    except Exception as e:
-        # Suggestion 7 Fallback: If everything fails, return just site map
-        _, site_meta = await get_site_metadata()
-        logger.error(f"RAG_FAILURE: {e}")
-        return f"{site_meta}\n\n[System Alert: Knowledge base retrieval is slow. Falling back to site-map.]"
-
-async def verify_answer(answer, context, client):
-    """Self-correction protocol to reduce hallucinations (Suggestion 4)."""
-    if not answer or not context: return answer
-    prompt = (
-        f"You are a fact-checker.\nCONTEXT:\n{context}\n\nANSWER TO VERIFY:\n{answer}\n\n"
-        "Check if the answer contains any facts NOT present in the context. "
-        "If yes, return a slightly revised, safer version of the answer. "
-        "If the answer is perfectly grounded, return it exactly as is. "
-        "Provide ONLY the final text."
-    )
+async def generate_rag_context(user_msg: str, client) -> str:
+    """
+    Streamlined RAG pipeline optimized for small models (Gemma 2B).
+    
+    Strategy:
+    - No extra LLM calls for classification/expansion (too expensive for 2B)
+    - For small blogs (<=10 posts): dump all content directly (fast & complete)
+    - For larger blogs: hybrid keyword + semantic search
+    - Return well-formatted context the model can easily parse
+    """
     try:
-        resp = await client.generate(model='qwen3-coder:latest', prompt=prompt, options={"temperature": 0.0})
-        return resp['response'].strip()
-    except: return answer
+        # 1. Quick check: skip RAG for greetings
+        msg_lower = user_msg.lower().strip()
+        if msg_lower in SKIP_RAG_PATTERNS or len(msg_lower) < 3:
+            return "NO_RAG_NEEDED"
+        
+        # 2. Get site inventory (always cheap)
+        post_count, site_inventory = await get_site_inventory()
+        
+        if post_count == 0:
+            return "NO_RAG_NEEDED"
+        
+        # 3. For small blogs: include everything — no search needed
+        if post_count <= 15:
+            full_content = await get_full_site_content()
+            return f"{site_inventory}\n\n{full_content}"
+        
+        # 4. For larger blogs: hybrid search (keyword + semantic)
+        text_results = []
+        vector_results = []
+        
+        try:
+            # Run keyword and semantic search in parallel
+            text_task = text_search_async(user_msg, top_k=3)
+            
+            # Get or compute embedding
+            embedding = await get_cached_embedding_async(user_msg)
+            if not embedding:
+                emb_resp = await client.embeddings(model='nomic-embed-text', prompt=user_msg)
+                embedding = emb_resp['embedding']
+                await cache_embedding_async(user_msg, embedding)
+            
+            vector_task = search_similar_async(embedding, top_k=4)
+            
+            text_results, vector_results = await asyncio.gather(
+                text_task, vector_task,
+                return_exceptions=True
+            )
+            
+            # Handle exceptions from gather
+            if isinstance(text_results, Exception):
+                logger.warning(f"Text search failed: {text_results}")
+                text_results = []
+            if isinstance(vector_results, Exception):
+                logger.warning(f"Vector search failed: {vector_results}")
+                vector_results = []
+                
+        except Exception as e:
+            logger.warning(f"Search error: {e}")
+        
+        # 5. Merge and deduplicate results
+        seen_content = set()
+        ranked_chunks = []
+        
+        # Prioritize semantic matches (usually more relevant)
+        for match in vector_results:
+            content_key = match['content'][:100]
+            if content_key not in seen_content:
+                seen_content.add(content_key)
+                ranked_chunks.append(match)
+        
+        # Add keyword matches that weren't already found
+        for match in text_results:
+            content_key = match['content'][:100]
+            if content_key not in seen_content:
+                seen_content.add(content_key)
+                ranked_chunks.append(match)
+        
+        # 6. Format context for the model
+        if ranked_chunks:
+            context_parts = [site_inventory, ""]
+            for i, chunk in enumerate(ranked_chunks[:5]):
+                context_parts.append(
+                    f"### From: {chunk['title']}\n{chunk['content'][:1500]}"
+                )
+            return "\n\n".join(context_parts)
+        else:
+            # No search results — still give the model the site inventory
+            # so it can at least recommend articles
+            logger.info(f"No RAG results for: {user_msg}")
+            return site_inventory
+            
+    except Exception as e:
+        logger.error(f"RAG pipeline error: {e}")
+        # Graceful fallback: still try to get site inventory
+        try:
+            _, inventory = await get_site_inventory()
+            return inventory if inventory else "NO_RAG_NEEDED"
+        except:
+            return "NO_RAG_NEEDED"
+
 
 def get_rag_system_prompt(context: str) -> str:
-    """Optimized Compact System Prompt (Suggestion 4: Token Efficiency)."""
+    """
+    System prompt optimized for small models (Gemma 2B).
+    
+    Key principles for small models:
+    - Use clear, natural language (not compressed tokens)
+    - Be permissive: allow general knowledge when blog doesn't cover a topic
+    - Give explicit examples of good behavior
+    - Keep instructions short and unambiguous
+    """
     return (
-        "Identity: DingAI (K8s-hosted System). Authority: Internal Data Docs. "
-        "Strict Rule: Answer ONLY from [CONTENT_MAP]. If missing, say 'Information not found in site docs.' "
-        "Instruction: Use Technical Markdown, clickable [Links](URL), and suggest 3 Related Questions at end.\n\n"
-        f"--- CONTEXT ---\n{context}\n--- END ---"
+        "You are Ding AI, a friendly and knowledgeable assistant for the iooding.local tech blog.\n\n"
+        "Your job:\n"
+        "- Answer questions using the blog content provided below when relevant.\n"
+        "- If the blog content covers the topic, reference it with links.\n"
+        "- If the blog doesn't cover the topic, use your general knowledge to help.\n"
+        "- Be concise, helpful, and use markdown formatting.\n"
+        "- When referencing blog posts, link them like: [Post Title](url)\n"
+        "- At the end, suggest 1-2 related questions the user might want to ask.\n\n"
+        f"--- Blog Content ---\n{context}\n--- End ---"
     )

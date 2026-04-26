@@ -140,22 +140,24 @@ async def chat_api(request):
 
         async def stream_response():
             try:
-                # Force flush any 16KB proxy buffers now that gzip is fully disabled
-                yield f": {' ' * 17000}\n\n"
-                
-                yield f"data: {json.dumps({'thinking': 'Analyzing intent...'})}\n\n"
+                yield f"data: {json.dumps({'thinking': 'Searching knowledge base...'})}\n\n"
 
                 context_text = await generate_rag_context(user_msg, client)
 
                 if context_text == 'NO_RAG_NEEDED':
-                    yield f"data: {json.dumps({'thinking': '\\nGeneral query – responding directly...'})}\n\n"
-                    messages.insert(0, {'role': 'system', 'content': "You are 'Ding AI'. Be helpful and concise."})
+                    yield f"data: {json.dumps({'thinking': 'Responding directly...'})}\n\n"
+                    messages.insert(0, {'role': 'system', 'content': 
+                        "You are Ding AI, a friendly assistant for the iooding.local tech blog. "
+                        "Be helpful, concise, and use markdown formatting."
+                    })
                 elif context_text:
                     messages.insert(0, {'role': 'system', 'content': get_rag_system_prompt(context_text)})
-                    yield f"data: {json.dumps({'thinking': '\\nKnowledge retrieved – synthesizing answer...'})}\n\n"
+                    yield f"data: {json.dumps({'thinking': 'Context found — generating answer...'})}\n\n"
                 else:
-                    messages.insert(0, {'role': 'system', 'content': "You are 'Ding AI'. Context limited. Help generally."})
-                    yield f"data: {json.dumps({'thinking': '\\nLimited context – using latent knowledge...'})}\n\n"
+                    messages.insert(0, {'role': 'system', 'content': 
+                        "You are Ding AI, a friendly assistant for the iooding.local tech blog. "
+                        "Be helpful, concise, and use markdown formatting."
+                    })
 
                 options = {
                     'temperature': 0.2,
