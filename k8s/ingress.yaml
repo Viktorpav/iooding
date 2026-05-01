@@ -1,3 +1,4 @@
+# ─── Main Ingress (all non-streaming traffic) ────────────────────────────────
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -8,10 +9,7 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-
     nginx.ingress.kubernetes.io/proxy-body-size: "20m"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
 spec:
   ingressClassName: nginx
   tls:
@@ -23,6 +21,42 @@ spec:
       http:
         paths:
           - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: iooding-service
+                port:
+                  number: 80
+
+---
+# ─── SSE Ingress (AI chat streaming — no gzip, no buffering) ─────────────────
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: iooding-chat-ingress
+  namespace: iooding
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      gzip off;
+      proxy_buffering off;
+      chunked_transfer_encoding on;
+      tcp_nodelay on;
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - iooding.local
+      secretName: iooding-tls
+  rules:
+    - host: iooding.local
+      http:
+        paths:
+          - path: /api/chat/
             pathType: Prefix
             backend:
               service:

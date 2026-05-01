@@ -224,6 +224,7 @@ async def chat_api(request):
         response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
         response['X-Accel-Buffering'] = 'no'
         response['Cache-Control'] = 'no-cache, no-transform'
+        response['Content-Encoding'] = 'identity'
         return response
 
     except Exception as exc:
