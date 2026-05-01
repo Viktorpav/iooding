@@ -43,8 +43,6 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
     nginx.ingress.kubernetes.io/configuration-snippet: |
       gzip off;
-      proxy_buffering off;
-      chunked_transfer_encoding on;
 spec:
   ingressClassName: nginx
   tls:
