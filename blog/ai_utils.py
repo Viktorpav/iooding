@@ -32,7 +32,7 @@ class LMStudioClient:
         self.client = AsyncOpenAI(
             base_url=base_url, 
             api_key=api_key,
-            timeout=10.0,
+            timeout=60.0,
         )
         self.completion_model = settings.LM_STUDIO_COMPLETION_MODEL
         self.embedding_model = settings.LM_STUDIO_EMBEDDING_MODEL
