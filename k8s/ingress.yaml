@@ -45,7 +45,6 @@ metadata:
       gzip off;
       proxy_buffering off;
       chunked_transfer_encoding on;
-      tcp_nodelay on;
 spec:
   ingressClassName: nginx
   tls:
