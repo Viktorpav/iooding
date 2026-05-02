@@ -6,14 +6,14 @@ A minimal, production-grade **Django blog** running on a personal 2-node **Talos
 
 ```mermaid
 graph TD
-    User["Browser"] -->|HTTPS| Ingress["ingress-nginx\n(LoadBalancer via kube-vip)"]
-    Ingress --> App["iooding-blog\nDjango + Gunicorn/Uvicorn\n(iooding ns)"]
+    User["Browser"] -->|HTTPS| Ingress["ingress-nginx\n(Optimized for SSE)"]
+    Ingress --> App["iooding-blog\nDjango 5.2 + Uvicorn\n(iooding ns)"]
     App --> DB["PostgreSQL\n(StatefulSet)"]
-    App --> Redis["Redis Stack\n(Deployment)"]
-    App -->|RAG embeddings| Ollama["Ollama\n(external host)"]
-    DB --> PVC_DB["PVC 10Gi\n(local-path)"]
-    Redis --> PVC_Redis["PVC 2Gi\n(local-path)"]
-    App --> Static["WhiteNoise\n(static files)"]
+    App --> Redis["Redis Stack\n(StatefulSet)"]
+    App -->|OpenAI API| LMStudio["LM Studio\n(external host 192.168.0.16)"]
+    DB --> PVC_DB["PVC 1Gi\n(local-path)"]
+    Redis --> PVC_Redis["PVC 1Gi\n(local-path)"]
+    App --> Static["WhiteNoise\n(Compressed static)"]
 ```
 
 ## Stack
@@ -24,30 +24,21 @@ graph TD
 | GitOps | ArgoCD |
 | App | Django 5.2, Gunicorn + Uvicorn (ASGI) |
 | DB | PostgreSQL (psycopg2) |
-| Cache / Vectors | Redis Stack |
-| TLS | cert-manager (internal CA) |
-| Ingress | ingress-nginx |
-| LB | kube-vip (ARP mode) |
-| Secrets | Sealed Secrets |
-| AI | Ollama (qwen3-coder, nomic-embed-text) |
+| Cache / Vectors | Redis Stack (Vector Search) |
+| Ingress | ingress-nginx (Buffered & Gzip OFF) |
+| AI | LM Studio (qwen3-coder, nomic-embed-text) |
 
 ## Quick Start
 
 ### 1. Bootstrap the cluster
 ```bash
-cd talos/
-make all          # patch nodes → fetch kubeconfig → bootstrap ArgoCD → apply manifests
-make hosts        # add argocd.local + iooding.local to /etc/hosts
-make pass         # print ArgoCD initial admin password
+cd ../          # Back to infra repo
+make all        # bootstrap everything
+make hosts      # add iooding.local to /etc/hosts
 ```
 
 ### 2. Deploy app via ArgoCD
-ArgoCD watches `k8s/manifests/` in this repo and auto-syncs. Any `git push` triggers a rolling update within ~60 s.
-
-### 3. Check cluster health
-```bash
-make status       # nodes + ArgoCD apps + non-running pods at a glance
-```
+Pushing to the `master` branch triggers the GitHub Action. The action builds the image and updates `k8s/deployment.yaml`. ArgoCD detects the change and triggers a rolling update.
 
 ## Environment Variables (injected via Sealed Secret)
 
@@ -56,10 +47,9 @@ make status       # nodes + ArgoCD apps + non-running pods at a glance
 | `DJANGO_SECRET_KEY` | Django secret key |
 | `DB_PASSWORD` | PostgreSQL password |
 | `REDIS_URL` | Redis connection URL |
-| `OLLAMA_HOST` | Ollama API base URL |
+| `LM_STUDIO_HOST` | LM Studio API base URL (192.168.0.16:1234/v1) |
+| `LM_STUDIO_API_KEY` | API Key for LM Studio |
 | `CSRF_TRUSTED_ORIGINS` | Comma-separated trusted origins |
-| `DJANGO_SUPERUSER_USERNAME` | Auto-created admin user |
-| `DJANGO_SUPERUSER_PASSWORD` | Auto-created admin password |
 
 ## Development (local Docker)
 
