@@ -40,6 +40,16 @@ spec:
   template:
     spec:
       nodeSelector: { "node-role.kubernetes.io/storage": "true" }
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: In
+                    values:
+                      - "true"
       restartPolicy: OnFailure
       securityContext: { runAsNonRoot: true, runAsUser: 100, fsGroup: 100 }
       containers:
@@ -90,6 +100,16 @@ spec:
       labels: { app: iooding-blog }
     spec:
       nodeSelector: { "node-role.kubernetes.io/storage": "true" }
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: In
+                    values:
+                      - "true"
       terminationGracePeriodSeconds: 10
       tolerations:
         - { key: "node.kubernetes.io/not-ready", operator: "Exists", effect: "NoExecute", tolerationSeconds: 10 }

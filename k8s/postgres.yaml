@@ -33,6 +33,16 @@ spec:
       terminationGracePeriodSeconds: 10
       nodeSelector:
         node-role.kubernetes.io/storage: "true"
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: In
+                    values:
+                      - "true"
       # Fast eviction tolerations
       tolerations:
         - key: "node.kubernetes.io/not-ready"
