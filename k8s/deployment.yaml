@@ -51,15 +51,15 @@ spec:
                 name: iooding-config
           env:
             - name: DJANGO_SUPERUSER_USERNAME
-              valueFrom: { secretKeyRef: { name: iooding-admin-secret, key: username } }
+              valueFrom: { secretKeyRef: { name: iooding-secrets, key: username } }
             - name: DJANGO_SUPERUSER_PASSWORD
-              valueFrom: { secretKeyRef: { name: iooding-admin-secret, key: password } }
+              valueFrom: { secretKeyRef: { name: iooding-secrets, key: password } }
             - name: DB_PASSWORD
-              valueFrom: { secretKeyRef: { name: postgres-secret, key: password } }
+              valueFrom: { secretKeyRef: { name: iooding-secrets, key: db_password } }
             - name: DJANGO_SECRET_KEY
-              valueFrom: { secretKeyRef: { name: postgres-secret, key: django_secret_key } }
+              valueFrom: { secretKeyRef: { name: iooding-secrets, key: django_secret_key } }
             - name: LM_STUDIO_API_KEY
-              valueFrom: { secretKeyRef: { name: iooding-admin-secret, key: lm_studio_api_key } }
+              valueFrom: { secretKeyRef: { name: iooding-secrets, key: lm_studio_api_key } }
           resources:
             requests: { cpu: 50m, memory: 256Mi }
             limits: { cpu: 500m, memory: 512Mi }
@@ -108,11 +108,11 @@ spec:
                 name: iooding-config
           env:
             - name: DB_PASSWORD
-              valueFrom: { secretKeyRef: { name: postgres-secret, key: password } }
+              valueFrom: { secretKeyRef: { name: iooding-secrets, key: db_password } }
             - name: DJANGO_SECRET_KEY
-              valueFrom: { secretKeyRef: { name: postgres-secret, key: django_secret_key } }
+              valueFrom: { secretKeyRef: { name: iooding-secrets, key: django_secret_key } }
             - name: LM_STUDIO_API_KEY
-              valueFrom: { secretKeyRef: { name: iooding-admin-secret, key: lm_studio_api_key } }
+              valueFrom: { secretKeyRef: { name: iooding-secrets, key: lm_studio_api_key } }
           resources:
             requests:
               cpu: 50m

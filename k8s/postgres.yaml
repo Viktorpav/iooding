@@ -88,8 +88,8 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres-secret
-                  key: password
+                  name: iooding-secrets
+                  key: db_password
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data

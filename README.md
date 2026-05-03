@@ -2,6 +2,9 @@
 
 A minimal, production-grade **Django blog** running on a personal 2-node **Talos Linux** Kubernetes cluster, managed entirely via **ArgoCD GitOps**. Features AI-assisted RAG chat powered by a local Ollama instance.
 
+> [!NOTE]
+> This is a **decoupled application repository**. For the Talos cluster setup, machine patches, and UTM configuration, see the [talos-iooding](https://github.com/Viktorpav/talos-iooding) infrastructure repo.
+
 ## Architecture
 
 ```mermaid
