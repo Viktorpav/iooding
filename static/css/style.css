@@ -1034,31 +1034,35 @@ body.ai-active {
 }
 
 .site-footer {
-    padding: 120px 0 40px;
+    padding: 40px 0 40px;
     background: var(--bg);
+    border-top: 1px solid var(--border);
+    margin-top: 80px;
 }
 
-.footer-bottom {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    width: 100%;
-    padding: 0 20px;
-    min-height: 80px;
+/* Top row: Github left, Privacy/Terms right */
+.footer-top-row {
+    padding: 0;
+    margin-bottom: 0;
 }
 
-.footer-legal {
+.footer-link-small {
     font-size: 0.75rem;
+    color: var(--text);
+    text-decoration: none;
+    opacity: 0.4;
+    transition: opacity 0.2s;
     font-weight: 500;
-    opacity: 0.3;
-    max-width: 300px;
+}
+
+.footer-link-small:hover {
+    opacity: 1;
 }
 
 .footer-legal-links {
     display: flex;
     gap: 24px;
     justify-content: flex-end;
-    max-width: 300px;
 }
 
 .footer-legal-links a {
@@ -1067,24 +1071,41 @@ body.ai-active {
     text-decoration: none;
     opacity: 0.4;
     transition: opacity 0.2s;
+    font-weight: 500;
 }
 
 .footer-legal-links a:hover {
     opacity: 1;
+}
+
+/* Spacer to clear AI button + copyright row at the very bottom */
+.footer-bottom {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 8px;
+}
+
+.footer-spacer-ai {
+    height: 100px; /* Clear the floating AI button */
+    width: 100%;
+}
+
+.footer-legal {
+    font-size: 0.72rem;
+    font-weight: 500;
+    opacity: 0.3;
+    text-align: center;
 }
 
 @media (max-width: 768px) {
-    .footer-bottom {
+    .footer-top-row {
         flex-direction: column;
-        align-items: center;
-        gap: 60px; /* Leave space for AI button in middle */
+        gap: 16px;
         text-align: center;
-        padding-bottom: 20px;
     }
-}
-
-.footer-legal-links a:hover {
-    opacity: 1;
 }
 
 @media (max-width: 768px) {
