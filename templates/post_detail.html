@@ -71,12 +71,12 @@
 {% endwith %}
 
 <div class="comment-section">
-    <div class="mb-5 bg-light p-4 rounded border">
-        <h4 class="mb-3">Leave a comment</h4>
+    <div class="comment-form-wrapper">
+        <h4>Leave a comment</h4>
         <form method="post" action="">
             {% csrf_token %}
             {{ comment_form.as_p }}
-            <button type="submit" class="btn btn-primary">Post Comment</button>
+            <button type="submit" class="btn btn-primary mt-3 px-4">Post Comment</button>
         </form>
     </div>
 
