@@ -507,7 +507,7 @@ label {
     position: fixed;
     left: 50%;
     transform: translateX(-50%);
-    bottom: 92px; /* 20px above the 72px footer */
+    bottom: 120px; /* Sits above the newly centered footer */
     z-index: 1001;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -959,29 +959,26 @@ body.ai-active {
 /* --- Site Footer --- */
 
 .site-footer {
-    padding: 0;
+    padding: 30px 0;
     background: var(--bg);
     border-top: 1px solid var(--border);
     margin-top: 80px;
-    height: var(--header-height);
     display: flex;
     align-items: center;
+    justify-content: center;
     position: relative;
     z-index: 1000;
 }
 
-/* Top row: Github left, Privacy/Terms right */
-.footer-top-row {
-    padding: 0;
-    margin-bottom: 0;
+.footer-centered-layout {
+    text-align: center;
 }
-
-
 
 .footer-legal-links {
     display: flex;
-    gap: 24px;
-    justify-content: flex-end;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
 }
 
 .footer-legal-links a {
@@ -1031,6 +1028,7 @@ body.ai-active {
             order: 3;
             flex: 0 0 100%;
         }
+
         .footer-bottom {
             flex-direction: column;
             gap: 20px;
