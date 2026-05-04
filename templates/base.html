@@ -49,9 +49,19 @@
                   <span class="title">Orchestration</span>
                   <span class="description d-block">Cloud Native & Cluster Scaling</span>
                 </a></li>
-              <li><a class="dropdown-item rounded-3 p-2" href="{% url 'blog:post_tag' tag_slug='ai' %}">
+              <li><a class="dropdown-item rounded-3 mb-1 p-2" href="{% url 'blog:post_tag' tag_slug='ai' %}">
                   <span class="title">Intelligence</span>
                   <span class="description d-block">Machine Learning & Neural Search</span>
+                </a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li>
+                <h6 class="dropdown-header">Education Labs</h6>
+              </li>
+              <li><a class="dropdown-item rounded-3 p-2" href="{% url 'blog:privacy' %}">
+                  <span class="title">Penetration Testing</span>
+                  <span class="description d-block">Security & Privacy Guidelines</span>
                 </a></li>
             </ul>
           </li>
@@ -70,12 +80,6 @@
       </div>
 
       <div class="header-right">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.view_name == 'blog:about' %}active{% endif %}"
-              href="{% url 'blog:about' %}">About</a>
-          </li>
-        </ul>
         <a class="navbar-brand ms-3" href="{% url 'blog:post_list' %}">
           <img src="{% static 'images/logo.png' %}" alt="Ding" class="navbar-logo">
         </a>
@@ -103,6 +107,8 @@
       <div class="footer-centered-layout d-flex flex-column align-items-center w-100">
         <div class="footer-legal-links mb-2">
           <a href="https://github.com/Viktorpav/iooding" target="_blank">Source Code</a>
+          <span class="mx-2 opacity-25">|</span>
+          <a href="{% url 'blog:about' %}">About</a>
           <span class="mx-2 opacity-25">|</span>
           <a href="{% url 'blog:privacy' %}">Privacy</a>
           <span class="mx-2 opacity-25">|</span>
