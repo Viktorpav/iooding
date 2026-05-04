@@ -507,10 +507,9 @@ label {
     position: fixed;
     left: 50%;
     transform: translateX(-50%);
-    bottom: 30px;
-    z-index: 9999;
-    cursor: pointer;
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    bottom: 92px; /* 20px above the 72px footer */
+    z-index: 1001;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 #ai-edge-trigger:hover {
@@ -960,10 +959,15 @@ body.ai-active {
 /* --- Site Footer --- */
 
 .site-footer {
-    padding: 30px 0 0;
+    padding: 0;
     background: var(--bg);
     border-top: 1px solid var(--border);
-    margin-top: 60px;
+    margin-top: 80px;
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 1000;
 }
 
 /* Top row: Github left, Privacy/Terms right */
@@ -998,8 +1002,8 @@ body.ai-active {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 60px; /* Reduced gap but still below AI button zone */
-    padding-bottom: 30px;
+    margin-top: 0;
+    padding-bottom: 0;
 }
 
 .footer-legal {
@@ -1026,37 +1030,12 @@ body.ai-active {
         .header-center {
             order: 3;
             flex: 0 0 100%;
-            padding: 10px 0;
         }
-
-        .navbar {
-            height: auto;
-            padding: 15px 0;
+        .footer-bottom {
+            flex-direction: column;
+            gap: 20px;
+            text-align: center;
         }
-
-        .header-left {
-            flex: 1;
-        }
-
-        .header-right {
-            flex: 1;
-        }
-    }
-
-    .footer-nav-minimal {
-        flex-direction: column;
-        gap: 30px;
-    }
-
-    .footer-links.horizontal {
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .footer-bottom {
-        flex-direction: column;
-        gap: 20px;
-        text-align: center;
     }
 }
 
