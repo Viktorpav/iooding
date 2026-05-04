@@ -308,10 +308,31 @@ function saveHistory(u, a) {
 }
 
 function clearHistory() {
+    if (!document.getElementById('ai-clear-modal')) {
+        const modal = document.createElement('div');
+        modal.id = 'ai-clear-modal';
+        modal.className = 'premium-modal';
+        modal.innerHTML = `
+            <div class="premium-modal-content">
+                <h4>Clean Conversation?</h4>
+                <p>This will erase the entire AI context. Are you sure?</p>
+                <div class="premium-modal-actions">
+                    <button class="action-btn-pill btn-cancel" onclick="document.getElementById('ai-clear-modal').style.display='none'">Cancel</button>
+                    <button class="action-btn-pill btn-confirm" onclick="confirmClearHistory()">Clean</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    document.getElementById('ai-clear-modal').style.display = 'flex';
+}
+
+function confirmClearHistory() {
     chatHistory = [];
     localStorage.removeItem('ai_chat_history');
     const v = document.getElementById('chat-messages'), w = v.querySelector('.system-msg');
     v.innerHTML = ''; if (w) v.appendChild(w);
+    document.getElementById('ai-clear-modal').style.display = 'none';
 }
 
 // --- Comment System Logic ---
