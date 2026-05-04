@@ -235,21 +235,42 @@ main.container {
     visibility: hidden;
     transform: translateY(10px);
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    background: rgba(255, 255, 255, 0.7) !important;
-    backdrop-filter: blur(40px) saturate(200%) !important;
-    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-    border-radius: 20px !important;
+    border: 1px solid var(--border) !important;
+    background: var(--surface) !important;
+    border-radius: 12px !important;
     pointer-events: none;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.3) !important;
+    box-shadow: var(--shadow) !important;
 }
 
 @media (prefers-color-scheme: dark) {
     .dropdown-menu {
-        background: rgba(15, 15, 15, 0.75) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+        background: #1a1a1a !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
     }
+}
+
+/* Hide Bootstrap Caret */
+.dropdown-toggle::after {
+    display: none !important;
+}
+
+.nav-link.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.nav-link.dropdown-toggle::before {
+    content: '+';
+    font-size: 0.8rem;
+    font-weight: 400;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+}
+
+.nav-link.dropdown-toggle:hover::before {
+    opacity: 1;
 }
 
 @media (min-width: 992px) {
@@ -999,19 +1020,39 @@ body.ai-active {
 }
 
 .footer-bottom {
-    padding-top: 30px;
+    padding-top: 40px;
+    margin-top: 40px;
     border-top: 1px solid var(--border);
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
 .footer-legal {
-    font-size: 0.65rem;
-    font-weight: 700;
-    opacity: 0.25;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 500;
+    opacity: 0.5;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+.footer-legal-links {
+    display: flex;
+    gap: 20px;
+}
+
+.footer-legal-links a {
+    font-size: 0.75rem;
+    color: var(--text);
+    text-decoration: none;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.footer-legal-links a:hover {
+    opacity: 1;
 }
 
 @media (max-width: 768px) {
