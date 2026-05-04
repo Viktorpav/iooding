@@ -5,8 +5,9 @@
     --primary-gradient: linear-gradient(135deg, #007aff, #5856d6);
     --bg: #ffffff;
     --text: #1d1d1f;
+    --text-rgb: 29, 29, 31;
     --surface: #f5f5f7;
-    --border: rgba(0, 0, 0, 0.08);
+    --border: rgba(0, 0, 0, 0.15);
     --radius: 20px;
     --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
     --header-height: 72px;
@@ -18,8 +19,9 @@
     :root {
         --bg: #000000;
         --text: #ffffff;
+        --text-rgb: 255, 255, 255;
         --surface: #121212;
-        --border: rgba(255, 255, 255, 0.1);
+        --border: rgba(255, 255, 255, 0.2);
         --shadow: 0 8px 64px rgba(0, 0, 0, 0.6);
         --glass: rgba(20, 20, 20, 0.8);
         --glass-border: rgba(255, 255, 255, 0.1);
@@ -352,22 +354,27 @@ select {
     width: 100%;
     padding: 12px 16px;
     background: var(--surface) !important;
-    border: 1px solid var(--border);
+    border: 1.5px solid var(--border) !important;
     border-radius: 12px;
     font-family: inherit;
     font-size: 0.95rem;
-    color: var(--text);
+    color: var(--text) !important;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     outline: none;
-    appearance: none;
-    -webkit-appearance: none;
+    box-sizing: border-box;
+}
+
+textarea {
+    min-height: 160px;
+    line-height: 1.6;
+    color: var(--text) !important;
 }
 
 input:focus,
 textarea:focus {
     background: var(--bg) !important;
-    border-color: var(--text);
-    box-shadow: 0 0 0 4px rgba(var(--text), 0.03);
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
 }
 
 label {
@@ -990,7 +997,8 @@ body.ai-active {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 16px;
+    margin-top: 100px; /* Large gap so copyright sits below floating AI button */
+    padding-bottom: 40px;
 }
 
 .footer-legal {
