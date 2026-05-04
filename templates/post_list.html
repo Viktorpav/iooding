@@ -45,22 +45,20 @@
 	</div>
 </div>
 {% empty %}
-<div class="neural-hud">
-	<div class="hud-scanner"></div>
-	<div class="hud-icon">
-		<div class="hud-pulse"></div>
-		<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
-			<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-		</svg>
+<div class="premium-empty-state">
+	<div class="empty-state-content">
+		<div class="mb-4">
+			<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="opacity-25">
+				<circle cx="11" cy="11" r="8" />
+				<path d="m21 21-4.3-4.3" />
+			</svg>
+		</div>
+		<h2 class="empty-state-title">No direct matches found</h2>
+		<p class="empty-state-subtitle">Our neural engine is standing by to assist with your search.</p>
+		<button onclick="sendQuickAction('Ask Ding AI about {{ query }}')" class="btn-minimal">
+			Ask Ding AI about "{{ query }}"
+		</button>
 	</div>
-	<h3 class="fw-bold mb-2">ZERO MATCHES DETECTED</h3>
-	<p class="geek-text mb-4">Neural Engine standing by for semantic bridge...</p>
-	<div class="mb-4">
-		<span class="badge bg-dark border border-secondary text-secondary opacity-75 font-monospace">STATUS: WAITING_FOR_INPUT</span>
-	</div>
-	<button onclick="sendQuickAction('Initialize neural search for: {{ query }}')" class="geek-btn">
-		<span>EXECUTE NEURAL SEARCH: "{{ query }}"</span>
-	</button>
 </div>
 {% endfor %}
 

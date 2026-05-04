@@ -10,22 +10,19 @@
     --radius: 20px;
     --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
     --header-height: 72px;
-    --accent: #00d2ff;
-    --accent-gradient: linear-gradient(135deg, #00d2ff, #3a7bd5);
     --glass: rgba(255, 255, 255, 0.7);
     --glass-border: rgba(255, 255, 255, 0.4);
-    --mono: 'JetBrains Mono', monospace;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg: #030303;
+        --bg: #000000;
         --text: #ffffff;
-        --surface: #0a0a0a;
+        --surface: #121212;
         --border: rgba(255, 255, 255, 0.1);
         --shadow: 0 8px 64px rgba(0, 0, 0, 0.6);
-        --glass: rgba(10, 10, 10, 0.8);
-        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass: rgba(20, 20, 20, 0.8);
+        --glass-border: rgba(255, 255, 255, 0.1);
     }
 }
 
@@ -235,121 +232,72 @@ main.container {
 .dropdown-menu {
     border: 1px solid var(--glass-border) !important;
     background: var(--glass) !important;
-    backdrop-filter: blur(24px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    backdrop-filter: blur(40px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+    border-radius: 18px !important;
 }
 
 .dropdown-item .description {
     font-size: 0.75rem;
-    opacity: 0.7 !important;
+    opacity: 0.5;
     font-weight: 400;
-    line-height: 1.2;
+    line-height: 1.3;
     margin-top: 2px;
-    color: var(--text);
 }
 
 .dropdown-item:hover .description {
-    opacity: 1 !important;
+    opacity: 0.9;
 }
 
-/* --- Neural HUD (Empty State) --- */
-.neural-hud {
+/* --- Premium Empty State --- */
+.premium-empty-state {
+    padding: 100px 40px;
+    text-align: center;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 32px;
-    padding: 60px 40px;
+    border-radius: 24px;
     position: relative;
     overflow: hidden;
-    text-align: center;
 }
 
-.neural-hud::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: repeating-linear-gradient(0deg, rgba(0, 210, 255, 0.03) 0px, rgba(0, 210, 255, 0.03) 1px, transparent 1px, transparent 2px);
-    pointer-events: none;
-}
-
-.hud-scanner {
-    position: absolute;
-    top: -100%;
-    left: 0;
-    width: 100%;
-    height: 100px;
-    background: linear-gradient(to bottom, transparent, rgba(0, 210, 255, 0.1), transparent);
-    animation: scan 4s linear infinite;
-}
-
-@keyframes scan {
-    0% { top: -100%; }
-    100% { top: 100%; }
-}
-
-.hud-icon {
-    position: relative;
-    display: inline-block;
-    margin-bottom: 2rem;
-}
-
-.hud-pulse {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100px;
-    height: 100px;
-    background: var(--accent);
-    border-radius: 50%;
-    opacity: 0.1;
-    animation: hud-pulse 2s infinite;
-}
-
-@keyframes hud-pulse {
-    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.3; }
-    100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
-}
-
-.geek-text {
-    font-family: var(--mono);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-size: 0.8rem;
-    color: var(--accent);
-}
-
-.geek-btn {
-    background: transparent;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    font-family: var(--mono);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    padding: 12px 30px;
-    border-radius: 4px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s;
-}
-
-.geek-btn:hover {
-    background: var(--accent);
-    color: #000;
-    box-shadow: 0 0 20px var(--accent);
-}
-
-.geek-btn span {
+.empty-state-content {
     position: relative;
     z-index: 1;
 }
 
+.empty-state-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.empty-state-subtitle {
+    font-size: 0.95rem;
+    opacity: 0.6;
+    margin-bottom: 2.5rem;
+}
+
+.btn-minimal {
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    padding: 12px 32px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-minimal:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    opacity: 0.9;
+}
+
 .card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15);
-    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
 /* --- AI System: Sidebar & Widgets --- */
