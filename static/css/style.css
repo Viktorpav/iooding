@@ -10,15 +10,22 @@
     --radius: 20px;
     --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
     --header-height: 72px;
+    --accent: #00d2ff;
+    --accent-gradient: linear-gradient(135deg, #00d2ff, #3a7bd5);
+    --glass: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --mono: 'JetBrains Mono', monospace;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg: #000000;
+        --bg: #030303;
         --text: #ffffff;
-        --surface: #121212;
+        --surface: #0a0a0a;
         --border: rgba(255, 255, 255, 0.1);
-        --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        --shadow: 0 8px 64px rgba(0, 0, 0, 0.6);
+        --glass: rgba(10, 10, 10, 0.8);
+        --glass-border: rgba(255, 255, 255, 0.08);
     }
 }
 
@@ -224,9 +231,125 @@ main.container {
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* --- Dropdown Enhancements --- */
+.dropdown-menu {
+    border: 1px solid var(--glass-border) !important;
+    background: var(--glass) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+}
+
+.dropdown-item .description {
+    font-size: 0.75rem;
+    opacity: 0.7 !important;
+    font-weight: 400;
+    line-height: 1.2;
+    margin-top: 2px;
+    color: var(--text);
+}
+
+.dropdown-item:hover .description {
+    opacity: 1 !important;
+}
+
+/* --- Neural HUD (Empty State) --- */
+.neural-hud {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 32px;
+    padding: 60px 40px;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+
+.neural-hud::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(0, 210, 255, 0.03) 0px, rgba(0, 210, 255, 0.03) 1px, transparent 1px, transparent 2px);
+    pointer-events: none;
+}
+
+.hud-scanner {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background: linear-gradient(to bottom, transparent, rgba(0, 210, 255, 0.1), transparent);
+    animation: scan 4s linear infinite;
+}
+
+@keyframes scan {
+    0% { top: -100%; }
+    100% { top: 100%; }
+}
+
+.hud-icon {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 2rem;
+}
+
+.hud-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    background: var(--accent);
+    border-radius: 50%;
+    opacity: 0.1;
+    animation: hud-pulse 2s infinite;
+}
+
+@keyframes hud-pulse {
+    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.3; }
+    100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+
+.geek-text {
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.8rem;
+    color: var(--accent);
+}
+
+.geek-btn {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 12px 30px;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.geek-btn:hover {
+    background: var(--accent);
+    color: #000;
+    box-shadow: 0 0 20px var(--accent);
+}
+
+.geek-btn span {
+    position: relative;
+    z-index: 1;
+}
+
 .card:hover {
     transform: translateY(-8px);
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary);
 }
 
 /* --- AI System: Sidebar & Widgets --- */
