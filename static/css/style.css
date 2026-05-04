@@ -230,11 +230,33 @@ main.container {
 
 /* --- Dropdown Enhancements --- */
 .dropdown-menu {
+    display: block;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     border: 1px solid var(--glass-border) !important;
     background: var(--glass) !important;
     backdrop-filter: blur(40px) saturate(200%) !important;
     -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
     border-radius: 18px !important;
+    pointer-events: none;
+}
+
+@media (min-width: 992px) {
+    .nav-item.dropdown:hover .dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+}
+
+.dropdown-header {
+    color: var(--text) !important;
+    opacity: 0.4 !important;
+    font-size: 0.65rem !important;
+    letter-spacing: 0.15em !important;
 }
 
 .dropdown-item .description {
@@ -251,53 +273,44 @@ main.container {
 
 /* --- Premium Empty State --- */
 .premium-empty-state {
-    padding: 100px 40px;
+    padding: 120px 40px;
     text-align: center;
-    background: var(--surface);
+    background: transparent;
     border: 1px solid var(--border);
-    border-radius: 24px;
-    position: relative;
-    overflow: hidden;
-}
-
-.empty-state-content {
-    position: relative;
-    z-index: 1;
+    border-radius: 30px;
 }
 
 .empty-state-title {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.25rem;
+    font-weight: 600;
     margin-bottom: 0.5rem;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
 }
 
 .empty-state-subtitle {
-    font-size: 0.95rem;
-    opacity: 0.6;
-    margin-bottom: 2.5rem;
+    font-size: 0.9rem;
+    opacity: 0.5;
+    margin-bottom: 2rem;
 }
 
 .btn-minimal {
     background: var(--text);
     color: var(--bg);
     border: none;
-    padding: 12px 32px;
-    border-radius: 30px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 10px 24px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
 }
 
 .btn-minimal:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    opacity: 0.9;
+    opacity: 0.8;
 }
 
 .card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
 }
 
 /* --- AI System: Sidebar & Widgets --- */
