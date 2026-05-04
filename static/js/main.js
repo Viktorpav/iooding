@@ -83,9 +83,11 @@ async function checkAiStatus() {
         if (data.online) {
             statusText.innerHTML = '<span class="pulse"></span> Online';
             if (welcomeBox) welcomeBox.innerHTML = '<p>Interface active. Powering high-performance inference. How can I assist with your technical journey today?</p>';
+            document.querySelectorAll('.ai-nav-btn').forEach(btn => btn.classList.add('online-pulse'));
         } else {
             statusText.innerHTML = '<span class="pulse offline"></span> AI Offline';
             if (welcomeBox) welcomeBox.innerHTML = '<p style="color:#ff3b30;">AI Error: All connection attempts failed. The high-performance inference engine is currently unreachable.</p>';
+            document.querySelectorAll('.ai-nav-btn').forEach(btn => btn.classList.remove('online-pulse'));
         }
     } catch (e) {
         statusText.innerHTML = '<span class="pulse offline"></span> Connection Error';
