@@ -248,15 +248,3 @@ def about(request):
 
 def terms(request):
     return render(request, 'terms.html')
-
-
-def sales(request):
-    return render(request, 'sales.html')
-
-
-def legal(request):
-    return render(request, 'legal.html')
-
-
-def sitemap(request):
-    return render(request, 'sitemap.html')
