@@ -108,7 +108,7 @@ main.container {
 }
 
 .navbar-logo {
-    height: 30px;
+    height: 24px;
     width: auto;
     display: block;
     transition: opacity 0.2s;
@@ -232,12 +232,13 @@ main.container {
 }
 
 #nav-search-field {
-    background: none;
-    border: none;
-    outline: none;
-    color: var(--text);
+    background: none !important;
+    border: none !important;
+    outline: none !important;
+    color: var(--text) !important;
     padding: 4px;
     font-size: 0.9rem;
+    box-shadow: none !important;
 }
 
 .card {
@@ -959,10 +960,10 @@ body.ai-active {
 /* --- Site Footer --- */
 
 .site-footer {
-    padding: 40px 0 80px; /* 80px bottom = space for fixed AI button (bottom:30px, ~50px tall) */
+    padding: 30px 0 0;
     background: var(--bg);
     border-top: 1px solid var(--border);
-    margin-top: 80px;
+    margin-top: 60px;
 }
 
 /* Top row: Github left, Privacy/Terms right */
@@ -997,8 +998,8 @@ body.ai-active {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 100px; /* Large gap so copyright sits below floating AI button */
-    padding-bottom: 40px;
+    margin-top: 60px; /* Reduced gap but still below AI button zone */
+    padding-bottom: 30px;
 }
 
 .footer-legal {
