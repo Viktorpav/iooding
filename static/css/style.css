@@ -319,6 +319,8 @@ main.container {
     letter-spacing: 0.05em !important;
     font-family: 'Outfit', sans-serif !important;
     padding-bottom: 0.5rem !important;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.5rem;
 }
 
 .dropdown-item .title {
@@ -523,14 +525,22 @@ label {
 }
 
 .trigger-content {
-    background: var(--primary);
-    padding: 10px 20px;
-    border-radius: 30px;
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.85), rgba(10, 10, 10, 0.95));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 12px 28px;
+    border-radius: 40px;
     display: flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 0 8px 30px rgba(0, 122, 255, 0.3);
-    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.trigger-content:hover {
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .trigger-logo {
@@ -541,21 +551,13 @@ label {
 }
 
 .trigger-text {
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    color: white;
-}
-
-.trigger-logo {
-    display: none;
-}
-
-.trigger-text {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
-    color: white;
+    letter-spacing: 0.1em;
+    background: linear-gradient(180deg, #ffffff 0%, #a0a0a0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-transform: uppercase;
 }
 
 /* Sidebar Panel */
