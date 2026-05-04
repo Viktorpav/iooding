@@ -248,3 +248,6 @@ def about(request):
 
 def terms(request):
     return render(request, 'terms.html')
+
+def games(request):
+    return render(request, 'games.html')

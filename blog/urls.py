@@ -10,6 +10,7 @@ urlpatterns = [
     path('privacy/', views.privacy, name='privacy'),
     path('terms/', views.terms, name='terms'),
     path('about/', views.about, name='about'),
+    path('games/', views.games, name='games'),
     path('api/chat/', views.chat_api, name='chat_api'),
     path('api/chat/status/', views.ai_status, name='ai_status'),
     # Note: health/ is also registered at root level in iooding/urls.py

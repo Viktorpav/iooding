@@ -64,9 +64,19 @@
               <li>
                 <h6 class="dropdown-header">Education Labs</h6>
               </li>
-              <li><a class="dropdown-item rounded-3 p-2" href="{% url 'blog:privacy' %}">
+              <li><a class="dropdown-item rounded-3 mb-1 p-2" href="{% url 'blog:privacy' %}">
                   <span class="title">Penetration Testing</span>
                   <span class="description d-block">Security & Privacy Guidelines</span>
+                </a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li>
+                <h6 class="dropdown-header">Interactive</h6>
+              </li>
+              <li><a class="dropdown-item rounded-3 p-2" href="{% url 'blog:games' %}">
+                  <span class="title">Games & Simulations</span>
+                  <span class="description d-block">Chaos Engineer & Defend Cluster</span>
                 </a></li>
             </ul>
           </li>
@@ -82,17 +92,12 @@
           <input id="nav-search-field" type="search" value="{{ request.GET.q }}" name="q"
             placeholder="Search (Press '/')">
         </form>
-        <button onclick="toggleChat()" class="ai-nav-btn ms-4 d-none d-lg-flex align-items-center gap-2">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2a10 10 0 1 0 10 10H12V2z" />
-            <path d="M12 12 2.1 7.1" />
-            <path d="M12 12l9.9 4.9" />
-          </svg>
-          <span class="fw-bold" style="letter-spacing: 0.05em;">AI ASSYSTENT</span>
-        </button>
       </div>
 
       <div class="header-right">
+        <button onclick="toggleChat()" class="ai-nav-btn me-3">
+          AI ASSYSTENT
+        </button>
         <button class="navbar-toggler border-0 ms-auto" type="button" data-bs-toggle="collapse"
           data-bs-target="#navbarSupportedContent">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -121,8 +126,6 @@
           <a href="{% url 'blog:privacy' %}">Privacy</a>
           <span class="mx-2 opacity-25">|</span>
           <a href="{% url 'blog:terms' %}">Terms</a>
-          <span class="mx-2 opacity-25">|</span>
-          <a href="{% url 'blog:about' %}">About</a>
         </div>
         <div class="footer-legal">
           Copyright &copy; 2026 iooding. All rights reserved.
