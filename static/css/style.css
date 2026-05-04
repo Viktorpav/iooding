@@ -528,17 +528,17 @@ label {
 }
 
 .trigger-logo {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    filter: drop-shadow(0 0 8px rgba(0, 122, 255, 0.5));
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
 }
 
 .trigger-text {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 800;
-    letter-spacing: 0.1em;
-    color: var(--text);
+    letter-spacing: 0.05em;
+    color: white;
 }
 
 /* Sidebar Panel */
