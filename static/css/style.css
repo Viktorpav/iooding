@@ -279,9 +279,9 @@ main.container {
 }
 
 .navbar-brand .brand-name {
-    font-size: 1.1rem;
+    font-size: 1.35rem;
     font-weight: 800;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     color: var(--text);
 }
 
@@ -1031,31 +1031,44 @@ body.ai-active {
     opacity: 0.6;
 }
 
-.footer-bottom {
-    padding-top: 40px;
-    margin-top: 40px;
+.site-footer {
+    padding: 80px 0 60px;
+    background: var(--bg);
     border-top: 1px solid var(--border);
+    margin-top: 100px;
+}
+
+.footer-bottom {
+    padding-top: 0;
+    margin-top: 0;
+    border-top: none;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
+}
+
+.footer-spacer {
+    height: 120px; /* Space for the AI button */
+    width: 100%;
 }
 
 .footer-legal {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 500;
     opacity: 0.4;
     text-align: center;
+    margin-bottom: 5px;
 }
 
 .footer-legal-links {
     display: flex;
-    gap: 24px;
+    gap: 32px;
 }
 
 .footer-legal-links a {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--text);
     text-decoration: none;
     opacity: 0.5;
