@@ -10,7 +10,7 @@
         </div>
         <div class="comment-body">
             <p>{{comment.body}}</p>
-            <a class="comment-reply-btn" onclick="handleReply({{ comment.id }})">Reply</a>
+            <a class="comment-reply-btn" onclick="handleReply('{{ comment.id }}')">Reply</a>
 
             <div id="reply-form-container-{{comment.id}}" style="display:none" class="mt-4">
                 <form method="post" action="{% url 'blog:reply' %}" class="comment-form-wrapper p-4">
@@ -23,7 +23,7 @@
 
                     <div class="d-flex gap-2 mt-3">
                         <button type="submit" class="btn btn-primary btn-sm px-3">Submit</button>
-                        <button type="button" onclick="handleCancel({{comment.id}})"
+                        <button type="button" onclick="handleCancel('{{comment.id}}')"
                             class="btn btn-outline-secondary btn-sm px-3">Cancel</button>
                     </div>
                 </form>

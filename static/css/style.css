@@ -110,10 +110,21 @@ main.container {
     width: auto;
     display: block;
     transition: opacity 0.2s;
+    filter: invert(1);
+    mix-blend-mode: screen;
+    opacity: 0.9;
+}
+
+@media (prefers-color-scheme: light) {
+    .navbar-logo {
+        filter: none;
+        mix-blend-mode: normal;
+        opacity: 0.85;
+    }
 }
 
 .navbar-brand:hover .navbar-logo {
-    opacity: 0.7;
+    opacity: 0.6;
 }
 
 .nav-link {
@@ -941,7 +952,7 @@ body.ai-active {
 /* --- Site Footer --- */
 
 .site-footer {
-    padding: 40px 0 40px;
+    padding: 40px 0 80px; /* 80px bottom = space for fixed AI button (bottom:30px, ~50px tall) */
     background: var(--bg);
     border-top: 1px solid var(--border);
     margin-top: 80px;
@@ -974,19 +985,12 @@ body.ai-active {
     opacity: 1;
 }
 
-/* Spacer to clear AI button + copyright row at the very bottom */
+/* Copyright row — sits at absolute bottom, below the fixed AI button zone */
 .footer-bottom {
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
-    gap: 0;
-    margin-top: 8px;
-}
-
-.footer-spacer-ai {
-    height: 100px; /* Clear the floating AI button */
-    width: 100%;
+    margin-top: 16px;
 }
 
 .footer-legal {
