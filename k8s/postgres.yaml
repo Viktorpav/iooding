@@ -32,14 +32,14 @@ spec:
       # Fast pod deletion on node failure
       terminationGracePeriodSeconds: 10
       nodeSelector:
-        node-role.kubernetes.io/storage: "true"
+        infra.iooding.local/storage: "true"
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               preference:
                 matchExpressions:
-                  - key: node-role.kubernetes.io/worker
+                  - key: infra.iooding.local/worker
                     operator: In
                     values:
                       - "true"

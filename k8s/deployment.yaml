@@ -39,14 +39,14 @@ metadata:
 spec:
   template:
     spec:
-      nodeSelector: { "node-role.kubernetes.io/storage": "true" }
+      nodeSelector: { "infra.iooding.local/storage": "true" }
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               preference:
                 matchExpressions:
-                  - key: node-role.kubernetes.io/worker
+                  - key: infra.iooding.local/worker
                     operator: In
                     values:
                       - "true"
@@ -99,14 +99,14 @@ spec:
     metadata:
       labels: { app: iooding-blog }
     spec:
-      nodeSelector: { "node-role.kubernetes.io/storage": "true" }
+      nodeSelector: { "infra.iooding.local/storage": "true" }
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               preference:
                 matchExpressions:
-                  - key: node-role.kubernetes.io/worker
+                  - key: infra.iooding.local/worker
                     operator: In
                     values:
                       - "true"
