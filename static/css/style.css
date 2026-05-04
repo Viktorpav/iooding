@@ -234,13 +234,22 @@ main.container {
     opacity: 0;
     visibility: hidden;
     transform: translateY(10px);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    border: 1px solid var(--glass-border) !important;
-    background: var(--glass) !important;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    background: rgba(255, 255, 255, 0.7) !important;
     backdrop-filter: blur(40px) saturate(200%) !important;
     -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-    border-radius: 18px !important;
+    border-radius: 20px !important;
     pointer-events: none;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.3) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    .dropdown-menu {
+        background: rgba(15, 15, 15, 0.75) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+    }
 }
 
 @media (min-width: 992px) {
@@ -384,37 +393,39 @@ label {
 
 /* --- Premium Empty State --- */
 .premium-empty-state {
-	padding: 120px 40px;
-	text-align: center;
-	background: transparent;
-	border: 1px solid var(--border);
-	border-radius: 30px;
-}
-
-.empty-state-content {
-	max-width: 300px;
-	margin: 0 auto;
+    padding: 160px 40px;
+    text-align: center;
 }
 
 .empty-state-title {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 700;
     margin-bottom: 0.5rem;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
 }
 
 .empty-state-subtitle {
     font-size: 0.9rem;
-    opacity: 0.5;
-    margin-bottom: 2rem;
+    opacity: 0.4;
+    margin-bottom: 3rem;
 }
 
-    font-weight: 500;
-    transition: all 0.2s;
+.btn-premium-minimal {
+    background: var(--text);
+    color: var(--bg);
+    border: 1px solid var(--text);
+    padding: 12px 32px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    letter-spacing: -0.01em;
 }
 
-.btn-minimal:hover {
-    opacity: 0.8;
+.btn-premium-minimal:hover {
+    background: transparent;
+    color: var(--text);
+    transform: scale(1.02);
 }
 
 .card:hover {
@@ -1071,6 +1082,7 @@ body.ai-active {
         bottom: 20px;
     }
 }
+
 /* Navigation Power Enhancements */
 .smallest {
     font-size: 0.72rem;
@@ -1079,15 +1091,10 @@ body.ai-active {
 
 .dropdown-item {
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    padding: 10px 15px !important;
+    padding: 12px 18px !important;
 }
 
 .dropdown-item:hover {
-    background: rgba(var(--text), 0.05) !important;
-    color: var(--primary) !important;
+    background: rgba(var(--text), 0.04) !important;
     transform: translateX(4px);
-}
-
-.dropdown-menu {
-    border: 1px solid var(--border) !important;
 }

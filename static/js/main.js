@@ -313,3 +313,20 @@ function clearHistory() {
     const v = document.getElementById('chat-messages'), w = v.querySelector('.system-msg');
     v.innerHTML = ''; if (w) v.appendChild(w);
 }
+
+// --- Comment System Logic ---
+function handleReply(id) {
+    const container = document.getElementById(`reply-form-container-${id}`);
+    if (container) {
+        // Hide other open reply forms if any
+        document.querySelectorAll('[id^="reply-form-container-"]').forEach(el => el.style.display = 'none');
+        container.style.display = 'block';
+        const input = container.querySelector('textarea, input[type="text"]');
+        if (input) input.focus();
+    }
+}
+
+function handleCancel(id) {
+    const container = document.getElementById(`reply-form-container-${id}`);
+    if (container) container.style.display = 'none';
+}
