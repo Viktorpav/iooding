@@ -16,8 +16,9 @@
   <!-- static file -->
   <link href="{% static 'css/style.css' %}?v=3.0.0" rel="stylesheet">
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}?v=2">
-  <link rel="shortcut icon" href="{% static 'images/logo.png' %}?v=2">
+  <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+  <link rel="shortcut icon" type="image/png" href="{% static 'images/logo.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">
   <!-- highlight js -->
   <link rel="stylesheet" href="{% static 'vendor/css/atom-one-dark.min.css' %}">
   <script src="{% static 'vendor/js/highlight.min.js' %}"></script>
@@ -31,7 +32,6 @@
     <div class="container">
       <div class="header-left">
         <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'blog:post_list' %}">
-          <img src="{% static 'images/logo.png' %}" alt="iooding logo" style="height: 28px; width: auto;">
           <span class="brand-name">Ding</span>
         </a>
         <ul class="navbar-nav d-none d-lg-flex">
@@ -100,9 +100,6 @@
   <footer class="site-footer">
     <div class="container">
       <div class="footer-bottom">
-        <div class="footer-brand mb-2">
-          <img src="{% static 'images/logo.png' %}" alt="iooding logo" style="height: 32px; width: auto;">
-        </div>
         <div class="footer-legal">
           Copyright &copy; 2026 iooding. All rights reserved.
         </div>
