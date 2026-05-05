@@ -38,7 +38,7 @@
 						{{ post.publish|date:"M d, Y" }} &bull; {{ post.read_time }} min read
 					</small>
 				</div>
-				<p class="card-text post-excerpt opacity-75 mb-auto">{{ post.body|safe|truncatechars_html:150 }}</p>
+				<div class="card-text post-excerpt opacity-75 mb-auto">{{ post.body|safe|truncatechars_html:150 }}</div>
 				<div class="mt-3">
 					<a href="{{ post.get_absolute_url }}" class="btn btn-primary btn-sm px-3">Read more</a>
 				</div>

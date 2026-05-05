@@ -1149,6 +1149,7 @@ body.ai-active {
 
 .article-body p, .ck-content p {
     margin-bottom: 1.5rem;
+    opacity: 0.75;
 }
 
 .article-body code, .ck-content code, .card-text code {
@@ -1161,8 +1162,8 @@ body.ai-active {
     font-weight: 500;
 }
 
-.article-body pre, .ck-content pre {
-    background: #121212 !important;
+.article-body pre, .ck-content pre, .card-text pre {
+    background: #f8f9fa !important;
     padding: 1.5rem;
     border-radius: 16px;
     border: 1px solid var(--border);
@@ -1178,9 +1179,9 @@ body.ai-active {
 }
 
 @media (prefers-color-scheme: dark) {
-    .article-body pre, .ck-content pre {
-        background: #080808 !important;
-        border-color: rgba(255, 255, 255, 0.05);
+    .article-body pre, .ck-content pre, .card-text pre {
+        background: #0a0a0a !important;
+        border-color: rgba(255, 255, 255, 0.08);
     }
 }
 
