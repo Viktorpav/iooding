@@ -38,9 +38,7 @@
 .smallest { font-size: 0.75rem; }
 .x-small { font-size: 0.85rem; }
 .bg-surface { background-color: var(--surface); }
-.post-excerpt { font-size: 1rem; line-height: 1.6; color: var(--text); }
-.post-excerpt *:not(p, a, b, i, code, span, strong, em) { display: none !important; }
-.post-excerpt p { margin-bottom: 0.5rem; }
+
 
 .ai-nav-btn, .premium-pagination-link, .quick-action-chip, .premium-pill {
     background: transparent;
@@ -1152,20 +1150,20 @@ body.ai-active {
     margin-bottom: 1.5rem;
 }
 
-.article-body code, .ck-content code, .card-text code {
-    background: var(--surface);
-    color: var(--primary);
-    padding: 0.1em 0.3em;
+.article-body code, .ck-content code {
+    background: rgba(120, 120, 120, 0.1);
+    color: #e83e8c;
+    padding: 0.2em 0.4em;
     border-radius: 4px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.95em;
+    font-size: 0.9em;
 }
 
-.article-body pre, .ck-content pre, .card-text pre {
-    background: var(--surface) !important;
+.article-body pre, .ck-content pre {
+    background: #282c34 !important;
     padding: 1.25rem;
-    border-radius: 12px;
-    border: 1px solid var(--border);
+    border-radius: 8px;
+    border: none;
     margin: 1.5rem 0;
     overflow-x: auto;
 }
@@ -1178,9 +1176,16 @@ body.ai-active {
 }
 
 @media (prefers-color-scheme: dark) {
-    .article-body pre, .ck-content pre, .card-text pre {
-        background: #0d0d0d !important;
-        border-color: rgba(255, 255, 255, 0.08);
+    .article-body pre, .ck-content pre {
+        background: #1e1e1e !important;
+    }
+    .article-body code, .ck-content code {
+        color: #ff87b3;
+        background: rgba(255, 255, 255, 0.1);
+    }
+    .article-body pre code, .ck-content pre code {
+        background: transparent;
+        color: inherit;
     }
 }
 
