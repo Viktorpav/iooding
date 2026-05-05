@@ -1149,7 +1149,6 @@ body.ai-active {
 
 .article-body p, .ck-content p {
     margin-bottom: 1.5rem;
-    opacity: 0.75;
 }
 
 .article-body code, .ck-content code, .card-text code {
@@ -1180,8 +1179,8 @@ body.ai-active {
 
 @media (prefers-color-scheme: dark) {
     .article-body pre, .ck-content pre, .card-text pre {
-        background: #0a0a0a !important;
-        border-color: rgba(255, 255, 255, 0.08);
+        background: #161616 !important;
+        border-color: rgba(255, 255, 255, 0.05);
     }
 }
 

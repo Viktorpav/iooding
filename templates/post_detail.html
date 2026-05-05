@@ -14,22 +14,24 @@
 </div>
 
 <article class="mb-5 reveal">
-    <header class="mb-4">
-        <h1 class="display-5 fw-bold mb-2">{{ post.title }}</h1>
-        <div class="opacity-50 small">
-            {{ post.publish|date:"M d, Y" }} &bull; By <strong>{{ post.author }}</strong> &bull; {{ post.read_time }}
-            min read
+    <div class="premium-card p-4 p-lg-5">
+        <header class="mb-4">
+            <h1 class="display-5 fw-bold mb-2">{{ post.title }}</h1>
+            <div class="opacity-50 small">
+                {{ post.publish|date:"M d, Y" }} &bull; By <strong>{{ post.author }}</strong> &bull; {{ post.read_time }}
+                min read
+            </div>
+        </header>
+
+        {% if post.image %}
+        <figure class="mb-4">
+            <img src="{{ post.image.url }}" class="img-fluid rounded shadow-sm" alt="{{ post.title }}">
+        </figure>
+        {% endif %}
+
+        <div class="article-body ck-content fs-5 opacity-75">
+            {{ post.body|safe }}
         </div>
-    </header>
-
-    {% if post.image %}
-    <figure class="mb-4">
-        <img src="{{ post.image.url }}" class="img-fluid rounded shadow-sm" alt="{{ post.title }}">
-    </figure>
-    {% endif %}
-
-    <div class="article-body ck-content fs-5">
-        {{ post.body|safe }}
     </div>
 </article>
 
