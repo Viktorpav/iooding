@@ -16,8 +16,8 @@
 					{% if post.image %}
 					<img src="{{ post.image.url }}" class="featured-image-list" alt="{{ post.title }}">
 					{% else %}
-					<div class="bg-light d-flex align-items-center justify-content-center h-100">
-						<span class="text-muted opacity-25">No Image</span>
+					<div class="bg-primary bg-opacity-5 d-flex align-items-center justify-content-center h-100">
+						<span class="opacity-25 smallest">No Image</span>
 					</div>
 					{% endif %}
 				</div>
@@ -29,16 +29,16 @@
 					{% endfor %}
 				</div>
 				<h2 class="card-title h4 fw-bold">
-					<a href="{{ post.get_absolute_url }}" class="text-decoration-none text-dark">
+					<a href="{{ post.get_absolute_url }}" class="text-decoration-none post-title-link">
 						{{ post.title }}
 					</a>
 				</h2>
-				<div class="text-muted mb-3">
+				<div class="opacity-50 mb-3">
 					<small>
 						{{ post.publish|date:"M d, Y" }} &bull; {{ post.read_time }} min read
 					</small>
 				</div>
-				<p class="card-text text-muted mb-auto">{{ post.body|safe|striptags|truncatechars:150 }}</p>
+				<p class="card-text opacity-75 mb-auto">{{ post.body|safe|striptags|truncatechars:150 }}</p>
 				<div class="mt-3">
 					<a href="{{ post.get_absolute_url }}" class="btn btn-primary btn-sm px-3">Read more</a>
 				</div>
