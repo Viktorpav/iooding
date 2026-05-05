@@ -38,17 +38,19 @@
 .smallest { font-size: 0.75rem; }
 .x-small { font-size: 0.85rem; }
 .bg-surface { background-color: var(--surface); }
-.post-excerpt { font-size: 1.1rem; line-height: 1.8; color: var(--text); opacity: 0.8; }
+.post-excerpt { font-size: 1rem; line-height: 1.6; color: var(--text); }
+.post-excerpt *:not(p, a, b, i, code, span, strong, em) { display: none !important; }
+.post-excerpt p { margin-bottom: 0.5rem; }
 
 .ai-nav-btn, .premium-pagination-link, .quick-action-chip, .premium-pill {
-    background: rgba(var(--primary-rgb), 0.05);
-    border: 1px solid rgba(var(--primary-rgb), 0.2);
+    background: transparent;
+    border: 1px solid var(--border);
     padding: 8px 18px;
     border-radius: 50px;
-    color: var(--primary);
-    font-weight: 600;
+    color: var(--text);
+    font-weight: 500;
     font-size: 0.85rem;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -56,10 +58,9 @@
 }
 
 .ai-nav-btn:hover, .premium-pagination-link:hover, .quick-action-chip:hover, .premium-pill:hover {
-    background: var(--primary) !important;
-    color: white !important;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 15px rgba(var(--primary-rgb), 0.3);
+    background: var(--surface);
+    color: var(--primary);
+    border-color: var(--primary);
 }
 
 .card, .premium-card {
@@ -1152,21 +1153,20 @@ body.ai-active {
 }
 
 .article-body code, .ck-content code, .card-text code {
-    background: rgba(var(--primary-rgb), 0.08);
+    background: var(--surface);
     color: var(--primary);
-    padding: 0.2em 0.4em;
-    border-radius: 6px;
+    padding: 0.1em 0.3em;
+    border-radius: 4px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9em;
-    font-weight: 500;
+    font-size: 0.95em;
 }
 
 .article-body pre, .ck-content pre, .card-text pre {
-    background: #f8f9fa !important;
-    padding: 1.5rem;
-    border-radius: 16px;
+    background: var(--surface) !important;
+    padding: 1.25rem;
+    border-radius: 12px;
     border: 1px solid var(--border);
-    margin: 2rem 0;
+    margin: 1.5rem 0;
     overflow-x: auto;
 }
 
@@ -1179,8 +1179,8 @@ body.ai-active {
 
 @media (prefers-color-scheme: dark) {
     .article-body pre, .ck-content pre, .card-text pre {
-        background: #161616 !important;
-        border-color: rgba(255, 255, 255, 0.05);
+        background: #0d0d0d !important;
+        border-color: rgba(255, 255, 255, 0.08);
     }
 }
 
