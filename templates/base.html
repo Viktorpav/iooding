@@ -83,7 +83,7 @@
         </ul>
       </div>
 
-      <div class="header-center d-flex align-items-center justify-content-center w-100">
+      <div class="header-center d-none d-lg-flex align-items-center justify-content-center w-100">
         <form class="search-input-premium" action="{% url 'blog:post_list' %}" method="get">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <circle cx="11" cy="11" r="8" />
@@ -96,17 +96,48 @@
 
       <div class="header-right">
         <button onclick="toggleChat()" class="ai-nav-btn me-3">
-          AI ASSYSTENT
+          <span class="d-none d-sm-inline">AI ASSYSTENT</span>
+          <span class="d-inline d-sm-none">AI</span>
         </button>
-        <button class="navbar-toggler border-0 ms-auto" type="button" data-bs-toggle="collapse"
+        <button class="navbar-toggler border-0 ms-auto p-0" type="button" data-bs-toggle="collapse"
           data-bs-target="#navbarSupportedContent">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <div class="burger-icon">
+            <span></span>
+            <span></span>
+          </div>
         </button>
       </div>
     </div>
   </nav>
+
+  <!-- Mobile Navigation Menu -->
+  <div class="collapse d-lg-none mobile-nav-collapse" id="navbarSupportedContent">
+    <div class="p-4">
+      <div class="mobile-search mb-4">
+        <form class="search-input-premium w-100" action="{% url 'blog:post_list' %}" method="get">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <input type="search" value="{{ request.GET.q }}" name="q" placeholder="Search...">
+        </form>
+      </div>
+      <h6 class="dropdown-header px-0">Technical Core</h6>
+      <div class="list-group list-group-flush mb-4">
+        <a href="{% url 'blog:post_tag' tag_slug='linux' %}" class="list-group-item bg-transparent border-0 px-0 py-2">Enterprise Linux</a>
+        <a href="{% url 'blog:post_tag' tag_slug='kubernetes' %}" class="list-group-item bg-transparent border-0 px-0 py-2">Orchestration</a>
+        <a href="{% url 'blog:post_tag' tag_slug='ai' %}" class="list-group-item bg-transparent border-0 px-0 py-2">Intelligence</a>
+      </div>
+      <h6 class="dropdown-header px-0">Education Labs</h6>
+      <div class="list-group list-group-flush mb-4">
+        <a href="{% url 'blog:privacy' %}" class="list-group-item bg-transparent border-0 px-0 py-2">Penetration Testing</a>
+      </div>
+      <h6 class="dropdown-header px-0">Interactive</h6>
+      <div class="list-group list-group-flush">
+        <a href="{% url 'blog:games' %}" class="list-group-item bg-transparent border-0 px-0 py-2">Games & Simulations</a>
+      </div>
+    </div>
+  </div>
 
   {% include 'includes/chat_widget.html' %}
 

@@ -3,7 +3,7 @@
         <div class="comment-meta">
             <span class="comment-author">{{comment.name}}</span>
             {% if comment.parent.name %}
-            <span class="text-muted mx-1">&rarr;</span>
+            <span class="opacity-50 mx-1">&rarr;</span>
             <span class="comment-author">{{comment.parent.name}}</span>
             {% endif %}
             <span class="comment-date">&middot; {{ comment.created | date:"j M Y" }}</span>
