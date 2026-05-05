@@ -32,12 +32,58 @@
     }
 }
 
-/* --- Utilities --- */
+/* --- Utilities & Shared Styles --- */
 .letter-spacing-1 { letter-spacing: 0.05em; }
 .letter-spacing-2 { letter-spacing: 0.1em; }
 .smallest { font-size: 0.75rem; }
 .x-small { font-size: 0.85rem; }
 .bg-surface { background-color: var(--surface); }
+.post-excerpt { font-size: 1.1rem; line-height: 1.8; color: var(--text); opacity: 0.8; }
+
+.ai-nav-btn, .premium-pagination-link, .quick-action-chip, .premium-pill {
+    background: rgba(var(--primary-rgb), 0.05);
+    border: 1px solid rgba(var(--primary-rgb), 0.2);
+    padding: 8px 18px;
+    border-radius: 50px;
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.ai-nav-btn:hover, .premium-pagination-link:hover, .quick-action-chip:hover, .premium-pill:hover {
+    background: var(--primary) !important;
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(var(--primary-rgb), 0.3);
+}
+
+.card, .premium-card {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    background: var(--bg);
+    border: 1px solid var(--border) !important;
+}
+
+.card:hover, .premium-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
+    border-color: rgba(var(--primary-rgb), 0.3) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    .card, .premium-card {
+        background: #0a0a0a !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+    .card:hover, .premium-card:hover {
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+    }
+}
 
 body {
     font-family: 'Outfit', sans-serif;
@@ -143,26 +189,7 @@ main.container {
 }
 
 .ai-nav-btn {
-    background: rgba(var(--primary-rgb), 0.05);
-    border: 1px solid rgba(var(--primary-rgb), 0.2);
-    padding: 8px 18px;
-    border-radius: 50px;
-    color: var(--primary);
-    font-size: 0.85rem;
-    font-weight: 800;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    letter-spacing: 0.1em;
     opacity: 0.9;
-    box-shadow: 0 2px 10px rgba(var(--primary-rgb), 0.05);
-}
-
-.ai-nav-btn:hover {
-    background: rgba(var(--primary-rgb), 0.1);
-    border-color: rgba(var(--primary-rgb), 0.4);
-    box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.15);
-    transform: translateY(-1px);
-    opacity: 1;
 }
 
 @keyframes heartbeatPremium {
@@ -549,16 +576,7 @@ label {
 }
 
 .card {
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    overflow: hidden;
-    background: var(--bg);
-    border: 1px solid var(--border) !important;
-}
-
-.card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
-    border-color: rgba(var(--primary-rgb), 0.3) !important;
+    border-radius: 20px;
 }
 
 .post-title-link {
@@ -581,15 +599,7 @@ label {
     transform: scale(1.08);
 }
 
-@media (prefers-color-scheme: dark) {
-    .card {
-        background: #0a0a0a !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    }
-    .card:hover {
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
-    }
-}
+/* Dark mode handled by premium-card */
 
 /* --- AI System: Sidebar & Widgets --- */
 #ai-system-container {
@@ -609,12 +619,7 @@ label {
 .premium-pagination-link {
     background: var(--surface) !important;
     color: var(--text) !important;
-    transition: all 0.2s ease;
-}
-
-.premium-pagination-link:hover {
-    background: var(--primary) !important;
-    color: #fff !important;
+    border-color: transparent;
 }
 
 .page-item.active .page-link {
@@ -824,24 +829,7 @@ body.ai-active {
 }
 
 .quick-action-chip {
-    background: rgba(var(--primary-rgb), 0.05);
-    border: 1px solid rgba(var(--primary-rgb), 0.1);
     padding: 8px 18px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    white-space: nowrap;
-    transition: all 0.2s;
-    color: var(--primary);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.quick-action-chip:hover {
-    background: var(--primary);
-    color: white;
-    transform: translateY(-2px);
 }
 
 .chat-viewport {
@@ -1163,7 +1151,7 @@ body.ai-active {
     margin-bottom: 1.5rem;
 }
 
-.article-body code, .ck-content code {
+.article-body code, .ck-content code, .card-text code {
     background: rgba(var(--primary-rgb), 0.08);
     color: var(--primary);
     padding: 0.2em 0.4em;
