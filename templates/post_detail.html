@@ -14,10 +14,11 @@
 </div>
 
 <article class="mb-5 reveal">
-    <header class="mb-5 text-center">
-        <h1 class="fw-bold mb-3" style="font-size: 2.5rem; letter-spacing: -0.03em;">{{ post.title }}</h1>
-        <div class="opacity-50 small text-uppercase letter-spacing-1">
-            {{ post.publish|date:"M d, Y" }} &bull; {{ post.read_time }} min read
+    <header class="mb-4">
+        <h1 class="display-5 fw-bold mb-2">{{ post.title }}</h1>
+        <div class="opacity-50 small">
+            {{ post.publish|date:"M d, Y" }} &bull; By <strong>{{ post.author }}</strong> &bull; {{ post.read_time }}
+            min read
         </div>
     </header>
 

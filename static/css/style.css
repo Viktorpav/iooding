@@ -1251,6 +1251,40 @@ body.ai-active {
     transform: translateX(4px);
 }
 
+/* --- Article Code Styling --- */
+.article-body code {
+    background: rgba(var(--primary-rgb), 0.08);
+    color: var(--primary);
+    padding: 0.2em 0.4em;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.article-body pre {
+    background: #121212 !important;
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    margin: 2rem 0;
+    overflow-x: auto;
+}
+
+.article-body pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: 0.9rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    .article-body pre {
+        background: #080808 !important;
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+}
+
 /* --- Mobile Menu Styles --- */
 .mobile-nav-collapse {
     position: fixed;

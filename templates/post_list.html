@@ -33,8 +33,10 @@
 						{{ post.title }}
 					</a>
 				</h2>
-				<div class="opacity-50 small text-uppercase letter-spacing-1 mb-3">
-					{{ post.publish|date:"M d, Y" }} &bull; {{ post.read_time }} min read
+				<div class="opacity-50 mb-3">
+					<small>
+						{{ post.publish|date:"M d, Y" }} &bull; {{ post.read_time }} min read
+					</small>
 				</div>
 				<p class="card-text opacity-75 mb-auto" style="line-height: 1.6;">{{ post.body|safe|striptags|truncatechars:150 }}</p>
 				<div class="mt-3">
