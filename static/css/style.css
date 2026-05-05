@@ -32,6 +32,13 @@
     }
 }
 
+/* --- Utilities --- */
+.letter-spacing-1 { letter-spacing: 0.05em; }
+.letter-spacing-2 { letter-spacing: 0.1em; }
+.smallest { font-size: 0.75rem; }
+.x-small { font-size: 0.85rem; }
+.bg-surface { background-color: var(--surface); }
+
 body {
     font-family: 'Outfit', sans-serif;
     background-color: var(--bg);
