@@ -6,14 +6,15 @@ WORKDIR /app
 # Enable Caching for Pip
 ENV PIP_CACHE_DIR=/root/.cache/pip
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install build dependencies with apt cache
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
     libjpeg-dev \
     zlib1g-dev \
-    libffi-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libffi-dev
 
 COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
@@ -29,12 +30,13 @@ WORKDIR /app
 # In Debian slim, GID 100 already exists as the 'users' group.
 RUN useradd -r -u 100 -g 100 django
 
-# Install only necessary runtime libraries
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install only necessary runtime libraries with cache
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     libjpeg62-turbo \
-    zlib1g \
-    && rm -rf /var/lib/apt/lists/*
+    zlib1g
 
 # Copy pre-installed packages from builder
 COPY --from=builder /install /usr/local
