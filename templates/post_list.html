@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
-{% if tag %}
-<h2 class="mb-3">Posts tagged with "{{ tag.name }}"</h2>
-{% endif %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        {% if tag %}
+        <h2 class="mb-5 text-center fw-bold">Posts tagged with "{{ tag.name }}"</h2>
+        {% endif %}
 
 {% for post in posts %}
 <div class="card mb-4 border-0 shadow-sm reveal">
@@ -62,6 +64,8 @@
 </div>
 {% endfor %}
 
-{% include "pagination.html" with page=posts %}
+        {% include "pagination.html" with page=posts %}
+    </div>
+</div>
 
 {% endblock content %}

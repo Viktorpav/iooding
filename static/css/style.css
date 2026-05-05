@@ -555,8 +555,6 @@ label {
 #ai-edge-trigger {
     display: none !important;
 }
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
 
 #ai-edge-trigger:hover {
     transform: scale(1.05);
