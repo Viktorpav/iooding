@@ -96,8 +96,6 @@ def post_detail(request, post):
     })
 
 
-from django.core.cache import cache
-
 @require_POST
 def reply_page(request):
     """Save a comment reply with basic rate limiting."""
@@ -192,8 +190,9 @@ async def chat_api(request):
                     'repeat_penalty': 1.1,
                     'num_ctx': 4096,
                 }
+                from django.conf import settings
                 chat_resp = await client.chat(
-                    model='qwen3-coder:latest',
+                    model=settings.LM_STUDIO_COMPLETION_MODEL,
                     messages=messages,
                     stream=True,
                     options=options,

@@ -1075,57 +1075,16 @@ body.ai-active {
     text-align: center;
 }
 
-@media (max-width: 768px) {
-    .footer-top-row {
-        flex-direction: column;
-        gap: 16px;
-        text-align: center;
-    }
-}
+/* --- Responsive State Management --- */
 
-@media (max-width: 768px) {
-    .footer-content {
-        gap: 40px;
-    }
-
-    @media (max-width: 992px) {
-        .header-center {
-            order: 3;
-            flex: 0 0 100%;
-        }
-
-        .footer-bottom {
-            flex-direction: column;
-            gap: 20px;
-            text-align: center;
-        }
-    }
-}
-
-/* Responsive adjustments */
 @media (max-width: 1200px) {
-    #ai-sidebar {
-        width: 400px;
-    }
-
-    body.ai-active {
-        padding-right: 400px;
-    }
+    #ai-sidebar { width: 400px; }
+    body.ai-active { padding-right: 400px; }
 }
 
 @media (max-width: 768px) {
-    #ai-sidebar {
-        width: 100%;
-    }
-
-    body.ai-active {
-        padding-right: 0;
-    }
-
-    #ai-edge-trigger {
-        right: 20px;
-        bottom: 20px;
-    }
+    #ai-sidebar { width: 100%; }
+    body.ai-active { padding-right: 0; }
 }
 
 /* Navigation Power Enhancements */
