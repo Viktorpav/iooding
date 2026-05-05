@@ -43,6 +43,10 @@ Thumbs.db
 # Docs & infra (not needed in image)
 README.md
 nginx/
+k8s/
+patches/
+terraform/
+manifests/
 
 # Test & typing
 .mypy_cache/

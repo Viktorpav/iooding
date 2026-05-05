@@ -48,8 +48,8 @@ jobs:
           push: true
           platforms: linux/arm64
           tags: viktor2003/iooding:${{ steps.tag.outputs.sha_short }}, viktor2003/iooding:latest
-          cache-from: type=registry,ref=viktor2003/iooding:buildcache
-          cache-to: type=registry,ref=viktor2003/iooding:buildcache,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
 
       - name: Update Kubernetes Manifests
