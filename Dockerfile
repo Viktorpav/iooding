@@ -46,7 +46,6 @@ COPY --chown=django:100 . .
 
 # Prepare directories and permissions in a single layer
 RUN mkdir -p /app/staticfiles /app/media && \
-    chown -R django:100 /app && \
     chmod +x /app/docker-entrypoint.sh
 
 # Environment variables for Python optimization

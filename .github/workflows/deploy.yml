@@ -21,8 +21,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -48,13 +46,8 @@ jobs:
           push: true
           platforms: linux/arm64
           tags: viktor2003/iooding:${{ steps.tag.outputs.sha_short }}, viktor2003/iooding:latest
-          cache-from: |
-            type=gha
-            type=registry,ref=viktor2003/iooding:buildcache
-          cache-to: |
-            type=gha,mode=max
-            type=registry,ref=viktor2003/iooding:buildcache,mode=max
-
+          cache-from: type=gha
+          cache-to: type=gha,mode=min
 
       - name: Update Kubernetes Manifests
         run: |
@@ -68,7 +61,6 @@ jobs:
           
           if ! git diff --staged --quiet; then
             git commit -m "Deploy: Update image to ${{ steps.tag.outputs.sha_short }} [skip ci]"
-            git pull --rebase origin ${{ github.ref_name }}
             git push
           else
             echo "No changes to commit."
