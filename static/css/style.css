@@ -184,26 +184,13 @@ main.container {
     text-decoration: none;
 }
 
-.navbar-logo {
-    height: 28px;
-    width: auto;
-    display: block;
-    transition: opacity 0.2s;
-    opacity: 1;
-}
 
 .logo-text {
     display: inline-block;
     transition: opacity 0.2s;
 }
 
-@media (prefers-color-scheme: dark) {
-    .navbar-logo {
-        filter: invert(1);
-    }
-}
 
-.navbar-brand:hover .navbar-logo,
 .navbar-brand:hover .logo-text {
     opacity: 0.7;
 }
@@ -458,9 +445,9 @@ main.container {
 }
 
 /* --- Global Premium Forms --- */
-input[type="text"],
+input[type="text"]:not(.search-input-premium input),
 input[type="email"],
-input[type="search"],
+input[type="search"]:not(.search-input-premium input),
 textarea,
 select {
     width: 100%;

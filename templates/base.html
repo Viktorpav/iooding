@@ -16,9 +16,6 @@
   <!-- static file -->
   <link href="{% static 'css/style.css' %}?v=3.0.0" rel="stylesheet">
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
-  <link rel="shortcut icon" type="image/png" href="{% static 'images/logo.png' %}">
-  <link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">
 </head>
 
 <body>
@@ -27,8 +24,7 @@
   <nav class="navbar navbar-expand-lg">
     <div class="container">
       <div class="header-left">
-        <a class="navbar-brand me-4 d-flex align-items-center gap-2" href="{% url 'blog:post_list' %}">
-          <img src="{% static 'images/logo.png' %}" alt="Ding" class="navbar-logo">
+        <a class="navbar-brand me-4 d-flex align-items-center" href="{% url 'blog:post_list' %}">
           <span class="fw-bold logo-text"
             style="font-size: 1.25rem; letter-spacing: 0.05em; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">IOODING</span>
         </a>
