@@ -84,6 +84,27 @@
     }
 }
 
+.post-card-row {
+    height: auto;
+}
+
+@media (min-width: 768px) {
+    .post-card-row {
+        height: 220px;
+    }
+}
+
+.post-excerpt-clamped {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.post-excerpt-clamped p {
+    margin-bottom: 0;
+}
+
 body {
     font-family: 'Outfit', sans-serif;
     background-color: var(--bg);
