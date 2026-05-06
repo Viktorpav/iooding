@@ -27,8 +27,7 @@ spec:
                 name: iooding-service
                 port:
                   number: 80
-    - host: 192.168.0.240
-      http:
+    - http:
         paths:
           - path: /
             pathType: Prefix
