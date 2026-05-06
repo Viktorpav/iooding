@@ -1168,6 +1168,47 @@ body.ai-active {
     overflow-x: auto;
 }
 
+/* Blockquotes */
+.article-body blockquote, .ck-content blockquote {
+    border-left: 4px solid var(--primary);
+    padding: 1rem 1.5rem;
+    background: rgba(var(--primary-rgb), 0.05);
+    border-radius: 0 8px 8px 0;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: var(--text);
+}
+
+.article-body blockquote p:last-child, .ck-content blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+/* Tables */
+.article-body figure.table, .ck-content figure.table {
+    margin: 2rem 0;
+    overflow-x: auto;
+}
+
+.article-body table, .ck-content table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.article-body th, .ck-content th,
+.article-body td, .ck-content td {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    text-align: left;
+}
+
+.article-body th, .ck-content th {
+    background: rgba(var(--text-rgb), 0.05);
+    font-weight: 600;
+}
+
 .article-body pre code, .ck-content pre code {
     background: transparent;
     color: inherit;
