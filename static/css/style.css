@@ -1197,7 +1197,12 @@ body.ai-active {
     border-radius: 0 8px 8px 0;
     margin: 1.5rem 0;
     font-style: italic;
-    color: var(--text);
+    color: var(--text) !important;
+}
+
+.article-body blockquote *, .ck-content blockquote * {
+    color: var(--text) !important;
+    background-color: transparent !important;
 }
 
 .article-body blockquote p:last-child, .ck-content blockquote p:last-child {
@@ -1213,20 +1218,29 @@ body.ai-active {
 .article-body table, .ck-content table {
     width: 100%;
     border-collapse: collapse;
-    background: var(--surface);
+    background: var(--surface) !important;
     border-radius: 8px;
     overflow: hidden;
+    color: var(--text) !important;
 }
 
 .article-body th, .ck-content th,
 .article-body td, .ck-content td {
     padding: 1rem;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border) !important;
     text-align: left;
+    color: var(--text) !important;
+    background: transparent !important;
+}
+
+.article-body td *, .ck-content td *,
+.article-body th *, .ck-content th * {
+    color: var(--text) !important;
+    background-color: transparent !important;
 }
 
 .article-body th, .ck-content th {
-    background: rgba(var(--text-rgb), 0.05);
+    background: rgba(var(--text-rgb), 0.05) !important;
     font-weight: 600;
 }
 
