@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DEBUG=(bool, False),
     CONN_MAX_AGE=(int, 0),
-    ALLOWED_HOSTS=(list, ['iooding.local']),
+    ALLOWED_HOSTS=(list, ['iooding.local', '192.168.0.240']),
     LM_STUDIO_COMPLETION_MODEL=(str, 'local-model'),
     LM_STUDIO_EMBEDDING_MODEL=(str, 'nomic-embed-text'),
 )

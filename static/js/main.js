@@ -138,7 +138,10 @@ function scrollToBottom(force = false) {
 }
 
 function renderHistory(history) {
-    history.forEach(msg => msg.role === 'user' ? addUserMessageUI(msg.content) : addAssistantMessageUI(msg.content));
+    const v = document.getElementById('chat-messages');
+    v.innerHTML = '';
+    // Show only last 10 messages for performance
+    history.slice(-10).forEach(msg => msg.role === 'user' ? addUserMessageUI(msg.content) : addAssistantMessageUI(msg.content));
 }
 
 function createActionButtons(text, isUser) {
@@ -173,6 +176,12 @@ function addUserMessageUI(text) {
     wrap.innerHTML = `<div class="user-msg">${text}</div>`;
     wrap.appendChild(createActionButtons(text, true));
     v.appendChild(wrap);
+    
+    // DOM Virtualization: Limit messages in DOM
+    const messages = v.querySelectorAll('.user-wrapper, .ai-msg:not(.system-msg)');
+    if (messages.length > 10) {
+        messages[0].remove();
+    }
 }
 
 function addAssistantMessageUI(content) {
@@ -183,6 +192,12 @@ function addAssistantMessageUI(content) {
     div.appendChild(createActionButtons(content, false));
     v.appendChild(div);
     div.querySelectorAll('pre code').forEach(hljs.highlightElement);
+
+    // DOM Virtualization: Limit messages in DOM
+    const messages = v.querySelectorAll('.user-wrapper, .ai-msg:not(.system-msg)');
+    if (messages.length > 10) {
+        messages[0].remove();
+    }
 }
 
 function stopGeneration(cancel = false) {

@@ -19,10 +19,6 @@
   <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
   <link rel="shortcut icon" type="image/png" href="{% static 'images/logo.png' %}">
   <link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">
-  <!-- highlight js -->
-  <link rel="stylesheet" href="{% static 'vendor/css/atom-one-dark.min.css' %}">
-  <script src="{% static 'vendor/js/highlight.min.js' %}"></script>
-  <script>hljs.highlightAll();</script>
 </head>
 
 <body>
@@ -183,6 +179,10 @@
       else nav.classList.remove('scrolled');
     };
   </script>
+  <!-- highlight js: Optimized Load -->
+  <link rel="stylesheet" href="{% static 'vendor/css/atom-one-dark.min.css' %}">
+  <script src="{% static 'vendor/js/highlight.min.js' %}"></script>
+  <script>hljs.highlightAll();</script>
 </body>
 
 </html>
