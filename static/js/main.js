@@ -263,11 +263,11 @@ async function sendMessage() {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        // Track last paint time for throttling. 0 means "never painted" → first token paints immediately.
         let lastRenderTime = 0;
+        const RENDER_MS = 16; // ~60fps max re-render rate
 
         aiDiv.querySelector('.msg-content').innerHTML = '';
-
-        let renderPending = false;
 
         while (true) {
             const { value, done } = await reader.read();
@@ -278,18 +278,31 @@ async function sendMessage() {
 
             for (const line of lines) {
                 if (!line.startsWith('data: ')) continue;
-                const data = JSON.parse(line.substring(6));
+                let data;
+                try { data = JSON.parse(line.substring(6)); } catch { continue; }
+
                 if (data.error) throw new Error(data.error);
+
                 if (data.thinking) {
                     const box = aiDiv.querySelector('.thinking-box');
                     box.style.display = 'block';
                     fullThinking += data.thinking;
                     box.querySelector('.thinking-content').textContent = fullThinking;
                 }
+
                 if (data.content) {
                     fullContent += data.content;
+                    // Paint immediately on first token; throttle subsequent paints to ~60fps
+                    const now = performance.now();
+                    if (now - lastRenderTime >= RENDER_MS) {
+                        aiDiv.querySelector('.msg-content').innerHTML = marked.parse(fullContent);
+                        scrollToBottom();
+                        lastRenderTime = now;
+                    }
                 }
+
                 if (data.done && data.metrics) {
+                    // Final render: full content + code highlighting
                     aiDiv.querySelector('.msg-content').innerHTML = marked.parse(fullContent);
                     aiDiv.querySelectorAll('pre code').forEach(hljs.highlightElement);
                     const m = data.metrics;
@@ -305,19 +318,8 @@ async function sendMessage() {
                             `<span>${m.eval_count} tokens</span> • <span>${speed} t/s</span> • <span>${(m.total_duration || 0).toFixed(2)}s</span>`;
                         document.getElementById('ai-stats-realtime').textContent = `${speed} t/s`;
                     }
+                    scrollToBottom();
                 }
-                scrollToBottom();
-            }
-
-            if (fullContent && !renderPending) {
-                renderPending = true;
-                requestAnimationFrame(() => {
-                    if (currentAiDiv) {
-                        currentAiDiv.querySelector('.msg-content').innerHTML = marked.parse(fullContent);
-                        scrollToBottom();
-                    }
-                    renderPending = false;
-                });
             }
         }
         if (fullContent) { aiDiv.appendChild(createActionButtons(fullContent, false)); saveHistory(text, fullContent); }

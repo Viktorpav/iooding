@@ -74,7 +74,11 @@ class LMStudioClient:
             "top_p": options.get("top_p", 1.0),
         }
         if stream:
-            kwargs["stream_options"] = {"include_usage": True}
+            # NOTE: Do NOT set stream_options: include_usage here.
+            # LM Studio (and many local LLM servers) buffer the entire response
+            # before emitting the usage chunk, causing ~300 token batch delays.
+            # We count tokens manually from content chunks instead.
+            pass
         
         try:
             resp = await self.client.chat.completions.create(**kwargs)
@@ -85,29 +89,22 @@ class LMStudioClient:
         if stream:
             async def generate_chunks():
                 start_time = time.time()
-                generated_tokens = 0
                 actual_chunks = 0
                 try:
                     async for chunk in resp:
-                        if hasattr(chunk, 'usage') and chunk.usage:
-                            generated_tokens = chunk.usage.completion_tokens
-
                         if chunk.choices and len(chunk.choices) > 0:
                             content = chunk.choices[0].delta.content or ""
                             if content:
                                 actual_chunks += 1
+                                # Yield immediately — no batching, no buffering
                                 yield {"message": {"content": content}, "done": False}
-                    
-                    if not generated_tokens or generated_tokens < actual_chunks:
-                        generated_tokens = actual_chunks
-                        
+
                     end_time = time.time()
                     duration_ns = int((end_time - start_time) * 1e9)
-                    
                     yield {
-                        "done": True, 
-                        "total_duration": duration_ns, 
-                        "eval_count": generated_tokens, 
+                        "done": True,
+                        "total_duration": duration_ns,
+                        "eval_count": actual_chunks,
                         "eval_duration": duration_ns
                     }
                 except Exception as e:
