@@ -8,6 +8,7 @@ from django.http import HttpResponse, StreamingHttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import json
+import hashlib
 import logging
 
 logger = logging.getLogger(__name__)
@@ -147,7 +148,6 @@ async def chat_api(request):
         return HttpResponse('Method not allowed', status=405)
 
     try:
-        import hashlib
         data = json.loads(request.body)
         user_msg = data.get('message', '').strip()
         history = data.get('messages', [])

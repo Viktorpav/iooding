@@ -11,9 +11,12 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libjpeg-dev \
     zlib1g-dev
 
+# Install uv (5-10x faster than pip)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 COPY requirements.txt .
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --prefix=/install -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system --prefix=/install -r requirements.txt
 
 # ─── Runtime ──────────────────────────────────────────────────────────────────
 FROM python:3.13-slim

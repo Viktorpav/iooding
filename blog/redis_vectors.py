@@ -1,6 +1,7 @@
 import hashlib
 import json
 import logging
+import struct
 from django.conf import settings
 from django.core.cache import cache
 import redis
@@ -102,7 +103,6 @@ def index_chunk(post_id: int, title: str, content: str, embedding: list) -> str:
 async def text_search_async(keyword: str, top_k: int = 5) -> list:
     """Search for blocks containing exact keywords using Redis FTS (Async)."""
     client = get_async_redis_client()
-    await ensure_index_exists_async()
     
     # Escape special characters for Redis search
     clean_keyword = keyword.replace('"', '').replace("'", "")
@@ -125,11 +125,7 @@ async def text_search_async(keyword: str, top_k: int = 5) -> list:
 
 async def search_similar_async(query_embedding: list, top_k: int = 5, max_distance: float = 0.7) -> list:
     """Search for similar chunks using vector similarity (Async)."""
-    import struct
     client = get_async_redis_client()
-
-    # Ensure index exists before searching
-    await ensure_index_exists_async()
 
     def parse_doc(doc):
         try:
@@ -159,7 +155,6 @@ async def search_similar_async(query_embedding: list, top_k: int = 5, max_distan
 
 def search_similar(query_embedding: list, top_k: int = 5, max_distance: float = 0.7) -> list:
     """Search for similar chunks using vector similarity (Sync)."""
-    import struct
     client = get_redis_client()
     if not ensure_index_exists(): return []
     query_vector = struct.pack(f'{len(query_embedding)}f', *query_embedding)

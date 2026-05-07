@@ -1,42 +1,47 @@
-from django.conf import settings
-from blog.redis_vectors import (
-    search_similar_async, 
-    get_cached_embedding_async, 
-    cache_embedding_async,
-    text_search_async
-)
-import os
 import json
 import time
 import logging
 import asyncio
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
-from datetime import datetime
 
 import httpx
 from openai import AsyncOpenAI
 from django.conf import settings
 from django.core.cache import cache
-from asgiref.sync import sync_to_async, async_to_sync
+from asgiref.sync import sync_to_async
+from blog.redis_vectors import (
+    search_similar_async,
+    get_cached_embedding_async,
+    cache_embedding_async,
+    text_search_async,
+)
 
 logger = logging.getLogger(__name__)
 
 # Skip RAG for these simple patterns or social queries
 SKIP_RAG_PATTERNS = {
-    'hi', 'hello', 'hey', 'thanks', 'bye', 'ok', 'yes', 'no', 'sure', 
+    'hi', 'hello', 'hey', 'thanks', 'bye', 'ok', 'yes', 'no', 'sure',
     'how are you', 'what is up', 'good morning', 'good evening', 'who are you',
     'whats up', "what's up", 'sup', 'yo', 'thank you', 'thx',
 }
 
-# Singleton instance
+# Singleton instances
 _ai_client = None
+_httpx_client = None
+
+
+def _get_httpx_client():
+    """Reusable httpx client — avoids TCP/TLS handshake per request."""
+    global _httpx_client
+    if _httpx_client is None:
+        _httpx_client = httpx.AsyncClient(timeout=300.0)
+    return _httpx_client
+
 
 class LMStudioClient:
     """Async-First LM Studio Client with raw httpx streaming for zero-latency SSE."""
     def __init__(self, host, api_key):
         base_url = host if host.endswith('/v1') else f"{host.rstrip('/')}/v1"
-        self._base_url = base_url          # Used by raw httpx streaming
+        self._base_url = base_url
         self._api_key = api_key
         self.client = AsyncOpenAI(
             base_url=base_url,
@@ -60,7 +65,7 @@ class LMStudioClient:
             return {"response": resp.choices[0].message.content}
         except Exception as e:
             logger.error(f"LM Studio Generate Error: {e}")
-            raise e
+            raise
 
     async def embeddings(self, model, prompt):
         try:
@@ -68,7 +73,7 @@ class LMStudioClient:
             return {"embedding": resp.data[0].embedding}
         except Exception as e:
             logger.error(f"LM Studio Embeddings Error: {e}")
-            raise e
+            raise
 
     async def chat(self, model, messages, stream, options=None):
         options = options or {}
@@ -83,11 +88,8 @@ class LMStudioClient:
             return {"message": {"content": resp.choices[0].message.content}}
 
         # ── Raw httpx streaming ───────────────────────────────────────────────
-        # Bypasses the OpenAI library's SSE parser/object builder which buffers
-        # chunks before yielding ChatCompletionChunk objects.
-        # httpx.aiter_lines() yields each \n-terminated SSE line the instant it
-        # comes off the wire — zero intermediate buffering.
-
+        # Bypasses the OpenAI library's SSE parser which buffers chunks.
+        # httpx.aiter_lines() yields each line the instant it arrives.
         url = f"{self._base_url}/chat/completions"
         payload = {
             "model": self.completion_model,
@@ -104,25 +106,25 @@ class LMStudioClient:
         async def generate_chunks():
             start_time = time.time()
             actual_chunks = 0
+            http = _get_httpx_client()
             try:
-                async with httpx.AsyncClient(timeout=300.0) as http:
-                    async with http.stream("POST", url, json=payload, headers=headers) as resp:
-                        async for line in resp.aiter_lines():
-                            if not line.startswith("data: "):
-                                continue
-                            data_str = line[6:].strip()
-                            if data_str == "[DONE]":
-                                break
-                            try:
-                                data = json.loads(data_str)
-                                choices = data.get("choices", [])
-                                if choices:
-                                    content = choices[0].get("delta", {}).get("content") or ""
-                                    if content:
-                                        actual_chunks += 1
-                                        yield {"message": {"content": content}, "done": False}
-                            except json.JSONDecodeError:
-                                continue
+                async with http.stream("POST", url, json=payload, headers=headers) as resp:
+                    async for line in resp.aiter_lines():
+                        if not line.startswith("data: "):
+                            continue
+                        data_str = line[6:].strip()
+                        if data_str == "[DONE]":
+                            break
+                        try:
+                            data = json.loads(data_str)
+                            choices = data.get("choices", [])
+                            if choices:
+                                content = choices[0].get("delta", {}).get("content") or ""
+                                if content:
+                                    actual_chunks += 1
+                                    yield {"message": {"content": content}, "done": False}
+                        except json.JSONDecodeError:
+                            continue
 
                 duration_ns = int((time.time() - start_time) * 1e9)
                 yield {
@@ -157,13 +159,17 @@ async def check_ai_status():
     except:
         return False
 
-# ─── RAG Pipeline (Optimized for Small Models like Gemma 2B) ─────────────────
+# ─── RAG Pipeline ─────────────────────────────────────────────────────────────
 
 async def get_site_inventory() -> str:
-    """Compact site inventory: titles, tags, dates. Cheap to build, no LLM needed."""
+    """Compact site inventory — cached for 5 minutes to avoid DB hits."""
+    cached = cache.get("rag:site_inventory")
+    if cached is not None:
+        return cached
+
     from blog.models import Post
     from taggit.models import Tag
-    
+
     @sync_to_async
     def _fetch():
         posts = list(Post.published.all().order_by('-publish')[:20])
@@ -174,47 +180,26 @@ async def get_site_inventory() -> str:
         posts, tags = await _fetch()
         if not posts:
             return 0, ""
-        
+
         lines = [f"Blog: iooding.local | {len(posts)} articles | Tags: {', '.join(tags[:15])}"]
         for p in posts:
             lines.append(f"- \"{p.title}\" ({p.publish.strftime('%Y-%m-%d')}) → {p.get_absolute_url()}")
-        
-        return len(posts), "\n".join(lines)
+
+        result = (len(posts), "\n".join(lines))
+        cache.set("rag:site_inventory", result, timeout=300)  # 5 min cache
+        return result
     except Exception as e:
         logger.error(f"Site inventory error: {e}")
         return 0, ""
 
-async def get_full_site_content() -> str:
-    """Fetches full content of all published posts. Used for small blogs (<=10 posts)."""
-    from blog.models import Post
-    
-    @sync_to_async
-    def _fetch():
-        posts = Post.published.all().order_by('-publish')
-        results = []
-        for p in posts:
-            clean_body = re.sub('<[^<]+?>', '', p.body)[:3000]
-            results.append(
-                f"## {p.title}\n"
-                f"URL: {p.get_absolute_url()}\n"
-                f"Date: {p.publish.strftime('%Y-%m-%d')} | Read time: {p.read_time} min\n\n"
-                f"{clean_body}"
-            )
-        return results
-    
-    try:
-        contents = await _fetch()
-        return "\n\n---\n\n".join(contents)
-    except:
-        return ""
 
 async def generate_rag_context(user_msg: str, client) -> str:
     """
-    RAG pipeline with:
+    RAG pipeline optimized for speed:
     - Skip RAG for small talk
-    - Hybrid vector + text search
-    - Hard 3k char context cap (keeps small models fast)
-    - Always includes compact site inventory header
+    - Embedding + text search run in TRUE parallel
+    - Hard 1500 char context cap
+    - Site inventory cached for 5 min
     """
     MAX_CONTEXT_CHARS = 1500
 
@@ -227,32 +212,41 @@ async def generate_rag_context(user_msg: str, client) -> str:
         if post_count == 0:
             return "NO_RAG_NEEDED"
 
-        # ── Search ───────────────────────────────────────────────────────────
+        # ── TRUE Parallel Search ──────────────────────────────────────────────
+        # Fire text search AND embedding generation at the same time.
+        # Previously embedding blocked before vector search could even start.
         text_results, vector_results = [], []
-        try:
-            text_task = text_search_async(user_msg, top_k=3)
 
+        async def _get_embedding():
             embedding = await get_cached_embedding_async(user_msg)
             if not embedding:
                 emb_resp = await client.embeddings(model=None, prompt=user_msg)
                 embedding = emb_resp['embedding']
                 await cache_embedding_async(user_msg, embedding)
+            return embedding
 
-            vector_task = search_similar_async(embedding, top_k=4)
-            text_results, vector_results = await asyncio.gather(
-                text_task, vector_task, return_exceptions=True
+        try:
+            # Run text search + embedding generation in parallel
+            text_task = text_search_async(user_msg, top_k=3)
+            emb_task = _get_embedding()
+            text_results, embedding = await asyncio.gather(
+                text_task, emb_task, return_exceptions=True
             )
+
             if isinstance(text_results, Exception):
                 logger.warning(f"Text search error: {text_results}")
                 text_results = []
-            if isinstance(vector_results, Exception):
-                logger.warning(f"Vector search error: {vector_results}")
-                vector_results = []
+            if isinstance(embedding, Exception):
+                logger.warning(f"Embedding error: {embedding}")
+                embedding = None
+
+            # Vector search needs the embedding, so it runs after
+            if embedding and not isinstance(embedding, Exception):
+                vector_results = await search_similar_async(embedding, top_k=4)
         except Exception as e:
             logger.warning(f"RAG search error: {e}")
 
-        # ── Rank & Deduplicate ───────────────────────────────────────────────
-        # Vector results are sorted by distance (best first), text results come second
+        # ── Rank & Deduplicate ────────────────────────────────────────────────
         seen, ranked = set(), []
         for match in list(vector_results) + list(text_results):
             key = match.get('content', '')[:80]
@@ -260,16 +254,14 @@ async def generate_rag_context(user_msg: str, client) -> str:
                 seen.add(key)
                 ranked.append(match)
 
-        # ── Trim to 3k chars ─────────────────────────────────────────────────
+        # ── Trim to 1500 chars ────────────────────────────────────────────────
         if not ranked:
-            logger.info(f"No RAG results for: {user_msg!r}")
             return site_inventory
 
         context_parts = []
         total_chars = 0
         for chunk in ranked:
             title = chunk.get('title', 'Unknown')
-            # Take at most 800 chars per chunk to allow multiple articles in context
             snippet = chunk.get('content', '')[:500].strip()
             if not snippet:
                 continue
@@ -296,3 +288,4 @@ def get_rag_system_prompt(context: str) -> str:
         "Use markdown. Link posts as [Title](url). Be concise.\n\n"
         f"--- Blog ---\n{context}\n---"
     )
+
