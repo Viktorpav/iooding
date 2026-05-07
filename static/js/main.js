@@ -286,8 +286,8 @@ async function sendMessage() {
                 if (data.thinking) {
                     const box = aiDiv.querySelector('.thinking-box');
                     box.style.display = 'block';
-                    fullThinking += data.thinking;
-                    box.querySelector('.thinking-content').textContent = fullThinking;
+                    // Replace status instead of appending for a cleaner "status update" feel
+                    box.querySelector('.thinking-content').textContent = `• ${data.thinking}`;
                 }
 
                 if (data.content) {
