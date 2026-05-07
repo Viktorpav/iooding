@@ -191,47 +191,56 @@ async def chat_api(request):
             accumulated = ""
             try:
                 yield f"data: {json.dumps({'thinking': 'Searching knowledge base...'})}\n\n"
+
                 context_text = await generate_rag_context(user_msg, client)
 
-                sys_prompt = "You are Ding AI for iooding.local. Be concise, use markdown."
-                if context_text != 'NO_RAG_NEEDED':
-                    sys_prompt = get_rag_system_prompt(context_text)
-                    yield f"data: {json.dumps({'thinking': 'Context found — generating answer...'})}\n\n"
-                else:
+                if context_text == 'NO_RAG_NEEDED':
                     yield f"data: {json.dumps({'thinking': 'Responding directly...'})}\n\n"
-                
-                messages.insert(0, {'role': 'system', 'content': sys_prompt})
+                    messages.insert(0, {'role': 'system', 'content':
+                        "You are Ding AI for iooding.local. Be concise, use markdown."
+                    })
+                else:
+                    messages.insert(0, {'role': 'system', 'content': get_rag_system_prompt(context_text)})
+                    yield f"data: {json.dumps({'thinking': 'Context found — generating answer...'})}\n\n"
 
-                chat_resp = await client.chat(messages=messages, stream=True)
+                chat_resp = await client.chat(
+                    model=None,
+                    messages=messages,
+                    stream=True,
+                    options={'temperature': 0.2, 'top_p': 0.9},
+                )
+
                 async for chunk in chat_resp:
-                    if "error" in chunk:
-                        yield f"data: {json.dumps({'error': chunk['error']})}\n\n"
-                        break
-                    
-                    if "content" in chunk:
-                        accumulated += chunk['content']
-                        yield f"data: {json.dumps({'content': chunk['content']})}\n\n"
+                    content = chunk.get('message', {}).get('content', '')
+                    if content:
+                        accumulated += content
+                        yield f"data: {json.dumps({'content': content})}\n\n"
 
                     if chunk.get('done'):
                         metrics = {
-                            'total_duration': round(chunk.get('total_duration', 0), 2),
+                            'total_duration': round(chunk.get('total_duration', 0) / 1e9, 2),
                             'eval_count': chunk.get('eval_count', 0),
                             'tokens_per_sec': round(
                                 chunk.get('eval_count', 0) /
-                                max(chunk.get('total_duration', 1), 0.001), 1
+                                max(chunk.get('eval_duration', 1) / 1e9, 0.001), 1
                             ),
                             'cached': False,
                         }
+                        # Store in Redis for 1 hour
                         if accumulated:
                             cache.set(cache_key, {'content': accumulated, 'metrics': metrics}, timeout=3600)
                         yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
-                
+
             except Exception as exc:
-                yield f"data: {json.dumps({'error': str(exc)})}\n\n"
+                import traceback
+                error_msg = f"Stream Error: {type(exc).__name__}: {exc}"
+                logger.error(error_msg)
+                yield f"data: {json.dumps({'error': error_msg})}\n\n"
 
         response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
         response['X-Accel-Buffering'] = 'no'
         response['Cache-Control'] = 'no-cache, no-transform'
+        response['Content-Encoding'] = 'identity'
         return response
 
     except Exception as exc:

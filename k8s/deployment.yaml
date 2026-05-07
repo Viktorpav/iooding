@@ -25,7 +25,11 @@ data:
   ALLOWED_HOSTS: "*"
   DEBUG: "False"
   CSRF_TRUSTED_ORIGINS: "https://iooding.local"
-  LM_STUDIO_HOST: "http://192.168.0.16:1234/v1"
+  # Ollama running on Mac host — bridge network accessible at 192.168.0.16
+  LM_STUDIO_HOST: "http://192.168.0.16:11434/v1"
+  AI_HOST: "http://192.168.0.16:11434/v1"
+  AI_COMPLETION_MODEL: "gemma4:e2b"
+  AI_EMBEDDING_MODEL: "nomic-embed-text"
 
 ---
 apiVersion: batch/v1
