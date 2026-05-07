@@ -4,7 +4,10 @@ import threading
 import queue
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
-from mlx_lm import load, stream_generate  # Use mlx_lm for text-only stability
+from mlx_lm import stream_generate
+from mlx_lm.utils import load_model, load_tokenizer
+from huggingface_hub import snapshot_download
+from pathlib import Path
 import mlx.core as mx
 
 app = FastAPI()
@@ -13,15 +16,17 @@ app = FastAPI()
 MODEL_PATH = "mlx-community/gemma-4-e2b-it-OptiQ-4bit"
 request_queue = queue.Queue()
 
-# Optimization: Limit cache fragmentation on Mac
-mx.metal.set_cache_limit(0)
+# Optimization: Modern way to limit cache fragmentation
+mx.set_cache_limit(0)
 
 def ai_worker():
     """Single-threaded worker that owns the MLX GPU context"""
     try:
-        # Use mlx_lm (text-only) with strict=False to ignore multimodal overhead
-        model, tokenizer = load(MODEL_PATH, strict=False)
-        print(f"Model {MODEL_PATH} loaded successfully into AI Worker (Text-only mode).")
+        # Use snapshot_download to get a Path object (fixes the string concat error)
+        model_path = Path(snapshot_download(repo_id=MODEL_PATH))
+        model, config = load_model(model_path, strict=False)
+        tokenizer = load_tokenizer(model_path)
+        print(f"Model {MODEL_PATH} loaded successfully into AI Worker (Strict=False).")
     except Exception as e:
         print(f"Critical error loading model: {e}")
         return
@@ -30,18 +35,45 @@ def ai_worker():
         task = request_queue.get()
         if task is None: break
         
-        prompt, token_queue, loop, body = task
+        prompt_raw, token_queue, loop, body = task
         try:
-            # mlx_lm.stream_generate is the fastest way for text-only chat
+            # Use the model's official chat template for instruction-tuned performance
+            messages = body.get("messages", [])
+            prompt = tokenizer.apply_chat_template(
+                messages, 
+                tokenize=False, 
+                add_generation_prompt=True
+            )
+            
+            # Use strict stop tokens to prevent the model from looping markers
+            stop_tokens = ["<end_of_turn>", "<eos>", "<turn|>"]
+            
+            # mlx_lm.stream_generate with greedy decoding (no temp) is the fastest
+            is_thinking = False
             for response in stream_generate(
                 model, 
                 tokenizer, 
                 prompt=prompt, 
                 max_tokens=body.get("max_tokens", 1024),
-                temp=body.get("temperature", 0.1),
             ):
-                # In mlx_lm, response is just a string token
-                loop.call_soon_threadsafe(token_queue.put_nowait, response)
+                # Support both raw strings and GenerationResponse objects
+                token = response.text if hasattr(response, 'text') else response
+                
+                # Filter out internal Thinking Process blocks (<|channel>thought ... <channel|>)
+                if "<|channel>" in token:
+                    is_thinking = True
+                    continue
+                if "<channel|>" in token:
+                    is_thinking = False
+                    continue
+                
+                # Manual stop-token check to prevent looping markers
+                if any(stop in token for stop in ["<end_of_turn>", "<eos>", "<turn|>"]):
+                    break
+                
+                # Only stream if we aren't in the middle of a "thought" block
+                if not is_thinking:
+                    loop.call_soon_threadsafe(token_queue.put_nowait, token)
             
             loop.call_soon_threadsafe(token_queue.put_nowait, None)
         except Exception as e:
