@@ -188,11 +188,17 @@ async def chat_api(request):
         client = get_ai_client()
 
         async def stream_response():
+            accumulated = ""
             try:
+                yield f"data: {json.dumps({'thinking': 'Searching knowledge base...'})}\n\n"
                 context_text = await generate_rag_context(user_msg, client)
+
                 sys_prompt = "You are Ding AI for iooding.local. Be concise, use markdown."
                 if context_text != 'NO_RAG_NEEDED':
                     sys_prompt = get_rag_system_prompt(context_text)
+                    yield f"data: {json.dumps({'thinking': 'Context found — generating answer...'})}\n\n"
+                else:
+                    yield f"data: {json.dumps({'thinking': 'Responding directly...'})}\n\n"
                 
                 messages.insert(0, {'role': 'system', 'content': sys_prompt})
 
@@ -203,9 +209,23 @@ async def chat_api(request):
                         break
                     
                     if "content" in chunk:
+                        accumulated += chunk['content']
                         yield f"data: {json.dumps({'content': chunk['content']})}\n\n"
+
+                    if chunk.get('done'):
+                        metrics = {
+                            'total_duration': round(chunk.get('total_duration', 0), 2),
+                            'eval_count': chunk.get('eval_count', 0),
+                            'tokens_per_sec': round(
+                                chunk.get('eval_count', 0) /
+                                max(chunk.get('total_duration', 1), 0.001), 1
+                            ),
+                            'cached': False,
+                        }
+                        if accumulated:
+                            cache.set(cache_key, {'content': accumulated, 'metrics': metrics}, timeout=3600)
+                        yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
                 
-                yield f"data: {json.dumps({'done': True})}\n\n"
             except Exception as exc:
                 yield f"data: {json.dumps({'error': str(exc)})}\n\n"
 

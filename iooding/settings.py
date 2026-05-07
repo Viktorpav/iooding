@@ -9,8 +9,8 @@ env = environ.Env(
     DEBUG=(bool, False),
     CONN_MAX_AGE=(int, 0),
     ALLOWED_HOSTS=(list, ['iooding.local', '192.168.0.240']),
-    LM_STUDIO_COMPLETION_MODEL=(str, 'local-model'),
-    LM_STUDIO_EMBEDDING_MODEL=(str, 'nomic-embed-text'),
+    AI_COMPLETION_MODEL=(str, 'gemma4:e2b'),
+    AI_EMBEDDING_MODEL=(str, 'nomic-embed-text'),
 )
 environ.Env.read_env(BASE_DIR / '.env', overrides=False)
 
@@ -22,11 +22,11 @@ DEBUG = env('DEBUG')
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 SITE_ID = 1
 
-# ─── AI / LM Studio ──────────────────────────────────────────────────────────
-LM_STUDIO_HOST = env('LM_STUDIO_HOST', default='http://192.168.0.16:1234/v1')
-LM_STUDIO_API_KEY = env('LM_STUDIO_API_KEY', default='lm-studio')
-LM_STUDIO_COMPLETION_MODEL = env('LM_STUDIO_COMPLETION_MODEL')
-LM_STUDIO_EMBEDDING_MODEL = env('LM_STUDIO_EMBEDDING_MODEL')
+# ─── Local AI (Ollama / vLLM) ────────────────────────────────────────────────
+AI_HOST = env('AI_HOST', default='http://192.168.0.16:11434/v1')
+AI_API_KEY = env('AI_API_KEY', default='ollama')
+AI_COMPLETION_MODEL = env('AI_COMPLETION_MODEL')
+AI_EMBEDDING_MODEL = env('AI_EMBEDDING_MODEL')
 
 # ─── Applications ─────────────────────────────────────────────────────────────
 INSTALLED_APPS = [

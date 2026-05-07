@@ -1,4 +1,5 @@
 import json
+import time
 import logging
 import asyncio
 
@@ -50,8 +51,8 @@ class LocalAIClient:
             api_key=api_key,
             timeout=httpx.Timeout(120.0, connect=5.0), # Fail fast on connection
         )
-        self.completion_model = settings.LM_STUDIO_COMPLETION_MODEL
-        self.embedding_model = settings.LM_STUDIO_EMBEDDING_MODEL
+        self.completion_model = settings.AI_COMPLETION_MODEL
+        self.embedding_model = settings.AI_EMBEDDING_MODEL
 
     async def list(self):
         return await self.client.models.list()
@@ -74,7 +75,7 @@ class LocalAIClient:
             resp = await self.client.embeddings.create(input=[prompt], model=self.embedding_model)
             return {"embedding": resp.data[0].embedding}
         except Exception as e:
-            logger.error(f"LM Studio Embeddings Error: {e}")
+            logger.error(f"Local AI Embeddings Error: {e}")
             raise
 
     async def chat(self, messages, stream, options=None):
@@ -87,18 +88,19 @@ class LocalAIClient:
             "stream": stream,
             "temperature": options.get("temperature", 0.2),
             "num_ctx": options.get("num_ctx", 4096),
+            "stream_options": {"include_usage": True} if stream else None,
         }
 
         if not stream:
-            for _ in range(2): # Simple retry
-                try:
-                    resp = await self.client.chat.completions.create(**payload)
-                    return {"message": {"content": resp.choices[0].message.content}}
-                except Exception:
-                    await asyncio.sleep(1)
-            raise ConnectionError("Local AI unreachable")
+            try:
+                resp = await self.client.chat.completions.create(**payload)
+                return {"message": {"content": resp.choices[0].message.content}}
+            except Exception as e:
+                logger.error(f"Chat error: {e}")
+                raise
 
         async def generate_chunks():
+            start_time = time.time()
             http = _get_httpx_client()
             for attempt in range(3):
                 try:
@@ -109,8 +111,19 @@ class LocalAIClient:
                             if data_str == "[DONE]": break
                             try:
                                 data = json.loads(data_str)
-                                content = data['choices'][0].get('delta', {}).get('content')
-                                if content: yield {"content": content}
+                                choices = data.get('choices', [])
+                                if choices:
+                                    content = choices[0].get('delta', {}).get('content')
+                                    if content: yield {"content": content}
+                                
+                                # Capture usage metrics from the final chunk
+                                if 'usage' in data:
+                                    yield {
+                                        "done": True,
+                                        "total_duration": time.time() - start_time,
+                                        "eval_count": data['usage'].get('completion_tokens', 0),
+                                        "prompt_count": data['usage'].get('prompt_tokens', 0),
+                                    }
                             except (KeyError, json.JSONDecodeError): continue
                     return
                 except Exception as e:
@@ -125,8 +138,8 @@ def get_ai_client():
     global _ai_client
     if _ai_client is None:
         _ai_client = LocalAIClient(
-            host=settings.LM_STUDIO_HOST,
-            api_key=settings.LM_STUDIO_API_KEY
+            host=settings.AI_HOST,
+            api_key=settings.AI_API_KEY
         )
     return _ai_client
 
