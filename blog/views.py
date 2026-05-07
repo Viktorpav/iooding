@@ -138,32 +138,57 @@ async def ai_status(request):
 async def chat_api(request):
     """
     Async SSE endpoint for AI chat with RAG.
-    Streams responses from Ollama token-by-token.
+    Features:
+    - Exact Redis cache for repeated questions (1 hour TTL)
+    - Streaming SSE with thinking indicator
+    - Context trimmed to ~3k chars
     """
     if request.method != 'POST':
         return HttpResponse('Method not allowed', status=405)
 
     try:
+        import hashlib
         data = json.loads(request.body)
         user_msg = data.get('message', '').strip()
         history = data.get('messages', [])
 
-        # Keep last 10 turns to bound token usage
-        messages = list(history[-10:])
-        if user_msg and (not messages or messages[-1].get('content') != user_msg):
-            messages.append({'role': 'user', 'content': user_msg})
-
-        if not messages:
+        if not user_msg:
             return HttpResponse(
                 json.dumps({'error': 'Empty message'}),
-                status=400,
-                content_type='application/json',
+                status=400, content_type='application/json',
             )
 
+        # Keep last 10 turns to bound token usage
+        messages = list(history[-10:])
+        if not messages or messages[-1].get('content') != user_msg:
+            messages.append({'role': 'user', 'content': user_msg})
+
+        # ── Exact Redis Cache ─────────────────────────────────────────────────
+        # Key: SHA256 of normalized user message (case-insensitive, stripped)
+        cache_key = f"ai:exact:{hashlib.sha256(user_msg.lower().encode()).hexdigest()}"
+        cached = cache.get(cache_key)
+
+        if cached:
+            async def stream_cached():
+                yield f"data: {json.dumps({'thinking': '⚡ Cached response — instant answer'})}\n\n"
+                # Re-stream stored content in small chunks to keep UI live
+                for i in range(0, len(cached['content']), 60):
+                    yield f"data: {json.dumps({'content': cached['content'][i:i+60]})}\n\n"
+                metrics = {**cached['metrics'], 'cached': True}
+                yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
+
+            resp = StreamingHttpResponse(stream_cached(), content_type='text/event-stream')
+            resp['X-Accel-Buffering'] = 'no'
+            resp['Cache-Control'] = 'no-cache, no-transform'
+            resp['Content-Encoding'] = 'identity'
+            return resp
+
+        # ── Generate ──────────────────────────────────────────────────────────
         from blog.ai_utils import get_ai_client, generate_rag_context, get_rag_system_prompt
         client = get_ai_client()
 
         async def stream_response():
+            accumulated = ""
             try:
                 yield f"data: {json.dumps({'thinking': 'Searching knowledge base...'})}\n\n"
 
@@ -171,36 +196,25 @@ async def chat_api(request):
 
                 if context_text == 'NO_RAG_NEEDED':
                     yield f"data: {json.dumps({'thinking': 'Responding directly...'})}\n\n"
-                    messages.insert(0, {'role': 'system', 'content': 
+                    messages.insert(0, {'role': 'system', 'content':
                         "You are Ding AI, a friendly assistant for the iooding.local tech blog. "
                         "Be helpful, concise, and use markdown formatting."
                     })
-                elif context_text:
+                else:
                     messages.insert(0, {'role': 'system', 'content': get_rag_system_prompt(context_text)})
                     yield f"data: {json.dumps({'thinking': 'Context found — generating answer...'})}\n\n"
-                else:
-                    messages.insert(0, {'role': 'system', 'content': 
-                        "You are Ding AI, a friendly assistant for the iooding.local tech blog. "
-                        "Be helpful, concise, and use markdown formatting."
-                    })
 
-                options = {
-                    'temperature': 0.2,
-                    'top_p': 0.9,
-                    'repeat_penalty': 1.1,
-                    'num_ctx': 4096,
-                }
-                from django.conf import settings
                 chat_resp = await client.chat(
-                    model=settings.LM_STUDIO_COMPLETION_MODEL,
+                    model=None,
                     messages=messages,
                     stream=True,
-                    options=options,
+                    options={'temperature': 0.2, 'top_p': 0.9},
                 )
 
                 async for chunk in chat_resp:
                     content = chunk.get('message', {}).get('content', '')
                     if content:
+                        accumulated += content
                         yield f"data: {json.dumps({'content': content})}\n\n"
 
                     if chunk.get('done'):
@@ -211,14 +225,18 @@ async def chat_api(request):
                                 chunk.get('eval_count', 0) /
                                 max(chunk.get('eval_duration', 1) / 1e9, 0.001), 1
                             ),
+                            'cached': False,
                         }
+                        # Store in Redis for 1 hour
+                        if accumulated:
+                            cache.set(cache_key, {'content': accumulated, 'metrics': metrics}, timeout=3600)
                         yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
 
             except Exception as exc:
                 import traceback
-                error_msg = f"Stream Error: {type(exc).__name__}: {str(exc)}"
+                error_msg = f"Stream Error: {type(exc).__name__}: {exc}"
                 logger.error(error_msg)
-                yield f"data: {json.dumps({'error': error_msg, 'traceback': traceback.format_exc()})}\n\n"
+                yield f"data: {json.dumps({'error': error_msg})}\n\n"
 
         response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
         response['X-Accel-Buffering'] = 'no'
@@ -228,12 +246,11 @@ async def chat_api(request):
 
     except Exception as exc:
         import traceback
-        error_msg = f"{type(exc).__name__}: {str(exc)}"
+        error_msg = f"{type(exc).__name__}: {exc}"
         logger.exception('chat_api error: %s', error_msg)
         return HttpResponse(
             json.dumps({'error': error_msg, 'traceback': traceback.format_exc()}),
-            status=500,
-            content_type='application/json',
+            status=500, content_type='application/json',
         )
 
 

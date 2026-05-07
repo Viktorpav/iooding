@@ -293,9 +293,18 @@ async function sendMessage() {
                     aiDiv.querySelector('.msg-content').innerHTML = marked.parse(fullContent);
                     aiDiv.querySelectorAll('pre code').forEach(hljs.highlightElement);
                     const m = data.metrics;
-                    const speed = (m.tokens_per_sec != null && !isNaN(m.tokens_per_sec)) ? m.tokens_per_sec.toFixed(1) : (m.eval_count / (m.total_duration || 0.001)).toFixed(1);
-                    aiDiv.querySelector('.msg-metrics').innerHTML = `<span>${m.eval_count} tokens</span> • <span>${speed} t/s</span> • <span>${(m.total_duration || 0).toFixed(2)}s</span>`;
-                    document.getElementById('ai-stats-realtime').textContent = `${speed} t/s`;
+                    if (m.cached) {
+                        aiDiv.querySelector('.msg-metrics').innerHTML =
+                            `<span class="cached-badge">⚡ Cached</span>&nbsp;<span>${m.eval_count} tokens</span>`;
+                        document.getElementById('ai-stats-realtime').textContent = '⚡ Cache';
+                    } else {
+                        const speed = (m.tokens_per_sec != null && !isNaN(m.tokens_per_sec))
+                            ? m.tokens_per_sec.toFixed(1)
+                            : (m.eval_count / (m.total_duration || 0.001)).toFixed(1);
+                        aiDiv.querySelector('.msg-metrics').innerHTML =
+                            `<span>${m.eval_count} tokens</span> • <span>${speed} t/s</span> • <span>${(m.total_duration || 0).toFixed(2)}s</span>`;
+                        document.getElementById('ai-stats-realtime').textContent = `${speed} t/s`;
+                    }
                 }
                 scrollToBottom();
             }

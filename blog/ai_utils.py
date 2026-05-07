@@ -188,82 +188,84 @@ async def get_full_site_content() -> str:
 
 async def generate_rag_context(user_msg: str, client) -> str:
     """
-    Streamlined RAG pipeline optimized for small models (Gemma 2B).
+    RAG pipeline with:
+    - Skip RAG for small talk
+    - Hybrid vector + text search
+    - Hard 3k char context cap (keeps small models fast)
+    - Always includes compact site inventory header
     """
+    MAX_CONTEXT_CHARS = 3000
+
     try:
         msg_lower = user_msg.lower().strip()
         if msg_lower in SKIP_RAG_PATTERNS or len(msg_lower) < 3:
             return "NO_RAG_NEEDED"
-        
+
         post_count, site_inventory = await get_site_inventory()
-        
         if post_count == 0:
             return "NO_RAG_NEEDED"
-        
-        if post_count <= 15:
-            full_content = await get_full_site_content()
-            return f"{site_inventory}\n\n{full_content}"
-        
-        text_results = []
-        vector_results = []
-        
+
+        # ── Search ───────────────────────────────────────────────────────────
+        text_results, vector_results = [], []
         try:
             text_task = text_search_async(user_msg, top_k=3)
+
             embedding = await get_cached_embedding_async(user_msg)
             if not embedding:
                 emb_resp = await client.embeddings(model=None, prompt=user_msg)
                 embedding = emb_resp['embedding']
                 await cache_embedding_async(user_msg, embedding)
-            
+
             vector_task = search_similar_async(embedding, top_k=4)
             text_results, vector_results = await asyncio.gather(
-                text_task, vector_task,
-                return_exceptions=True
+                text_task, vector_task, return_exceptions=True
             )
-            
             if isinstance(text_results, Exception):
-                logger.warning(f"Text search failed: {text_results}")
+                logger.warning(f"Text search error: {text_results}")
                 text_results = []
             if isinstance(vector_results, Exception):
-                logger.warning(f"Vector search failed: {vector_results}")
+                logger.warning(f"Vector search error: {vector_results}")
                 vector_results = []
-                
         except Exception as e:
-            logger.warning(f"Search error: {e}")
-        
-        seen_content = set()
-        ranked_chunks = []
-        
-        for match in vector_results:
-            content_key = match['content'][:100]
-            if content_key not in seen_content:
-                seen_content.add(content_key)
-                ranked_chunks.append(match)
-        
-        for match in text_results:
-            content_key = match['content'][:100]
-            if content_key not in seen_content:
-                seen_content.add(content_key)
-                ranked_chunks.append(match)
-        
-        if ranked_chunks:
-            context_parts = [site_inventory, ""]
-            for i, chunk in enumerate(ranked_chunks[:5]):
-                context_parts.append(
-                    f"### From: {chunk['title']}\n{chunk['content'][:1500]}"
-                )
-            return "\n\n".join(context_parts)
-        else:
-            logger.info(f"No RAG results for: {user_msg}")
+            logger.warning(f"RAG search error: {e}")
+
+        # ── Rank & Deduplicate ───────────────────────────────────────────────
+        # Vector results are sorted by distance (best first), text results come second
+        seen, ranked = set(), []
+        for match in list(vector_results) + list(text_results):
+            key = match.get('content', '')[:80]
+            if key and key not in seen:
+                seen.add(key)
+                ranked.append(match)
+
+        # ── Trim to 3k chars ─────────────────────────────────────────────────
+        if not ranked:
+            logger.info(f"No RAG results for: {user_msg!r}")
             return site_inventory
-            
+
+        context_parts = []
+        total_chars = 0
+        for chunk in ranked:
+            title = chunk.get('title', 'Unknown')
+            # Take at most 800 chars per chunk to allow multiple articles in context
+            snippet = chunk.get('content', '')[:800].strip()
+            if not snippet:
+                continue
+            entry = f"### {title}\n{snippet}"
+            if total_chars + len(entry) > MAX_CONTEXT_CHARS:
+                break
+            context_parts.append(entry)
+            total_chars += len(entry)
+
+        if not context_parts:
+            return site_inventory
+
+        return site_inventory + "\n\n" + "\n\n".join(context_parts)
+
     except Exception as e:
         logger.error(f"RAG pipeline error: {e}")
-        try:
-            _, inventory = await get_site_inventory()
-            return inventory if inventory else "NO_RAG_NEEDED"
-        except:
-            return "NO_RAG_NEEDED"
+        return "NO_RAG_NEEDED"
+
 
 def get_rag_system_prompt(context: str) -> str:
     """
