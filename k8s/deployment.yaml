@@ -28,7 +28,7 @@ data:
   # MLX Native Server with Speculative Decoding (Port 8080)
   LM_STUDIO_HOST: "http://192.168.0.16:8080/v1"
   AI_HOST: "http://192.168.0.16:8080/v1"
-  AI_COMPLETION_MODEL: "mlx-community/gemma-4-e2b-it-4bit"
+  AI_COMPLETION_MODEL: "mlx-community/gemma-4-e2b-it-OptiQ-4bit"
   AI_EMBEDDING_MODEL: "nomic-embed-text"
 
 ---
