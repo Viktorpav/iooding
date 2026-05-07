@@ -11,19 +11,17 @@ on:
   workflow_dispatch: # Allow manual trigger from GitHub UI
 
 jobs:
-
-
   build-and-update-manifest:
-    runs-on: ubuntu-latest
+    # Native arm64 runner — eliminates QEMU cross-compilation entirely.
+    # Build time drops from ~60s to ~15-20s for cache hits.
+    runs-on: ubuntu-24.04-arm
+
     permissions:
       contents: write
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -44,10 +42,19 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          # Native arm64 runner — no platforms cross-compilation needed
           platforms: linux/arm64
-          tags: viktor2003/iooding:${{ steps.tag.outputs.sha_short }}, viktor2003/iooding:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=min
+          tags: |
+            viktor2003/iooding:${{ steps.tag.outputs.sha_short }}
+            viktor2003/iooding:latest
+          # mode=max caches ALL layers (builder + runtime), not just the final image
+          cache-from: |
+            type=gha
+            type=registry,ref=viktor2003/iooding:latest
+          cache-to: type=gha,mode=max
+          # Skip provenance/SBOM attestation — saves ~5s per build
+          provenance: false
+          sbom: false
 
       - name: Update Kubernetes Manifests
         run: |
@@ -58,10 +65,10 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add k8s/deployment.yaml
-          
+
           if ! git diff --staged --quiet; then
-            git commit -m "Deploy: Update image to ${{ steps.tag.outputs.sha_short }} [skip ci]"
+            git commit -m "ci: deploy ${{ steps.tag.outputs.sha_short }} [skip ci]"
             git push
           else
-            echo "No changes to commit."
+            echo "No manifest changes to commit."
           fi
