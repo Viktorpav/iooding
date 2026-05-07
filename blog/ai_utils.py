@@ -26,11 +26,13 @@ SKIP_RAG_PATTERNS = {
 _ai_client = None
 
 class LMStudioClient:
-    """Consolidated Async-First LM Studio Client."""
+    """Async-First LM Studio Client with raw httpx streaming for zero-latency SSE."""
     def __init__(self, host, api_key):
         base_url = host if host.endswith('/v1') else f"{host.rstrip('/')}/v1"
+        self._base_url = base_url          # Used by raw httpx streaming
+        self._api_key = api_key
         self.client = AsyncOpenAI(
-            base_url=base_url, 
+            base_url=base_url,
             api_key=api_key,
             timeout=300.0,
         )
@@ -41,12 +43,11 @@ class LMStudioClient:
         return await self.client.models.list()
 
     async def generate(self, model, prompt, options=None):
-        m = self.completion_model
         messages = [{"role": "user", "content": prompt}]
         try:
             resp = await self.client.chat.completions.create(
-                model=m, 
-                messages=messages, 
+                model=self.completion_model,
+                messages=messages,
                 temperature=options.get("temperature", 0.7) if options else 0.7
             )
             return {"response": resp.choices[0].message.content}
@@ -55,63 +56,81 @@ class LMStudioClient:
             raise e
 
     async def embeddings(self, model, prompt):
-        m = self.embedding_model
         try:
-            resp = await self.client.embeddings.create(input=[prompt], model=m)
+            resp = await self.client.embeddings.create(input=[prompt], model=self.embedding_model)
             return {"embedding": resp.data[0].embedding}
         except Exception as e:
             logger.error(f"LM Studio Embeddings Error: {e}")
             raise e
 
     async def chat(self, model, messages, stream, options=None):
-        m = self.completion_model
         options = options or {}
-        kwargs = {
-            "model": m,
+
+        if not stream:
+            resp = await self.client.chat.completions.create(
+                model=self.completion_model,
+                messages=messages,
+                temperature=options.get("temperature", 0.7),
+                top_p=options.get("top_p", 1.0),
+            )
+            return {"message": {"content": resp.choices[0].message.content}}
+
+        # ── Raw httpx streaming ───────────────────────────────────────────────
+        # Bypasses the OpenAI library's SSE parser/object builder which buffers
+        # chunks before yielding ChatCompletionChunk objects.
+        # httpx.aiter_lines() yields each \n-terminated SSE line the instant it
+        # comes off the wire — zero intermediate buffering.
+        import httpx
+
+        url = f"{self._base_url}/chat/completions"
+        payload = {
+            "model": self.completion_model,
             "messages": messages,
-            "stream": stream,
+            "stream": True,
             "temperature": options.get("temperature", 0.7),
             "top_p": options.get("top_p", 1.0),
         }
-        if stream:
-            # NOTE: Do NOT set stream_options: include_usage here.
-            # LM Studio (and many local LLM servers) buffer the entire response
-            # before emitting the usage chunk, causing ~300 token batch delays.
-            # We count tokens manually from content chunks instead.
-            pass
-        
-        try:
-            resp = await self.client.chat.completions.create(**kwargs)
-        except Exception as e:
-            logger.error(f"LM Studio Chat Connection Error: {e}")
-            raise e
-        
-        if stream:
-            async def generate_chunks():
-                start_time = time.time()
-                actual_chunks = 0
-                try:
-                    async for chunk in resp:
-                        if chunk.choices and len(chunk.choices) > 0:
-                            content = chunk.choices[0].delta.content or ""
-                            if content:
-                                actual_chunks += 1
-                                # Yield immediately — no batching, no buffering
-                                yield {"message": {"content": content}, "done": False}
+        headers = {
+            "Authorization": f"Bearer {self._api_key}",
+            "Content-Type": "application/json",
+        }
 
-                    end_time = time.time()
-                    duration_ns = int((end_time - start_time) * 1e9)
-                    yield {
-                        "done": True,
-                        "total_duration": duration_ns,
-                        "eval_count": actual_chunks,
-                        "eval_duration": duration_ns
-                    }
-                except Exception as e:
-                    logger.error(f"Stream error: {e}")
-            return generate_chunks()
-        else:
-            return {"message": {"content": resp.choices[0].message.content}}
+        async def generate_chunks():
+            start_time = time.time()
+            actual_chunks = 0
+            try:
+                async with httpx.AsyncClient(timeout=300.0) as http:
+                    async with http.stream("POST", url, json=payload, headers=headers) as resp:
+                        async for line in resp.aiter_lines():
+                            if not line.startswith("data: "):
+                                continue
+                            data_str = line[6:].strip()
+                            if data_str == "[DONE]":
+                                break
+                            try:
+                                data = json.loads(data_str)
+                                choices = data.get("choices", [])
+                                if choices:
+                                    content = choices[0].get("delta", {}).get("content") or ""
+                                    if content:
+                                        actual_chunks += 1
+                                        yield {"message": {"content": content}, "done": False}
+                            except json.JSONDecodeError:
+                                continue
+
+                duration_ns = int((time.time() - start_time) * 1e9)
+                yield {
+                    "done": True,
+                    "total_duration": duration_ns,
+                    "eval_count": actual_chunks,
+                    "eval_duration": duration_ns,
+                }
+            except Exception as e:
+                logger.error(f"Raw stream error: {e}")
+                raise
+
+        return generate_chunks()
+
 
 def get_ai_client():
     """Returns the consolidated LM Studio client (Singleton)."""
