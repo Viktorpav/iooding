@@ -2,73 +2,38 @@ name: Build and Deploy
 
 on:
   push:
-    branches:
-      - master
-      - main
-    paths-ignore:
-      - 'k8s/**'
-      - 'README.md'
-  workflow_dispatch: # Allow manual trigger from GitHub UI
+    branches: [master, main]
+    paths-ignore: ['k8s/**', '**.md']
+  workflow_dispatch:
 
 jobs:
-  build-and-update-manifest:
-    # Native arm64 runner — eliminates QEMU cross-compilation entirely.
-    # Build time drops from ~60s to ~15-20s for cache hits.
+  build:
     runs-on: ubuntu-24.04-arm
-
-    permissions:
-      contents: write
-
+    permissions: { contents: write }
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Generate Version Tag
-        id: tag
-        run: echo "sha_short=v$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
-      - name: Build and Push Docker Image
+      - name: Build & Push
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile
           push: true
-          # Native arm64 runner — no platforms cross-compilation needed
           platforms: linux/arm64
-          tags: |
-            viktor2003/iooding:${{ steps.tag.outputs.sha_short }}
-            viktor2003/iooding:latest
-          # mode=max caches ALL layers (builder + runtime), not just the final image
-          cache-from: |
-            type=gha
-            type=registry,ref=viktor2003/iooding:latest
+          tags: viktor2003/iooding:latest, viktor2003/iooding:v${{ github.run_number }}
+          cache-from: type=gha
           cache-to: type=gha,mode=max
-          # Skip provenance/SBOM attestation — saves ~5s per build
           provenance: false
           sbom: false
 
-      - name: Update Kubernetes Manifests
+      - name: Deploy
         run: |
-          sed -i "s|image: viktor2003/iooding:.*|image: viktor2003/iooding:${{ steps.tag.outputs.sha_short }}|g" k8s/deployment.yaml
-
-      - name: Commit and Push Changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "bot"
+          git config user.email "bot@iooding.local"
+          sed -i "s|image: viktor2003/iooding:.*|image: viktor2003/iooding:v${{ github.run_number }}|g" k8s/deployment.yaml
           git add k8s/deployment.yaml
-
-          if ! git diff --staged --quiet; then
-            git commit -m "ci: deploy ${{ steps.tag.outputs.sha_short }} [skip ci]"
-            git push
-          else
-            echo "No manifest changes to commit."
-          fi
+          git commit -m "deploy v${{ github.run_number }} [skip ci]" && git push || echo "No changes"

@@ -292,9 +292,16 @@ async function sendMessage() {
 
                 if (data.content) {
                     fullContent += data.content;
-                    // Paint immediately on first token; throttle subsequent paints to ~60fps
                     const now = performance.now();
-                    if (now - lastRenderTime >= RENDER_MS) {
+                    
+                    // PERFORMANCE: 
+                    // 1. If it's the very first token, show it as raw text immediately.
+                    // 2. Otherwise, throttle markdown parsing to ~60fps to keep CPU low.
+                    if (lastRenderTime === 0) {
+                        aiDiv.querySelector('.msg-content').textContent = fullContent;
+                        scrollToBottom();
+                        lastRenderTime = now;
+                    } else if (now - lastRenderTime >= RENDER_MS) {
                         aiDiv.querySelector('.msg-content').innerHTML = marked.parse(fullContent);
                         scrollToBottom();
                         lastRenderTime = now;

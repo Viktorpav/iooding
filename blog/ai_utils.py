@@ -5,12 +5,19 @@ from blog.redis_vectors import (
     cache_embedding_async,
     text_search_async
 )
-import time
+import os
 import json
+import time
 import logging
-import re
 import asyncio
+from typing import List, Dict, Any, Optional
+from dataclasses import dataclass
+from datetime import datetime
+
+import httpx
 from openai import AsyncOpenAI
+from django.conf import settings
+from django.core.cache import cache
 from asgiref.sync import sync_to_async, async_to_sync
 
 logger = logging.getLogger(__name__)
@@ -80,7 +87,6 @@ class LMStudioClient:
         # chunks before yielding ChatCompletionChunk objects.
         # httpx.aiter_lines() yields each \n-terminated SSE line the instant it
         # comes off the wire — zero intermediate buffering.
-        import httpx
 
         url = f"{self._base_url}/chat/completions"
         payload = {
