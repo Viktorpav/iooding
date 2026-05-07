@@ -158,8 +158,8 @@ async def chat_api(request):
                 status=400, content_type='application/json',
             )
 
-        # Keep last 10 turns to bound token usage
-        messages = list(history[-10:])
+        # Keep last 4 turns only — more history = more prefill tokens = slower first token
+        messages = list(history[-4:])
         if not messages or messages[-1].get('content') != user_msg:
             messages.append({'role': 'user', 'content': user_msg})
 
@@ -197,8 +197,7 @@ async def chat_api(request):
                 if context_text == 'NO_RAG_NEEDED':
                     yield f"data: {json.dumps({'thinking': 'Responding directly...'})}\n\n"
                     messages.insert(0, {'role': 'system', 'content':
-                        "You are Ding AI, a friendly assistant for the iooding.local tech blog. "
-                        "Be helpful, concise, and use markdown formatting."
+                        "You are Ding AI for iooding.local. Be concise, use markdown."
                     })
                 else:
                     messages.insert(0, {'role': 'system', 'content': get_rag_system_prompt(context_text)})

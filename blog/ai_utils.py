@@ -216,7 +216,7 @@ async def generate_rag_context(user_msg: str, client) -> str:
     - Hard 3k char context cap (keeps small models fast)
     - Always includes compact site inventory header
     """
-    MAX_CONTEXT_CHARS = 3000
+    MAX_CONTEXT_CHARS = 1500
 
     try:
         msg_lower = user_msg.lower().strip()
@@ -270,7 +270,7 @@ async def generate_rag_context(user_msg: str, client) -> str:
         for chunk in ranked:
             title = chunk.get('title', 'Unknown')
             # Take at most 800 chars per chunk to allow multiple articles in context
-            snippet = chunk.get('content', '')[:800].strip()
+            snippet = chunk.get('content', '')[:500].strip()
             if not snippet:
                 continue
             entry = f"### {title}\n{snippet}"
@@ -290,17 +290,9 @@ async def generate_rag_context(user_msg: str, client) -> str:
 
 
 def get_rag_system_prompt(context: str) -> str:
-    """
-    System prompt optimized for small models (Gemma 2B).
-    """
+    """System prompt kept minimal to reduce prefill tokens → faster first output token."""
     return (
-        "You are Ding AI, a friendly and knowledgeable assistant for the iooding.local tech blog.\n\n"
-        "Your job:\n"
-        "- Answer questions using the blog content provided below when relevant.\n"
-        "- If the blog content covers the topic, reference it with links.\n"
-        "- If the blog doesn't cover the topic, use your general knowledge to help.\n"
-        "- Be concise, helpful, and use markdown formatting.\n"
-        "- When referencing blog posts, link them like: [Post Title](url)\n"
-        "- At the end, suggest 1-2 related questions the user might want to ask.\n\n"
-        f"--- Blog Content ---\n{context}\n--- End ---"
+        "You are Ding AI for iooding.local. Answer using the blog content below. "
+        "Use markdown. Link posts as [Title](url). Be concise.\n\n"
+        f"--- Blog ---\n{context}\n---"
     )
