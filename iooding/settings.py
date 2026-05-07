@@ -22,11 +22,17 @@ DEBUG = env('DEBUG')
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 SITE_ID = 1
 
-# ─── Local AI (Ollama / vLLM) ────────────────────────────────────────────────
-AI_HOST = env('AI_HOST', default='http://192.168.0.16:11434/v1')
-AI_API_KEY = env('AI_API_KEY', default='ollama')
-AI_COMPLETION_MODEL = env('AI_COMPLETION_MODEL')
-AI_EMBEDDING_MODEL = env('AI_EMBEDDING_MODEL')
+# ─── Local AI (MLX Native Server with Speculative Decoding) ──────────────────
+AI_HOST = env('AI_HOST', default=env('LM_STUDIO_HOST', default='http://192.168.0.16:8080/v1'))
+AI_API_KEY = env('AI_API_KEY', default=env('LM_STUDIO_API_KEY', default='mlx'))
+AI_COMPLETION_MODEL = env('AI_COMPLETION_MODEL', default=env('LM_STUDIO_COMPLETION_MODEL', default='mlx-community/gemma-4-e2b-it-4bit'))
+AI_EMBEDDING_MODEL = env('AI_EMBEDDING_MODEL', default=env('LM_STUDIO_EMBEDDING_MODEL', default='nomic-embed-text'))
+
+# Backward Compatibility
+LM_STUDIO_HOST = AI_HOST
+LM_STUDIO_API_KEY = AI_API_KEY
+LM_STUDIO_COMPLETION_MODEL = AI_COMPLETION_MODEL
+LM_STUDIO_EMBEDDING_MODEL = AI_EMBEDDING_MODEL
 
 # ─── Applications ─────────────────────────────────────────────────────────────
 INSTALLED_APPS = [

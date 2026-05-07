@@ -25,10 +25,10 @@ data:
   ALLOWED_HOSTS: "*"
   DEBUG: "False"
   CSRF_TRUSTED_ORIGINS: "https://iooding.local"
-  # Ollama running on Mac host — bridge network accessible at 192.168.0.16
-  LM_STUDIO_HOST: "http://192.168.0.16:11434/v1"
-  AI_HOST: "http://192.168.0.16:11434/v1"
-  AI_COMPLETION_MODEL: "gemma4:e2b"
+  # MLX Native Server with Speculative Decoding (Port 8080)
+  LM_STUDIO_HOST: "http://192.168.0.16:8080/v1"
+  AI_HOST: "http://192.168.0.16:8080/v1"
+  AI_COMPLETION_MODEL: "mlx-community/gemma-4-e2b-it-4bit"
   AI_EMBEDDING_MODEL: "nomic-embed-text"
 
 ---
