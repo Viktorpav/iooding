@@ -1,5 +1,4 @@
 import json
-import time
 import logging
 import asyncio
 
@@ -37,8 +36,11 @@ def _get_httpx_client():
     return _httpx_client
 
 
-class LMStudioClient:
-    """Async-First LM Studio Client with raw httpx streaming for zero-latency SSE."""
+class LocalAIClient:
+    """
+    Async-First Local AI Client (Ollama / LM Studio / vLLM).
+    Optimized for zero-latency streaming and resource efficiency.
+    """
     def __init__(self, host, api_key):
         base_url = host if host.endswith('/v1') else f"{host.rstrip('/')}/v1"
         self._base_url = base_url
@@ -46,7 +48,7 @@ class LMStudioClient:
         self.client = AsyncOpenAI(
             base_url=base_url,
             api_key=api_key,
-            timeout=300.0,
+            timeout=httpx.Timeout(120.0, connect=5.0), # Fail fast on connection
         )
         self.completion_model = settings.LM_STUDIO_COMPLETION_MODEL
         self.embedding_model = settings.LM_STUDIO_EMBEDDING_MODEL
@@ -75,76 +77,54 @@ class LMStudioClient:
             logger.error(f"LM Studio Embeddings Error: {e}")
             raise
 
-    async def chat(self, model, messages, stream, options=None):
+    async def chat(self, messages, stream, options=None):
+        """Unified chat method with built-in resilience and Ollama tuning."""
         options = options or {}
-
-        if not stream:
-            resp = await self.client.chat.completions.create(
-                model=self.completion_model,
-                messages=messages,
-                temperature=options.get("temperature", 0.7),
-                top_p=options.get("top_p", 1.0),
-            )
-            return {"message": {"content": resp.choices[0].message.content}}
-
-        # ── Raw httpx streaming ───────────────────────────────────────────────
-        # Bypasses the OpenAI library's SSE parser which buffers chunks.
-        # httpx.aiter_lines() yields each line the instant it arrives.
         url = f"{self._base_url}/chat/completions"
         payload = {
             "model": self.completion_model,
             "messages": messages,
-            "stream": True,
-            "temperature": options.get("temperature", 0.7),
-            "top_p": options.get("top_p", 1.0),
+            "stream": stream,
+            "temperature": options.get("temperature", 0.2),
+            "num_ctx": options.get("num_ctx", 4096),
         }
-        headers = {
-            "Authorization": f"Bearer {self._api_key}",
-            "Content-Type": "application/json",
-        }
+
+        if not stream:
+            for _ in range(2): # Simple retry
+                try:
+                    resp = await self.client.chat.completions.create(**payload)
+                    return {"message": {"content": resp.choices[0].message.content}}
+                except Exception:
+                    await asyncio.sleep(1)
+            raise ConnectionError("Local AI unreachable")
 
         async def generate_chunks():
-            start_time = time.time()
-            actual_chunks = 0
             http = _get_httpx_client()
-            try:
-                async with http.stream("POST", url, json=payload, headers=headers) as resp:
-                    async for line in resp.aiter_lines():
-                        if not line.startswith("data: "):
-                            continue
-                        data_str = line[6:].strip()
-                        if data_str == "[DONE]":
-                            break
-                        try:
-                            data = json.loads(data_str)
-                            choices = data.get("choices", [])
-                            if choices:
-                                content = choices[0].get("delta", {}).get("content") or ""
-                                if content:
-                                    actual_chunks += 1
-                                    yield {"message": {"content": content}, "done": False}
-                        except json.JSONDecodeError:
-                            continue
-
-                duration_ns = int((time.time() - start_time) * 1e9)
-                yield {
-                    "done": True,
-                    "total_duration": duration_ns,
-                    "eval_count": actual_chunks,
-                    "eval_duration": duration_ns,
-                }
-            except Exception as e:
-                logger.error(f"Raw stream error: {e}")
-                raise
+            for attempt in range(3):
+                try:
+                    async with http.stream("POST", url, json=payload, headers={"Authorization": f"Bearer {self._api_key}"}) as resp:
+                        async for line in resp.aiter_lines():
+                            if not line.startswith("data: "): continue
+                            data_str = line[6:].strip()
+                            if data_str == "[DONE]": break
+                            try:
+                                data = json.loads(data_str)
+                                content = data['choices'][0].get('delta', {}).get('content')
+                                if content: yield {"content": content}
+                            except (KeyError, json.JSONDecodeError): continue
+                    return
+                except Exception as e:
+                    if attempt == 2: yield {"error": str(e)}
+                    await asyncio.sleep(1)
 
         return generate_chunks()
 
 
 def get_ai_client():
-    """Returns the consolidated LM Studio client (Singleton)."""
+    """Returns the consolidated local AI client (Singleton)."""
     global _ai_client
     if _ai_client is None:
-        _ai_client = LMStudioClient(
+        _ai_client = LocalAIClient(
             host=settings.LM_STUDIO_HOST,
             api_key=settings.LM_STUDIO_API_KEY
         )
@@ -172,7 +152,7 @@ async def get_site_inventory() -> str:
 
     @sync_to_async
     def _fetch():
-        posts = list(Post.published.all().order_by('-publish')[:20])
+        posts = list(Post.published.all().order_by('-publish')[:5])
         tags = list(Tag.objects.all().values_list('name', flat=True))
         return posts, tags
 
@@ -201,7 +181,7 @@ async def generate_rag_context(user_msg: str, client) -> str:
     - Hard 1500 char context cap
     - Site inventory cached for 5 min
     """
-    MAX_CONTEXT_CHARS = 1500
+    MAX_CONTEXT_CHARS = 1200
 
     try:
         msg_lower = user_msg.lower().strip()
@@ -242,7 +222,7 @@ async def generate_rag_context(user_msg: str, client) -> str:
 
             # Vector search needs the embedding, so it runs after
             if embedding and not isinstance(embedding, Exception):
-                vector_results = await search_similar_async(embedding, top_k=4)
+                vector_results = await search_similar_async(embedding, top_k=4, max_distance=0.55) # Tighter threshold
         except Exception as e:
             logger.warning(f"RAG search error: {e}")
 
