@@ -8,19 +8,11 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/proxy-body-size: "20m"
     # ── Anti-buffering for real-time AI SSE streaming ──────────────────────
+    # proxy-buffering off: each chunk forwarded immediately (no response buffering)
     nginx.ingress.kubernetes.io/proxy-buffering: "off"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
-    # HTTP/1.1 is required for chunked transfer encoding (SSE).
-    # HTTP/1.0 (the default) buffers the full response before forwarding.
+    # HTTP/1.1 required for chunked transfer encoding used by SSE streams
     nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
-    # Force X-Accel-Buffering off at NGINX level for the /api/chat/ endpoint
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      location ~* ^/api/chat/ {
-        proxy_buffering off;
-        proxy_cache off;
-        proxy_set_header X-Accel-Buffering "no";
-        chunked_transfer_encoding on;
-      }
 spec:
   ingressClassName: nginx
   tls:
