@@ -94,15 +94,28 @@
     }
 }
 
-.post-excerpt-clamped {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+.premium-excerpt-container {
+    position: relative;
     overflow: hidden;
-    text-overflow: ellipsis;
+    max-height: 90px; /* strict limit to leave space for button */
+    flex: 1;
 }
-.post-excerpt-clamped p {
-    margin-bottom: 0;
+
+.premium-excerpt-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: linear-gradient(to bottom, rgba(245, 245, 247, 0), #f5f5f7);
+    pointer-events: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    .premium-excerpt-container::after {
+        background: linear-gradient(to bottom, rgba(18, 18, 18, 0), #121212);
+    }
 }
 
 body {

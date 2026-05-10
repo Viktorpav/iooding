@@ -25,7 +25,7 @@
 
         {% if post.image %}
         <figure class="mb-4">
-            <img src="{{ post.image.url }}" class="img-fluid rounded shadow-sm" alt="{{ post.title }}">
+            <img src="{{ post.image.url }}" class="img-fluid rounded shadow-sm" alt="{{ post.title }}" loading="lazy">
         </figure>
         {% endif %}
 
@@ -46,7 +46,7 @@
         <div class="card h-100 border-0 shadow-sm reveal overflow-hidden">
             <div class="ratio ratio-16x9">
                 {% if post.image %}
-                <img src="{{ post.image.url }}" class="featured-image-list" alt="{{post.title}}">
+                <img src="{{ post.image.url }}" class="featured-image-list" alt="{{post.title}}" loading="lazy">
                 {% else %}
                 <div class="bg-primary bg-opacity-5 d-flex align-items-center justify-content-center h-100">
                     <span class="opacity-25 smallest">No Image</span>

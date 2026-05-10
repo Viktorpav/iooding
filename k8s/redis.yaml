@@ -63,15 +63,17 @@ spec:
             - name: redis-data
               mountPath: /data
           livenessProbe:
-            tcpSocket:
-              port: 6379
-            initialDelaySeconds: 10
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 15
             periodSeconds: 10
+            timeoutSeconds: 5
           readinessProbe:
-            tcpSocket:
-              port: 6379
+            exec:
+              command: ["redis-cli", "ping"]
             initialDelaySeconds: 5
             periodSeconds: 5
+            timeoutSeconds: 3
   volumeClaimTemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
