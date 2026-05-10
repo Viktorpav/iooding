@@ -25,9 +25,9 @@
   <div id="scroll-progress"></div>
 
   <nav class="navbar navbar-expand-lg">
-    <div class="container px-4 px-md-5">
+    <div class="container px-3 px-md-4">
       <div class="header-left">
-        <a class="navbar-brand me-4 d-flex align-items-center" href="{% url 'blog:post_list' %}">
+        <a class="navbar-brand ms-2 ms-md-3 me-4 d-flex align-items-center" href="{% url 'blog:post_list' %}">
           <span class="fw-bold logo-text"
             style="font-size: 1.25rem; letter-spacing: 0.05em; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">IOODING</span>
         </a>
@@ -119,24 +119,29 @@
       </div>
       <h6 class="dropdown-header px-0">Technical Core</h6>
       <div class="list-group list-group-flush mb-4">
-        <a href="{% url 'blog:post_tag' tag_slug='linux' %}" class="list-group-item bg-transparent border-0 px-0 py-2">Enterprise Linux</a>
-        <a href="{% url 'blog:post_tag' tag_slug='kubernetes' %}" class="list-group-item bg-transparent border-0 px-0 py-2">Orchestration</a>
-        <a href="{% url 'blog:post_tag' tag_slug='ai' %}" class="list-group-item bg-transparent border-0 px-0 py-2">Intelligence</a>
+        <a href="{% url 'blog:post_tag' tag_slug='linux' %}"
+          class="list-group-item bg-transparent border-0 px-0 py-2">Enterprise Linux</a>
+        <a href="{% url 'blog:post_tag' tag_slug='kubernetes' %}"
+          class="list-group-item bg-transparent border-0 px-0 py-2">Orchestration</a>
+        <a href="{% url 'blog:post_tag' tag_slug='ai' %}"
+          class="list-group-item bg-transparent border-0 px-0 py-2">Intelligence</a>
       </div>
       <h6 class="dropdown-header px-0">Education Labs</h6>
       <div class="list-group list-group-flush mb-4">
-        <a href="{% url 'blog:privacy' %}" class="list-group-item bg-transparent border-0 px-0 py-2">Penetration Testing</a>
+        <a href="{% url 'blog:privacy' %}" class="list-group-item bg-transparent border-0 px-0 py-2">Penetration
+          Testing</a>
       </div>
       <h6 class="dropdown-header px-0">Interactive</h6>
       <div class="list-group list-group-flush">
-        <a href="{% url 'blog:games' %}" class="list-group-item bg-transparent border-0 px-0 py-2">Games & Simulations</a>
+        <a href="{% url 'blog:games' %}" class="list-group-item bg-transparent border-0 px-0 py-2">Games &
+          Simulations</a>
       </div>
     </div>
   </div>
 
   {% include 'includes/chat_widget.html' %}
 
-  <main class="container px-4 px-md-5 mt-4 mb-5">
+  <main class="container px-3 px-md-4 mt-4 mb-5">
     {% if request.GET.q %}
     <div class="row justify-content-center">
       <div class="col-lg-9 text-center">
