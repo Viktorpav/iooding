@@ -16,13 +16,16 @@
   <!-- static file -->
   <link href="{% static 'css/style.css' %}?v=3.0.0" rel="stylesheet">
   <!-- Favicon -->
+  <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">
+  <link rel="shortcut icon" href="{% static 'images/logo.png' %}">
 </head>
 
 <body>
   <div id="scroll-progress"></div>
 
   <nav class="navbar navbar-expand-lg">
-    <div class="container">
+    <div class="container px-4 px-md-5">
       <div class="header-left">
         <a class="navbar-brand me-4 d-flex align-items-center" href="{% url 'blog:post_list' %}">
           <span class="fw-bold logo-text"
