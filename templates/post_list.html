@@ -36,7 +36,9 @@
 						{{ post.publish|date:"M d, Y" }} &bull; {{ post.read_time }} min read
 					</small>
 				</div>
-				<div class="card-text article-body ck-content post-excerpt-clamped opacity-75 mb-auto" style="font-size: 0.95rem; line-height: 1.6;">{{ post.body|safe|truncatechars_html:150 }}</div>
+				<div class="card-text opacity-75 mb-auto" style="font-size: 0.95rem; line-height: 1.6;">
+					{{ post.semantic_summary|default:post.body|striptags|truncatechars:180 }}
+				</div>
 				<div class="mt-3">
 					<a href="{{ post.get_absolute_url }}" class="btn btn-primary btn-sm px-3">Read more</a>
 				</div>
@@ -62,6 +64,10 @@
         {% elif tag %}
 		<button onclick="sendQuickAction('What is {{ tag.name }} and how does it work?')" class="btn-premium-minimal">
 			Ask Ding AI about "{{ tag.name }}"
+		</button>
+        {% else %}
+		<button onclick="sendQuickAction('What is this blog about?')" class="btn-premium-minimal">
+			Ask Ding AI for an overview
 		</button>
         {% endif %}
 	</div>
