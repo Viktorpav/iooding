@@ -4,18 +4,19 @@
 
 {% block content %}
 
-<div class="mb-2">
-    {% for tag in post.tags.all %}
-    <a href="{% url 'blog:post_tag' tag.slug %}"
-        class="badge bg-primary bg-opacity-10 text-primary text-decoration-none fw-normal me-1">
-        {{tag.name}}
-    </a>
-    {% endfor %}
-</div>
+
 
 <article class="mb-5 reveal">
     <div class="premium-card p-4 p-lg-5">
         <header class="mb-4">
+            <div class="mb-3">
+                {% for tag in post.tags.all %}
+                <a href="{% url 'blog:post_tag' tag.slug %}"
+                    class="badge bg-primary bg-opacity-10 text-primary text-decoration-none fw-normal me-2" style="font-size: 0.85rem; padding: 0.5em 0.8em;">
+                    {{tag.name}}
+                </a>
+                {% endfor %}
+            </div>
             <h1 class="display-5 fw-bold mb-2">{{ post.title }}</h1>
             <div class="opacity-50 small">
                 {{ post.publish|date:"M d, Y" }} &bull; By <strong>{{ post.author }}</strong> &bull; {{ post.read_time }}
