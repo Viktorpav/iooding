@@ -74,6 +74,36 @@
     border-color: rgba(var(--primary-rgb), 0.3) !important;
 }
 
+/* --- Premium Layout Agreement --- */
+.premium-header {
+    margin-bottom: 2.5rem;
+}
+
+.premium-header h1 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+}
+
+.premium-header .lead, 
+.premium-header .subtitle {
+    opacity: 0.5;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+.premium-content {
+    line-height: 1.8;
+}
+
+.premium-content section {
+    margin-bottom: 3rem;
+}
+
+.premium-content section:last-child {
+    margin-bottom: 0;
+}
+
 @media (prefers-color-scheme: dark) {
     .card, .premium-card {
         background: #0a0a0a !important;

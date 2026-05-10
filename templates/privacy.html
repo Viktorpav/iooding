@@ -4,61 +4,67 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-lg-10">
-        <header class="text-center mb-5 mt-4">
-            <div class="mb-3">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                </svg>
-            </div>
-            <h1 class="display-4 fw-bold mb-3 gradient-text">Privacy & Security</h1>
-            <p class="text-muted lead">How we protect your data through advanced infrastructure.</p>
-        </header>
+    <div class="col-12">
+        <article class="reveal active">
+            <div class="premium-card p-4 p-lg-5">
+                <header class="premium-header">
+                    <div class="mb-3">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <h1 class="display-5 fw-bold">Privacy & Security</h1>
+                    <p class="lead subtitle">How we protect your data through advanced infrastructure.</p>
+                </header>
 
-        <div class="glass-card p-5 rounded-4 shadow-lg mb-5" style="background: var(--surface); border: 1px solid var(--border);">
-            
-            <section class="mb-5">
-                <h3 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                    <span style="color: var(--primary);">01.</span> Uncompromising Infrastructure
-                </h3>
-                <p class="text-muted" style="line-height: 1.8;">
-                    Our platform is built on <strong>Talos OS</strong> and orchestrated via Kubernetes. This means the host operating system is fully immutable and ephemeral. By removing SSH access, console access, and all unnecessary packages from the host, we minimize the attack surface to near zero. Your data and interaction with our platform traverse through a highly secure, automated environment where manual tampering is cryptographically prohibited.
-                </p>
-            </section>
+                <div class="premium-content fs-5">
+                    <section>
+                        <h3 class="fw-bold mb-3 d-flex align-items-center gap-3">
+                            <span class="badge bg-primary bg-opacity-10 text-primary fw-bold" style="font-size: 0.9rem; padding: 0.5em 0.8em;">01</span>
+                            Uncompromising Infrastructure
+                        </h3>
+                        <p class="opacity-75">
+                            Our platform is built on <strong>Talos OS</strong> and orchestrated via Kubernetes. This means the host operating system is fully immutable and ephemeral. By removing SSH access, console access, and all unnecessary packages from the host, we minimize the attack surface to near zero. Your data and interaction with our platform traverse through a highly secure, automated environment where manual tampering is cryptographically prohibited.
+                        </p>
+                    </section>
 
-            <section class="mb-5">
-                <h3 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                    <span style="color: var(--primary);">02.</span> Local AI Inference
-                </h3>
-                <p class="text-muted" style="line-height: 1.8;">
-                    We believe your thoughts and queries belong to you. Our intelligent AI Assystent operates using <strong>100% locally hosted models</strong>. No query you make is ever sent to third-party APIs like OpenAI, Anthropic, or Google. Everything is processed directly within our bare-metal infrastructure, ensuring absolute data sovereignty and privacy.
-                </p>
-            </section>
+                    <section>
+                        <h3 class="fw-bold mb-3 d-flex align-items-center gap-3">
+                            <span class="badge bg-primary bg-opacity-10 text-primary fw-bold" style="font-size: 0.9rem; padding: 0.5em 0.8em;">02</span>
+                            Local AI Inference
+                        </h3>
+                        <p class="opacity-75">
+                            We believe your thoughts and queries belong to you. Our intelligent AI Assystent operates using <strong>100% locally hosted models</strong>. No query you make is ever sent to third-party APIs like OpenAI, Anthropic, or Google. Everything is processed directly within our bare-metal infrastructure, ensuring absolute data sovereignty and privacy.
+                        </p>
+                    </section>
 
-            <section class="mb-5">
-                <h3 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                    <span style="color: var(--primary);">03.</span> Strict Data Minimization
-                </h3>
-                <p class="text-muted" style="line-height: 1.8;">
-                    We only collect what is absolutely necessary for the platform to function. We do not employ invasive tracking scripts, cross-site trackers, or sell your data to advertisers. Our analytics are completely anonymized and self-hosted, ensuring that your reading habits and interactions remain confidential.
-                </p>
-            </section>
+                    <section>
+                        <h3 class="fw-bold mb-3 d-flex align-items-center gap-3">
+                            <span class="badge bg-primary bg-opacity-10 text-primary fw-bold" style="font-size: 0.9rem; padding: 0.5em 0.8em;">03</span>
+                            Strict Data Minimization
+                        </h3>
+                        <p class="opacity-75">
+                            We only collect what is absolutely necessary for the platform to function. We do not employ invasive tracking scripts, cross-site trackers, or sell your data to advertisers. Our analytics are completely anonymized and self-hosted, ensuring that your reading habits and interactions remain confidential.
+                        </p>
+                    </section>
 
-            <section>
-                <h3 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                    <span style="color: var(--primary);">04.</span> Open Source Transparency
-                </h3>
-                <p class="text-muted" style="line-height: 1.8;">
-                    Trust is earned through transparency. The core infrastructure manifests and configurations powering this platform are entirely open source. You can inspect how we route traffic, how we store data, and how we deploy our workloads. We invite the community to review our security posture because we have nothing to hide.
-                </p>
-                <div class="mt-4">
-                    <a href="https://github.com/Viktorpav/iooding" target="_blank" class="btn btn-premium-minimal">
-                        Inspect Our Infrastructure
-                    </a>
+                    <section>
+                        <h3 class="fw-bold mb-3 d-flex align-items-center gap-3">
+                            <span class="badge bg-primary bg-opacity-10 text-primary fw-bold" style="font-size: 0.9rem; padding: 0.5em 0.8em;">04</span>
+                            Open Source Transparency
+                        </h3>
+                        <p class="opacity-75">
+                            Trust is earned through transparency. The core infrastructure manifests and configurations powering this platform are entirely open source. You can inspect how we route traffic, how we store data, and how we deploy our workloads. We invite the community to review our security posture because we have nothing to hide.
+                        </p>
+                        <div class="mt-4">
+                            <a href="https://github.com/Viktorpav/iooding" target="_blank" class="btn btn-primary px-4 py-2">
+                                Inspect Our Infrastructure
+                            </a>
+                        </div>
+                    </section>
                 </div>
-            </section>
-
-        </div>
+            </div>
+        </article>
     </div>
 </div>
 {% endblock %}

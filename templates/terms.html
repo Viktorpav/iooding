@@ -1,33 +1,39 @@
 {% extends 'base.html' %}
 
-{% block title %} - Terms of Use{% endblock title %}
+{% block title %} | Terms of Use{% endblock %}
 
 {% block content %}
-<div class="reveal">
-    <div class="mb-5">
-        <h1 class="display-4 fw-bold mb-3">Terms of Use</h1>
-        <p class="text-muted small text-uppercase letter-spacing-1">Updated May 2026</p>
-    </div>
-    
-    <div class="article-body">
-        <div class="glass-alert p-4 mb-5" style="background: var(--surface); border-radius: 16px; border: 1px solid var(--border);">
-            <p class="mb-0 fs-6">By accessing or using the Ding platform, you agree to be bound by these Terms of Use. Please read them carefully.</p>
-        </div>
+<div class="row justify-content-center">
+    <div class="col-12">
+        <article class="reveal active">
+            <div class="premium-card p-4 p-lg-5">
+                <header class="premium-header">
+                    <h1 class="display-5 fw-bold">Terms of Use</h1>
+                    <p class="subtitle smallest text-uppercase letter-spacing-2">Updated May 2026</p>
+                </header>
+                
+                <div class="premium-content fs-5">
+                    <div class="p-4 mb-5 rounded-4 border border-secondary border-opacity-10 bg-surface">
+                        <p class="mb-0 opacity-75">By accessing or using the Ding platform, you agree to be bound by these Terms of Use. Please read them carefully.</p>
+                    </div>
 
-        <section class="mb-5">
-            <h3 class="fw-bold mb-3" style="color: var(--text);">1. Platform Usage</h3>
-            <p class="text-secondary fs-5 lh-lg">Ding provides a specialized environment for high-performance engineering insights and AI-driven technical assistance. Users are expected to interact with the platform and its AI assistant in a professional and constructive manner.</p>
-        </section>
-        
-        <section class="mb-5">
-            <h3 class="fw-bold mb-3" style="color: var(--text);">2. Intellectual Property</h3>
-            <p class="text-secondary fs-5 lh-lg">The "Ding" name, its minimalist branding, and all original technical content are the exclusive property of iooding. Reproduction or redistribution of content without express written permission is prohibited.</p>
-        </section>
+                    <section class="mb-5">
+                        <h3 class="fw-bold mb-3">1. Platform Usage</h3>
+                        <p class="opacity-75 lh-lg">Ding provides a specialized environment for high-performance engineering insights and AI-driven technical assistance. Users are expected to interact with the platform and its AI assistant in a professional and constructive manner.</p>
+                    </section>
+                    
+                    <section class="mb-5">
+                        <h3 class="fw-bold mb-3">2. Intellectual Property</h3>
+                        <p class="opacity-75 lh-lg">The "Ding" name, its minimalist branding, and all original technical content are the exclusive property of iooding. Reproduction or redistribution of content without express written permission is prohibited.</p>
+                    </section>
 
-        <section class="mb-5">
-            <h3 class="fw-bold mb-3" style="color: var(--text);">3. AI Assistance Disclaimer</h3>
-            <p class="text-secondary fs-5 lh-lg">The Ding AI assistant provides automated technical support. While we strive for absolute precision, all generated advice should be verified within your specific technical environment before implementation.</p>
-        </section>
+                    <section class="mb-0">
+                        <h3 class="fw-bold mb-3">3. AI Assistance Disclaimer</h3>
+                        <p class="opacity-75 lh-lg">The Ding AI assistant provides automated technical support. While we strive for absolute precision, all generated advice should be verified within your specific technical environment before implementation.</p>
+                    </section>
+                </div>
+            </div>
+        </article>
     </div>
 </div>
-{% endblock content %}
+{% endblock %}

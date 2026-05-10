@@ -5,593 +5,195 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-lg-12">
-        <header class="text-center mb-5 mt-4">
-            <h1 class="display-2 fw-bold mb-3 gradient-text">Infrastructure Games</h1>
-            <p class="lead text-muted mx-auto" style="max-width: 900px;">
-                Learn system architecture by defending and breaking it.
-            </p>
-        </header>
+    <div class="col-12">
+        <article class="reveal active">
+            <div class="premium-card p-4 p-lg-5">
+                <header class="mb-5">
+                    <h1 class="display-5 fw-bold mb-3">Infrastructure Games</h1>
+                    <p class="opacity-50 lead">Learn system architecture by defending and breaking it through interactive simulations.</p>
+                </header>
 
-        <!-- Chaos Engineer Game -->
-        <div class="glass-card mb-5 p-5 rounded-4 border-0 shadow-lg"
-            style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
-            <div class="row align-items-center mb-4">
-                <div class="col-md-8">
-                    <span class="badge bg-danger px-3 py-2 mb-3">🔥 CHAOS STRESS TEST</span>
-                    <h2 class="fw-bold mb-2 text-white">Chaos Engineer v2.0</h2>
-                    <p class="opacity-70 text-white mb-0">Simulate real-world infrastructure failures. Keep the pods
-                        running while the system tries to bring them down!</p>
-                </div>
-                <div class="col-md-4">
-                    <div id="chaos-stats" class="p-3 rounded-4"
-                        style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
-                        <div class="row g-0 text-white">
-                            <div class="col-4 text-center border-end border-secondary">
-                                <div class="smallest opacity-50 mb-1">UPTIME</div>
-                                <div id="game-v2-time" class="h4 mb-0 fw-bold">0s</div>
+                <div class="row g-4">
+                    <!-- Chaos Engineer Game -->
+                    <div class="col-12 mb-4">
+                        <div class="rounded-4 p-4 p-lg-5" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255,255,255,0.1);">
+                            <div class="row align-items-center mb-4">
+                                <div class="col-md-8">
+                                    <span class="badge bg-danger px-3 py-2 mb-3">🔥 CHAOS STRESS TEST</span>
+                                    <h2 class="fw-bold mb-2 text-white">Chaos Engineer v2.0</h2>
+                                    <p class="opacity-70 text-white mb-0">Simulate real-world infrastructure failures. Keep the pods running while the system tries to bring them down!</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <div id="chaos-stats" class="p-3 rounded-4" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                                        <div class="row g-0 text-white">
+                                            <div class="col-4 text-center border-end border-secondary">
+                                                <div class="smallest opacity-50 mb-1">UPTIME</div>
+                                                <div id="game-v2-time" class="h4 mb-0 fw-bold">0s</div>
+                                            </div>
+                                            <div class="col-4 text-center border-end border-secondary">
+                                                <div class="smallest opacity-50 mb-1">PODS</div>
+                                                <div id="game-v2-pods" class="h4 mb-0 fw-bold">8</div>
+                                            </div>
+                                            <div class="col-4 text-center">
+                                                <div class="smallest opacity-50 mb-1">LOAD</div>
+                                                <div id="game-v2-load" class="h4 mb-0 fw-bold text-success">0%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-4 text-center border-end border-secondary">
-                                <div class="smallest opacity-50 mb-1">PODS</div>
-                                <div id="game-v2-pods" class="h4 mb-0 fw-bold">8</div>
+
+                            <div id="chaos-game-container" class="rounded-4 p-4" style="background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.1); position: relative; min-height: 300px;">
+                                <div id="chaos-start-screen" class="text-center py-5">
+                                    <div class="mb-4" style="font-size: 4rem;">☢️</div>
+                                    <h3 class="text-white fw-bold mb-3">Begin Stress Test</h3>
+                                    <p class="text-white opacity-70 mb-4">Pods will randomly fail. Click on failed (red) pods to restart them before the cluster load reaches 100%.</p>
+                                    <button id="start-chaos-btn" class="btn btn-lg px-5 py-3 fw-bold rounded-pill btn-danger">START CHAOS</button>
+                                </div>
+                                <div id="chaos-grid" class="row row-cols-2 row-cols-md-4 g-4 d-none">
+                                    <!-- Pods injected here -->
+                                </div>
                             </div>
-                            <div class="col-4 text-center">
-                                <div class="smallest opacity-50 mb-1">LOAD</div>
-                                <div id="game-v2-load" class="h4 mb-0 fw-bold text-success">0%</div>
+                        </div>
+                    </div>
+
+                    <!-- Kubernetes Tower Defense Game -->
+                    <div class="col-12">
+                        <div class="rounded-4 p-4 p-lg-5" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,0.1);">
+                            <!-- Background Pattern -->
+                            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.05; background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px);"></div>
+
+                            <div class="position-relative" style="z-index: 1;">
+                                <div class="row align-items-center mb-4">
+                                    <div class="col-md-8">
+                                        <span class="badge px-3 py-2 mb-3" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-weight: 700;">⚡ K8S TOWER DEFENSE</span>
+                                        <h2 class="fw-bold mb-2 text-white">Defend Your Cluster</h2>
+                                        <p class="opacity-70 text-white mb-0">Deploy pods strategically to defend against traffic spikes, DDoS attacks, and resource leaks!</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div id="game-stats" class="p-3 rounded-4" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                                            <div class="row g-0 text-white">
+                                                <div class="col-4 text-center border-end border-secondary">
+                                                    <div class="smallest opacity-50 mb-1">HEALTH</div>
+                                                    <div id="cluster-health" class="h4 mb-0 fw-bold text-success">100</div>
+                                                </div>
+                                                <div class="col-4 text-center border-end border-secondary">
+                                                    <div class="smallest opacity-50 mb-1">WAVE</div>
+                                                    <div id="current-wave" class="h4 mb-0 fw-bold">0</div>
+                                                </div>
+                                                <div class="col-4 text-center">
+                                                    <div class="smallest opacity-50 mb-1">CPU</div>
+                                                    <div id="cpu-credits" class="h4 mb-0 fw-bold" style="color: #fbbf24;">100</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="k8s-game-container" class="rounded-4" style="background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.1); position: relative; height: 600px;">
+                                    <div id="game-start-screen" class="position-absolute top-50 start-50 translate-middle text-center w-100 p-4" style="z-index: 100;">
+                                        <div class="mb-4" style="font-size: 5rem;">🎯</div>
+                                        <h3 class="text-white fw-bold mb-3">Initialize Cluster Defense</h3>
+                                        <p class="text-white opacity-70 mb-4">Deploy pods on the grid to stop incoming attacks. Each pod type has unique abilities.</p>
+                                        <button id="start-k8s-game" class="btn btn-lg px-5 py-3 fw-bold rounded-pill" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none;">START DEFENSE</button>
+                                    </div>
+                                    <div id="k8s-game-grid" class="d-none h-100 position-relative">
+                                        <svg id="path-layer" class="position-absolute" style="width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+                                            <path id="attack-path" d="" stroke="#ef4444" stroke-width="3" fill="none" stroke-dasharray="10,5" opacity="0.3" />
+                                        </svg>
+                                        <div id="tower-grid" class="position-absolute" style="top: 0; left: 0; right: 0; bottom: 0; z-index: 2;"></div>
+                                        <div id="enemy-layer" class="position-absolute" style="top: 0; left: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none;"></div>
+                                        <div id="wave-info" class="position-absolute top-0 start-50 translate-middle-x mt-3 px-4 py-2 rounded-pill text-white fw-bold" style="background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.2); z-index: 10;">
+                                            <span id="wave-status">Preparing Wave 1...</span>
+                                        </div>
+                                    </div>
+                                    <div id="game-over-screen" class="d-none position-absolute top-50 start-50 translate-middle text-center w-100 p-4" style="z-index: 100;">
+                                        <div class="mb-4" style="font-size: 5rem;">💥</div>
+                                        <h3 class="text-danger fw-bold mb-3">CLUSTER OVERLOADED</h3>
+                                        <p class="text-white mb-2">Wave Survived: <span id="final-wave" class="fw-bold">0</span></p>
+                                        <button onclick="location.reload()" class="btn btn-outline-light px-5 py-3 rounded-pill fw-bold">RETRY DEFENSE</button>
+                                    </div>
+                                    <div id="victory-screen" class="d-none position-absolute top-50 start-50 translate-middle text-center w-100 p-4" style="z-index: 100;">
+                                        <div class="mb-4" style="font-size: 5rem;">🏆</div>
+                                        <h3 class="text-success fw-bold mb-3">CLUSTER SECURED!</h3>
+                                        <button onclick="location.reload()" class="btn px-5 py-3 rounded-pill fw-bold" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none;">PLAY AGAIN</button>
+                                    </div>
+                                </div>
+
+                                <div id="pod-shop" class="d-none mt-4">
+                                    <h5 class="text-white fw-bold mb-3">📦 Deploy Pods</h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-3">
+                                            <div class="pod-card p-3 rounded-3 h-100" data-pod="nginx" data-cost="20" style="background: rgba(59, 130, 246, 0.1); border: 2px solid #3b82f6; cursor: pointer;">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <span style="font-size: 1.5rem;">🔵</span>
+                                                    <span class="badge bg-primary">20 CPU</span>
+                                                </div>
+                                                <h6 class="text-white fw-bold mb-1">Nginx Pod</h6>
+                                                <p class="smallest text-white opacity-70 mb-0">Fast attacks, low cost.</p>
+                                            </div>
+                                        </div>
+                                        <!-- Other pods... (kept for logic) -->
+                                        <div class="col-md-3">
+                                            <div class="pod-card p-3 rounded-3 h-100" data-pod="redis" data-cost="35" style="background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444; cursor: pointer;">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <span style="font-size: 1.5rem;">🔴</span>
+                                                    <span class="badge bg-danger">35 CPU</span>
+                                                </div>
+                                                <h6 class="text-white fw-bold mb-1">Redis Pod</h6>
+                                                <p class="smallest text-white opacity-70 mb-0">Area damage.</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="pod-card p-3 rounded-3 h-100" data-pod="database" data-cost="50" style="background: rgba(168, 85, 247, 0.1); border: 2px solid #a855f7; cursor: pointer;">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <span style="font-size: 1.5rem;">🟣</span>
+                                                    <span class="badge" style="background: #a855f7;">50 CPU</span>
+                                                </div>
+                                                <h6 class="text-white fw-bold mb-1">Database Pod</h6>
+                                                <p class="smallest text-white opacity-70 mb-0">Heavy damage.</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="pod-card p-3 rounded-3 h-100" data-pod="loadbalancer" data-cost="80" style="background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; cursor: pointer;">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <span style="font-size: 1.5rem;">🟢</span>
+                                                    <span class="badge bg-success">80 CPU</span>
+                                                </div>
+                                                <h6 class="text-white fw-bold mb-1">LB Pod</h6>
+                                                <p class="smallest text-white opacity-70 mb-0">Ultimate defense.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div id="chaos-game-container" class="rounded-4 p-4"
-                style="background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.1); position: relative; min-height: 300px;">
-                <div id="chaos-start-screen" class="text-center py-5">
-                    <div class="mb-4" style="font-size: 4rem;">☢️</div>
-                    <h3 class="text-white fw-bold mb-3">Begin Stress Test</h3>
-                    <p class="text-white opacity-70 mb-4">Pods will randomly fail. Click on failed (red) pods to restart
-                        them before the cluster load reaches 100%.</p>
-                    <button id="start-chaos-btn" class="btn btn-lg px-5 py-3 fw-bold rounded-pill btn-danger">START
-                        CHAOS</button>
-                </div>
-                <div id="chaos-grid" class="row row-cols-2 row-cols-md-4 g-4 d-none">
-                    <!-- Pods injected here -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Kubernetes Tower Defense Game -->
-        <div class="glass-card mb-5 p-5 rounded-4 border-0 shadow-lg"
-            style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); overflow: hidden; position: relative;">
-
-            <!-- Background Pattern -->
-            <div
-                style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.05; background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px);">
-            </div>
-
-            <div class="position-relative" style="z-index: 1;">
-                <!-- Game Header -->
-                <div class="row align-items-center mb-4">
-                    <div class="col-md-8">
-                        <span class="badge px-3 py-2 mb-3"
-                            style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-weight: 700;">⚡
-                            K8S TOWER DEFENSE</span>
-                        <h2 class="fw-bold mb-2 text-white">Defend Your Cluster</h2>
-                        <p class="opacity-70 text-white mb-0">Deploy pods strategically to defend against traffic
-                            spikes, DDoS attacks, and resource leaks!</p>
-                    </div>
-                    <div class="col-md-4">
-                        <div id="game-stats" class="p-3 rounded-4"
-                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
-                            <div class="row g-0 text-white">
-                                <div class="col-4 text-center border-end border-secondary">
-                                    <div class="smallest opacity-50 mb-1">HEALTH</div>
-                                    <div id="cluster-health" class="h4 mb-0 fw-bold text-success">100</div>
-                                </div>
-                                <div class="col-4 text-center border-end border-secondary">
-                                    <div class="smallest opacity-50 mb-1">WAVE</div>
-                                    <div id="current-wave" class="h4 mb-0 fw-bold">0</div>
-                                </div>
-                                <div class="col-4 text-center">
-                                    <div class="smallest opacity-50 mb-1">CPU</div>
-                                    <div id="cpu-credits" class="h4 mb-0 fw-bold" style="color: #fbbf24;">100</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Game Container -->
-                <div id="k8s-game-container" class="rounded-4"
-                    style="background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.1); position: relative; height: 600px;">
-
-                    <!-- Start Screen -->
-                    <div id="game-start-screen"
-                        class="position-absolute top-50 start-50 translate-middle text-center w-100 p-4"
-                        style="z-index: 100;">
-                        <div class="mb-4" style="font-size: 5rem;">🎯</div>
-                        <h3 class="text-white fw-bold mb-3">Initialize Cluster Defense</h3>
-                        <p class="text-white opacity-70 mb-4">Deploy pods on the grid to stop incoming attacks. Each pod
-                            type has unique abilities.</p>
-                        <button id="start-k8s-game" class="btn btn-lg px-5 py-3 fw-bold rounded-pill"
-                            style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none;">
-                            START DEFENSE
-                        </button>
-                    </div>
-
-                    <!-- Game Grid -->
-                    <div id="k8s-game-grid" class="d-none h-100 position-relative">
-                        <!-- Path Layer -->
-                        <svg id="path-layer" class="position-absolute"
-                            style="width: 100%; height: 100%; pointer-events: none; z-index: 1;">
-                            <path id="attack-path" d="" stroke="#ef4444" stroke-width="3" fill="none"
-                                stroke-dasharray="10,5" opacity="0.3" />
-                        </svg>
-
-                        <!-- Tower Grid -->
-                        <div id="tower-grid" class="position-absolute"
-                            style="top: 0; left: 0; right: 0; bottom: 0; z-index: 2;"></div>
-
-                        <!-- Enemy Layer -->
-                        <div id="enemy-layer" class="position-absolute"
-                            style="top: 0; left: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none;"></div>
-
-                        <!-- Wave Info -->
-                        <div id="wave-info"
-                            class="position-absolute top-0 start-50 translate-middle-x mt-3 px-4 py-2 rounded-pill text-white fw-bold"
-                            style="background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.2); z-index: 10;">
-                            <span id="wave-status">Preparing Wave 1...</span>
-                        </div>
-                    </div>
-
-                    <!-- Game Over Screen -->
-                    <div id="game-over-screen"
-                        class="d-none position-absolute top-50 start-50 translate-middle text-center w-100 p-4"
-                        style="z-index: 100;">
-                        <div class="mb-4" style="font-size: 5rem;">💥</div>
-                        <h3 class="text-danger fw-bold mb-3">CLUSTER OVERLOADED</h3>
-                        <p class="text-white mb-2">Wave Survived: <span id="final-wave" class="fw-bold">0</span></p>
-                        <p class="text-white opacity-70 mb-4">Your cluster couldn't handle the load. Optimize your pod
-                            deployment strategy!</p>
-                        <button onclick="location.reload()"
-                            class="btn btn-outline-light px-5 py-3 rounded-pill fw-bold">
-                            RETRY DEFENSE
-                        </button>
-                    </div>
-
-                    <!-- Victory Screen -->
-                    <div id="victory-screen"
-                        class="d-none position-absolute top-50 start-50 translate-middle text-center w-100 p-4"
-                        style="z-index: 100;">
-                        <div class="mb-4" style="font-size: 5rem;">🏆</div>
-                        <h3 class="text-success fw-bold mb-3">CLUSTER SECURED!</h3>
-                        <p class="text-white mb-2">All waves defended successfully!</p>
-                        <p class="text-white opacity-70 mb-4">Your infrastructure is now production-ready!</p>
-                        <button onclick="location.reload()" class="btn px-5 py-3 rounded-pill fw-bold"
-                            style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none;">
-                            PLAY AGAIN
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Pod Shop -->
-                <div id="pod-shop" class="d-none mt-4">
-                    <h5 class="text-white fw-bold mb-3">📦 Deploy Pods</h5>
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <div class="pod-card p-3 rounded-3 h-100" data-pod="nginx" data-cost="20"
-                                style="background: rgba(59, 130, 246, 0.1); border: 2px solid #3b82f6; cursor: pointer; transition: all 0.2s;">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <span style="font-size: 1.5rem;">🔵</span>
-                                    <span class="badge bg-primary">20 CPU</span>
-                                </div>
-                                <h6 class="text-white fw-bold mb-1">Nginx Pod</h6>
-                                <p class="smallest text-white opacity-70 mb-0">Fast attacks, low cost. Basic defense
-                                    unit.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="pod-card p-3 rounded-3 h-100" data-pod="redis" data-cost="35"
-                                style="background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444; cursor: pointer; transition: all 0.2s;">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <span style="font-size: 1.5rem;">🔴</span>
-                                    <span class="badge bg-danger">35 CPU</span>
-                                </div>
-                                <h6 class="text-white fw-bold mb-1">Redis Pod</h6>
-                                <p class="smallest text-white opacity-70 mb-0">Area damage. Slows multiple enemies.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="pod-card p-3 rounded-3 h-100" data-pod="database" data-cost="50"
-                                style="background: rgba(168, 85, 247, 0.1); border: 2px solid #a855f7; cursor: pointer; transition: all 0.2s;">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <span style="font-size: 1.5rem;">🟣</span>
-                                    <span class="badge bg-purple" style="background: #a855f7;">50 CPU</span>
-                                </div>
-                                <h6 class="text-white fw-bold mb-1">Database Pod</h6>
-                                <p class="smallest text-white opacity-70 mb-0">Heavy damage, slow fire rate. Boss
-                                    killer.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="pod-card p-3 rounded-3 h-100" data-pod="loadbalancer" data-cost="80"
-                                style="background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; cursor: pointer; transition: all 0.2s;">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <span style="font-size: 1.5rem;">🟢</span>
-                                    <span class="badge bg-success">80 CPU</span>
-                                </div>
-                                <h6 class="text-white fw-bold mb-1">Load Balancer</h6>
-                                <p class="smallest text-white opacity-70 mb-0">Multi-target attacks. Ultimate defense.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </article>
 
         <style>
-            .topo-node {
-                fill: var(--bg);
-                stroke: var(--border);
-                stroke-width: 2;
-                transition: 0.3s;
-                cursor: help;
-            }
-
-            .topo-node:hover {
-                stroke: var(--primary);
-                fill: rgba(var(--primary-rgb), 0.05);
-                filter: url(#glow);
-            }
-
-            .topo-node-primary {
-                fill: var(--primary);
-                transition: 0.3s;
-                cursor: help;
-            }
-
-            .topo-node-primary:hover {
-                filter: contrast(1.2) brightness(1.1);
-            }
-
-            .topo-node-alt {
-                fill: transparent;
-                stroke: var(--primary);
-                stroke-width: 1.5;
-                stroke-dasharray: 2, 2;
-                cursor: help;
-            }
-
-            .topo-app {
-                fill: var(--bg);
-                stroke: var(--primary);
-                stroke-width: 3;
-                cursor: help;
-            }
-
-            .topo-service {
-                fill: #1e293b;
-                stroke: #334155;
-                stroke-width: 2;
-                cursor: help;
-            }
-
-            .topo-service-ai {
-                fill: #6366f1;
-                stroke: #818cf8;
-                stroke-width: 2;
-                cursor: help;
-            }
-
-            .node-label {
-                font-size: 10px;
-                font-weight: 700;
-                fill: var(--text);
-                pointer-events: none;
-            }
-
-            .topo-tooltip {
-                position: absolute;
-                display: none;
-                background: var(--surface);
-                border: 1px solid var(--border);
-                padding: 15px;
-                border-radius: 12px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-                width: 220px;
-                z-index: 100;
-                pointer-events: none;
-            }
-
-            .topo-tooltip h5 {
-                font-size: 0.9rem;
-                font-weight: bold;
-                margin-bottom: 5px;
-                color: var(--primary);
-            }
-
-            .topo-tooltip p {
-                font-size: 0.75rem;
-                margin-bottom: 0;
-                opacity: 0.7;
-            }
-
-            .flow-path.animated {
-                stroke-dasharray: 5, 5;
-                animation: flowDash 2s linear infinite;
-            }
-
-            @keyframes flowDash {
-                to {
-                    stroke-dashoffset: -20;
-                }
-            }
-
-            /* Game v2 Styles */
-            .chaos-pod {
-                height: 80px;
-                background: rgba(255, 255, 255, 0.05);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 12px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                transition: all 0.2s;
-                position: relative;
-            }
-
-            .chaos-pod:hover {
-                background: rgba(255, 255, 255, 0.1);
-                transform: translateY(-2px);
-            }
-
-            .chaos-pod.failed {
-                border-color: #ef4444;
-                background: rgba(239, 68, 68, 0.1);
-                animation: shake 0.5s infinite;
-            }
-
-            .chaos-pod.failed::after {
-                content: "RESTART";
-                position: absolute;
-                bottom: 5px;
-                font-size: 0.6rem;
-                font-weight: bold;
-                color: #ef4444;
-            }
-
-            .chaos-pod i {
-                font-size: 1.2rem;
-                margin-bottom: 4px;
-            }
-
-            @keyframes shake {
-                0% {
-                    transform: translate(0);
-                }
-
-                25% {
-                    transform: translate(2px);
-                }
-
-                50% {
-                    transform: translate(-2px);
-                }
-
-                75% {
-                    transform: translate(2px);
-                }
-
-                100% {
-                    transform: translate(0);
-                }
-            }
-
-            /* ========================================
-   KUBERNETES TOWER DEFENSE GAME STYLES
-   ======================================== */
-
-            .pod-card:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            }
-
-            .pod-card.selected {
-                box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
-                transform: scale(1.05);
-            }
-
-            .grid-cell {
-                position: absolute;
-                width: 60px;
-                height: 60px;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 8px;
-                transition: all 0.2s;
-                cursor: pointer;
-            }
-
-            .grid-cell:hover {
-                background: rgba(255, 255, 255, 0.1);
-                border-color: rgba(255, 255, 255, 0.3);
-            }
-
-            .grid-cell.path {
-                background: rgba(239, 68, 68, 0.1);
-                cursor: not-allowed;
-            }
-
-            .grid-cell.has-tower {
-                cursor: not-allowed;
-            }
-
-            .tower {
-                width: 100%;
-                height: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 2rem;
-                border-radius: 8px;
-                position: relative;
-            }
-
-            .tower.nginx {
-                background: linear-gradient(135deg, #3b82f6, #2563eb);
-            }
-
-            .tower.redis {
-                background: linear-gradient(135deg, #ef4444, #dc2626);
-            }
-
-            .tower.database {
-                background: linear-gradient(135deg, #a855f7, #9333ea);
-            }
-
-            .tower.loadbalancer {
-                background: linear-gradient(135deg, #10b981, #059669);
-            }
-
-            .tower-range {
-                position: absolute;
-                border: 2px solid rgba(255, 255, 255, 0.2);
-                border-radius: 50%;
-                pointer-events: none;
-                display: none;
-            }
-
-            .tower:hover .tower-range {
-                display: block;
-                animation: rangePulse 2s infinite;
-            }
-
-            @keyframes rangePulse {
-
-                0%,
-                100% {
-                    opacity: 0.3;
-                }
-
-                50% {
-                    opacity: 0.6;
-                }
-            }
-
-            .enemy {
-                position: absolute;
-                width: 30px;
-                height: 30px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.2rem;
-                transition: transform 0.1s;
-                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-            }
-
-            .enemy.traffic {
-                background: linear-gradient(135deg, #f59e0b, #d97706);
-            }
-
-            .enemy.ddos {
-                background: linear-gradient(135deg, #ef4444, #dc2626);
-            }
-
-            .enemy.leak {
-                background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            }
-
-            .enemy.boss {
-                width: 40px;
-                height: 40px;
-                font-size: 1.6rem;
-                background: linear-gradient(135deg, #dc2626, #991b1b);
-                animation: bossPulse 1s infinite;
-            }
-
-            @keyframes bossPulse {
-
-                0%,
-                100% {
-                    transform: scale(1);
-                }
-
-                50% {
-                    transform: scale(1.1);
-                }
-            }
-
-            .health-bar {
-                position: absolute;
-                top: -8px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 100%;
-                height: 4px;
-                background: rgba(0, 0, 0, 0.5);
-                border-radius: 2px;
-                overflow: hidden;
-            }
-
-            .health-bar-fill {
-                height: 100%;
-                background: linear-gradient(90deg, #10b981, #059669);
-                transition: width 0.2s;
-            }
-
-            .projectile {
-                position: absolute;
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-                background: #fbbf24;
-                box-shadow: 0 0 10px #fbbf24;
-                pointer-events: none;
-                z-index: 5;
-            }
-
-            .damage-popup {
-                position: absolute;
-                font-size: 0.9rem;
-                font-weight: bold;
-                color: #fbbf24;
-                pointer-events: none;
-                animation: damageFloat 0.8s ease-out forwards;
-                z-index: 10;
-                text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
-            }
-
-            @keyframes damageFloat {
-                0% {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-
-                100% {
-                    opacity: 0;
-                    transform: translateY(-40px);
-                }
-            }
-
-            .wave-indicator {
-                animation: slideIn 0.5s ease-out;
-            }
-
-            @keyframes slideIn {
-                from {
-                    transform: translateX(-50%) translateY(-20px);
-                    opacity: 0;
-                }
-
-                to {
-                    transform: translateX(-50%) translateY(0);
-                    opacity: 1;
-                }
-            }
+            /* Keep essential game animations/styles but clean up */
+            .chaos-pod { height: 80px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; }
+            .chaos-pod:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
+            .chaos-pod.failed { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); animation: shake 0.5s infinite; }
+            .chaos-pod.failed::after { content: "RESTART"; position: absolute; bottom: 5px; font-size: 0.6rem; font-weight: bold; color: #ef4444; }
+            @keyframes shake { 0%, 100% { transform: translate(0); } 25% { transform: translate(2px); } 50% { transform: translate(-2px); } 75% { transform: translate(2px); } }
+            .grid-cell { position: absolute; width: 60px; height: 60px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; transition: all 0.2s; cursor: pointer; }
+            .grid-cell:hover { background: rgba(255, 255, 255, 0.1); }
+            .tower { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2rem; border-radius: 8px; }
+            .tower.nginx { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+            .tower.redis { background: linear-gradient(135deg, #ef4444, #dc2626); }
+            .tower.database { background: linear-gradient(135deg, #a855f7, #9333ea); }
+            .tower.loadbalancer { background: linear-gradient(135deg, #10b981, #059669); }
+            .enemy { position: absolute; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)); }
+            .enemy.traffic { background: #f59e0b; }
+            .enemy.ddos { background: #ef4444; }
+            .enemy.leak { background: #8b5cf6; }
+            .health-bar { position: absolute; top: -8px; left: 0; width: 100%; height: 4px; background: rgba(0,0,0,0.5); }
+            .health-bar-fill { height: 100%; background: #10b981; }
+            .projectile { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 10px #fbbf24; pointer-events: none; }
         </style>
 
         <script src="{% static 'js/games/infrastructure.js' %}"></script>

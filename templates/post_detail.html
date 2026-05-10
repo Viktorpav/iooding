@@ -7,10 +7,10 @@
 
 
 <div class="row justify-content-center">
-    <div class="col-lg-10">
-        <article class="mb-5 reveal">
+    <div class="col-12">
+        <article class="mb-4 reveal">
             <div class="premium-card p-4 p-lg-4">
-                <header class="mb-4">
+                <header class="premium-header">
                     <div class="mb-2">
                         {% for t in post.tags.all %}
                         <a href="{% url 'blog:post_tag' t.slug %}"
@@ -19,8 +19,8 @@
                         </a>
                         {% endfor %}
                     </div>
-                    <h1 class="display-5 fw-bold mb-2">{{ post.title }}</h1>
-                    <div class="opacity-50 small">
+                    <h1 class="display-5 fw-bold">{{ post.title }}</h1>
+                    <div class="subtitle small">
                         {{ post.publish|date:"M d, Y" }} &bull; By <strong>{{ post.author }}</strong> &bull; {{ post.read_time }} min read
                     </div>
                 </header>
@@ -39,7 +39,7 @@
     </div>
 </div>
 
-<hr class="my-5 opacity-10">
+<hr class="my-4 opacity-10">
 
 <div class="mb-4">
     <h3 class="fw-bold">Similar Posts</h3>

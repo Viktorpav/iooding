@@ -4,180 +4,121 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-lg-12">
-        <!-- Hero Section -->
-        <header class="text-center mb-5 mt-4">
-            <h1 class="display-2 fw-bold mb-3 gradient-text">Architecture Ledger</h1>
-            <p class="lead text-muted mx-auto" style="max-width: 900px;">
-                A comprehensive analysis of the <strong>Ding Infrastructure</strong>.
-                Built on a distributed Kubernetes foundation, optimized for silicon-native AI inference.
-            </p>
-        </header>
+    <div class="col-12">
+        <article class="reveal active">
+            <div class="premium-card p-4 p-lg-5">
+                <!-- Hero Section -->
+                <header class="premium-header">
+                    <h1 class="display-5 fw-bold">Architecture Ledger</h1>
+                    <p class="lead subtitle">
+                        A comprehensive analysis of the <strong>Ding Infrastructure</strong>.
+                        Built on a distributed Kubernetes foundation, optimized for silicon-native AI inference.
+                    </p>
+                </header>
 
-        <!-- Advanced Topology Map -->
-        <div class="glass-card p-5 rounded-4 mb-5 border-0 shadow-lg"
-            style="background: var(--surface); position: relative; overflow: visible;">
-            <div class="mb-5">
-                <h3 class="h2 fw-bold mb-1">System Topology</h3>
-                <p class="text-muted text-uppercase letter-spacing-2 smallest">Full Cluster Logic Visualization</p>
-            </div>
+                <!-- Advanced Topology Map -->
+                <div class="mb-5">
+                    <div class="mb-4">
+                        <h3 class="h3 fw-bold mb-1">System Topology</h3>
+                        <p class="opacity-50 text-uppercase smallest letter-spacing-2">Full Cluster Logic Visualization</p>
+                    </div>
 
-            <div class="topology-wrapper mb-5"
-                style="background: rgba(var(--text), 0.02); border-radius: 30px; padding: 40px; border: 1px solid var(--border);">
-                <!-- Legend -->
-                <div class="d-flex gap-4 mb-4 justify-content-center small opacity-60">
-                    <div class="d-flex align-items-center gap-2"><span
-                            style="width:12px; height:12px; background:var(--primary); border-radius:3px;"></span> Core
-                        Service</div>
-                    <div class="d-flex align-items-center gap-2"><span
-                            style="width:12px; height:2px; border-bottom:2px dashed var(--primary);"></span> Logical
-                        Flow</div>
-                    <div class="d-flex align-items-center gap-2"><span
-                            style="width:12px; height:12px; background:#10b981; border-radius:50%;"></span> Master Node
+                    <div class="topology-wrapper mb-5 p-4 p-lg-5" style="background: rgba(var(--primary-rgb), 0.02); border-radius: 30px; border: 1px solid var(--border);">
+                        <!-- Legend -->
+                        <div class="d-flex flex-wrap gap-4 mb-4 justify-content-center small opacity-60">
+                            <div class="d-flex align-items-center gap-2"><span style="width:12px; height:12px; background:var(--primary); border-radius:3px;"></span> Core Service</div>
+                            <div class="d-flex align-items-center gap-2"><span style="width:12px; height:2px; border-bottom:2px dashed var(--primary);"></span> Logical Flow</div>
+                            <div class="d-flex align-items-center gap-2"><span style="width:12px; height:12px; background:#10b981; border-radius:50%;"></span> Master Node</div>
+                        </div>
+
+                        <div class="svg-container" style="position: relative;">
+                            <svg id="main-topology" viewBox="0 0 1000 500" class="w-100 h-auto">
+                                <defs>
+                                    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                        <feGaussianBlur stdDeviation="3" result="blur" />
+                                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                    </filter>
+                                </defs>
+
+                                <!-- Layers -->
+                                <g class="infra-layer">
+                                    <rect x="50" y="200" width="120" height="100" rx="15" class="topo-node" data-title="Mac-Master-01" data-desc="Control plane node running ETCD and API Server." />
+                                    <text x="110" y="255" text-anchor="middle" class="node-label">MASTER</text>
+
+                                    <rect x="250" y="100" width="120" height="100" rx="15" class="topo-node" data-title="Worker-01 (Inference)" data-desc="Dedicated silicon worker for AI workloads." />
+                                    <text x="310" y="155" text-anchor="middle" class="node-label">WORKER 01</text>
+
+                                    <rect x="250" y="300" width="120" height="100" rx="15" class="topo-node" data-title="Worker-02 (Storage)" data-desc="Storage-optimized worker hosting the Longhorn replicated volumes." />
+                                    <text x="310" y="355" text-anchor="middle" class="node-label">WORKER 02</text>
+                                </g>
+
+                                <g class="network-layer" stroke="var(--primary)" stroke-width="1.5" fill="none">
+                                    <path d="M170,250 L250,150" class="flow-path" />
+                                    <path d="M170,250 L250,350" class="flow-path" />
+                                    <path d="M0,250 Q100,250 170,250" stroke-dasharray="5,5" class="flow-path animated" />
+                                </g>
+
+                                <g class="service-layer">
+                                    <circle cx="210" cy="250" r="25" class="topo-service" data-title="MetalLB" data-desc="BGP-based Load Balancer." />
+                                    <text x="210" y="254" text-anchor="middle" font-size="8" fill="white">LB</text>
+
+                                    <rect x="420" y="200" width="100" height="100" rx="20" class="topo-node-primary" data-title="Nginx Ingress" data-desc="The main traffic gateway." />
+                                    <text x="470" y="255" text-anchor="middle" class="node-label" fill="white">INGRESS</text>
+                                </g>
+
+                                <g class="app-layer">
+                                    <rect x="650" y="180" width="140" height="140" rx="25" class="topo-app" data-title="iooding-blog" data-desc="The Django 5.1 core application." />
+                                    <text x="720" y="245" text-anchor="middle" class="node-label">APP CORE</text>
+
+                                    <circle cx="720" cy="120" r="35" class="topo-service-ai" data-title="Ollama" data-desc="Local AI inference hub." />
+                                    <text x="720" y="124" text-anchor="middle" font-size="8" fill="white">AI</text>
+
+                                    <circle cx="850" cy="250" r="30" class="topo-service" data-title="Redis Stack" data-desc="Vector database and caching layer." />
+                                    <text x="850" y="254" text-anchor="middle" font-size="8" fill="white">REDIS</text>
+                                </g>
+                            </svg>
+
+                            <div id="topo-tooltip" class="topo-tooltip">
+                                <h5 id="topo-tool-title"></h5>
+                                <p id="topo-tool-desc"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="svg-container" style="position: relative;">
-                    <svg id="main-topology" viewBox="0 0 1000 500" class="w-100 h-auto">
-                        <defs>
-                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                                <feGaussianBlur stdDeviation="3" result="blur" />
-                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                            </filter>
-                        </defs>
-
-                        <!-- Layers -->
-                        <!-- 1. Infrastructure (Base) -->
-                        <g class="infra-layer">
-                            <!-- Master -->
-                            <rect x="50" y="200" width="120" height="100" rx="15" class="topo-node"
-                                data-title="Mac-Master-01"
-                                data-desc="Control plane node running ETCD and API Server. Optimized for Silicon performance." />
-                            <text x="110" y="255" text-anchor="middle" class="node-label">MASTER</text>
-
-                            <!-- Worker 1 -->
-                            <rect x="250" y="100" width="120" height="100" rx="15" class="topo-node"
-                                data-title="Worker-01 (Inference)"
-                                data-desc="Dedicated silicon worker for AI workloads and Ollama inference models." />
-                            <text x="310" y="155" text-anchor="middle" class="node-label">WORKER 01</text>
-
-                            <!-- Worker 2 -->
-                            <rect x="250" y="300" width="120" height="100" rx="15" class="topo-node"
-                                data-title="Worker-02 (Storage)"
-                                data-desc="Storage-optimized worker hosting the Longhorn replicated volumes and Databases." />
-                            <text x="310" y="355" text-anchor="middle" class="node-label">WORKER 02</text>
-                        </g>
-
-                        <!-- 2. Networking (Connectors) -->
-                        <g class="network-layer" stroke="var(--primary)" stroke-width="1.5" fill="none">
-                            <path d="M170,250 L250,150" class="flow-path" />
-                            <path d="M170,250 L250,350" class="flow-path" />
-
-                            <!-- External Traffic -->
-                            <path d="M0,250 Q100,250 170,250" stroke-dasharray="5,5" class="flow-path animated" />
-                        </g>
-
-                        <!-- 3. Service Mesh -->
-                        <g class="service-layer">
-                            <!-- MetalLB -->
-                            <circle cx="210" cy="250" r="25" class="topo-service" data-title="MetalLB"
-                                data-desc="BGP-based Load Balancer providing internal IP allocation for the cluster." />
-                            <text x="210" y="254" text-anchor="middle" font-size="8" fill="white">LB</text>
-
-                            <!-- Calico -->
-                            <rect x="180" y="100" width="60" height="30" rx="5" class="topo-node-alt"
-                                data-title="Calico CNI"
-                                data-desc="High-performance container networking with BGP routing and network policies." />
-                            <text x="210" y="120" text-anchor="middle" font-size="6" fill="var(--primary)">CNI</text>
-
-                            <!-- ArgoCD -->
-                            <rect x="50" y="50" width="80" height="40" rx="10" class="topo-service" data-title="ArgoCD"
-                                data-desc="The GitOps brain. Synchronizes GitHub manifests with the physical cluster state." />
-                            <text x="90" y="75" text-anchor="middle" font-size="8" fill="white">GITOPS</text>
-
-                            <!-- Ingress -->
-                            <rect x="420" y="200" width="100" height="100" rx="20" class="topo-node-primary"
-                                data-title="Nginx Ingress"
-                                data-desc="The main traffic gateway handles SSL termination and Route53 DNS synchronization." />
-                            <text x="470" y="255" text-anchor="middle" class="node-label" fill="white">INGRESS</text>
-
-                            <!-- Cert Manager -->
-                            <rect x="430" y="80" width="80" height="40" rx="8" class="topo-node-alt"
-                                data-title="Cert-Manager"
-                                data-desc="Automated TLS certificate management using Let's Encrypt and custom CA." />
-                            <text x="470" y="105" text-anchor="middle" font-size="7" fill="var(--primary)">TLS
-                                SYNC</text>
-
-                            <!-- Longhorn -->
-                            <rect x="430" y="380" width="80" height="40" rx="8" class="topo-node-alt"
-                                data-title="Longhorn Storage"
-                                data-desc="High-availability block storage with distributed replication across worker nodes." />
-                            <text x="470" y="405" text-anchor="middle" font-size="7"
-                                fill="var(--primary)">STORAGE</text>
-                        </g>
-
-                        <!-- 4. Application Stack -->
-                        <g class="app-layer">
-                            <rect x="650" y="180" width="140" height="140" rx="25" class="topo-app"
-                                data-title="iooding-blog"
-                                data-desc="The Django 5.1 core application running in high-availability mode." />
-                            <text x="720" y="245" text-anchor="middle" class="node-label">APP CORE</text>
-
-                            <!-- AI Hub -->
-                            <circle cx="720" cy="120" r="35" class="topo-service-ai" data-title="Ollama"
-                                data-desc="Local AI inference hub serving Qwen and Llama models via internal API." />
-                            <text x="720" y="124" text-anchor="middle" font-size="8" fill="white">AI</text>
-
-                            <!-- Redis -->
-                            <circle cx="850" cy="250" r="30" class="topo-service" data-title="Redis Stack"
-                                data-desc="Vector database and caching layer for sub-100ms retrieval." />
-                            <text x="850" y="254" text-anchor="middle" font-size="8" fill="white">REDIS</text>
-                        </g>
-                    </svg>
-
-                    <!-- Tooltip Box -->
-                    <div id="topo-tooltip" class="topo-tooltip">
-                        <h5 id="topo-tool-title"></h5>
-                        <p id="topo-tool-desc"></p>
+                <!-- Detailed Specs Grid -->
+                <div class="row g-4 mt-2">
+                    <div class="col-md-3">
+                        <div class="p-4 rounded-4 bg-surface h-100 border border-secondary border-opacity-10">
+                            <span class="badge bg-primary bg-opacity-10 text-primary mb-3">01</span>
+                            <h6 class="fw-bold">GitOps Flow</h6>
+                            <p class="smallest opacity-50 mb-0">Declarative deployments via ArgoCD ensure the cluster stays in its desired state automatically.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-4 rounded-4 bg-surface h-100 border border-secondary border-opacity-10">
+                            <span class="badge bg-primary bg-opacity-10 text-primary mb-3">02</span>
+                            <h6 class="fw-bold">Silicon Native</h6>
+                            <p class="smallest opacity-50 mb-0">M-series optimization reduces inference latency by 40% compared to traditional cloud CPU rigs.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-4 rounded-4 bg-surface h-100 border border-secondary border-opacity-10">
+                            <span class="badge bg-primary bg-opacity-10 text-primary mb-3">03</span>
+                            <h6 class="fw-bold">Encryption Edge</h6>
+                            <p class="smallest opacity-50 mb-0">Automated TLS management by Cert-Manager secures every internal and external endpoint.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-4 rounded-4 bg-surface h-100 border border-secondary border-opacity-10">
+                            <span class="badge bg-primary bg-opacity-10 text-primary mb-3">04</span>
+                            <h6 class="fw-bold">Self-Healing</h6>
+                            <p class="smallest opacity-50 mb-0">Kubernetes health probes automatically restart failed containers within 10 seconds of detection.</p>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Detailed Specs Grid -->
-            <div class="row g-4">
-                <div class="col-md-3">
-                    <div class="p-4 rounded-4 bg-primary bg-opacity-5 h-100 border border-primary border-opacity-10">
-                        <i class="mb-3 d-block text-primary">01</i>
-                        <h6 class="fw-bold">GitOps Flow</h6>
-                        <p class="smallest text-muted mb-0">Declarative deployments via ArgoCD ensure the cluster stays
-                            in its desired state automatically.</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="p-4 rounded-4 bg-primary bg-opacity-5 h-100 border border-primary border-opacity-10">
-                        <i class="mb-3 d-block text-primary">02</i>
-                        <h6 class="fw-bold">Silicon Native</h6>
-                        <p class="smallest text-muted mb-0">M-series optimization reduces inference latency by 40%
-                            compared to traditional cloud CPU rigs.</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="p-4 rounded-4 bg-primary bg-opacity-5 h-100 border border-primary border-opacity-10">
-                        <i class="mb-3 d-block text-primary">03</i>
-                        <h6 class="fw-bold">Encryption Edge</h6>
-                        <p class="smallest text-muted mb-0">Automated TLS management by Cert-Manager secures every
-                            internal and external endpoint.</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="p-4 rounded-4 bg-primary bg-opacity-5 h-100 border border-primary border-opacity-10">
-                        <i class="mb-3 d-block text-primary">04</i>
-                        <h6 class="fw-bold">Self-Healing</h6>
-                        <p class="smallest text-muted mb-0">Kubernetes health probes automatically restart failed
-                            containers within 10 seconds of detection.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {% endblock %}
+        </article>
+    </div>
+</div>
+{% endblock %}
