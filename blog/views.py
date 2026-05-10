@@ -1,17 +1,30 @@
-from django.db.models import Q, Count
-from taggit.models import Tag
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Post, Comment
-from .forms import CommentForm
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponse, StreamingHttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
 import json
 import hashlib
 import logging
 
+from django.db import connections
+from django.db.models import Count
+from django.shortcuts import render, get_object_or_404, redirect
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import HttpResponse, StreamingHttpResponse
+from django.views.decorators.http import require_POST
+from django.core.cache import cache
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+
+from taggit.models import Tag
+
+from .models import Post
+from .forms import CommentForm
+from .ai_utils import (
+    check_ai_status,
+    generate_rag_context,
+    get_ai_client,
+    get_rag_system_prompt,
+)
+
 logger = logging.getLogger(__name__)
+
+
 
 POSTS_PER_PAGE = 10
 
@@ -26,7 +39,6 @@ def post_list(request, tag_slug=None):
 
     query = request.GET.get('q', '').strip()
     if query:
-        from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
         # Combine title and tags for robust search, ranking title higher
         search_vector = SearchVector('title', weight='A') + SearchVector('tags__name', weight='B')
         search_query = SearchQuery(query)
@@ -50,7 +62,6 @@ def post_list(request, tag_slug=None):
     })
 
 
-from django.core.cache import cache
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -121,19 +132,35 @@ def reply_page(request):
     return redirect('/')
 
 
-async def health_check(request):
-    """Lightweight K8s liveness/readiness probe."""
-    return HttpResponse('ok', content_type='text/plain')
+def health_check(request):
+    """
+    Robust K8s liveness/readiness probe.
+    Verifies database connectivity synchronously.
+    """
+    try:
+        with connections['default'].cursor() as cursor:
+            cursor.execute("SELECT 1")
+        return HttpResponse('ok', content_type='text/plain')
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return HttpResponse('Service Unavailable', status=503, content_type='text/plain')
 
 
 async def ai_status(request):
-    """Check Ollama availability."""
-    from .ai_utils import check_ai_status
-    is_online = await check_ai_status()
-    return HttpResponse(
-        json.dumps({'online': is_online}),
-        content_type='application/json',
-    )
+    """Check Ollama availability with error handling."""
+    try:
+        is_online = await check_ai_status()
+        return HttpResponse(
+            json.dumps({'online': is_online}),
+            content_type='application/json',
+        )
+    except Exception as e:
+        logger.warning(f"AI status check failed: {e}")
+        return HttpResponse(
+            json.dumps({'online': False, 'error': str(e)}),
+            content_type='application/json',
+            status=200, # Still return 200 so UI can handle 'offline' state gracefully
+        )
 
 
 async def chat_api(request):
@@ -184,7 +211,6 @@ async def chat_api(request):
             return resp
 
         # ── Generate ──────────────────────────────────────────────────────────
-        from blog.ai_utils import get_ai_client, generate_rag_context, get_rag_system_prompt
         client = get_ai_client()
 
         async def stream_response():

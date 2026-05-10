@@ -77,8 +77,11 @@ spec:
       kind: PersistentVolumeClaim
       metadata:
         name: redis-data
+        labels:
+          recurring-job-group.longhorn.io/backup: enabled
       spec:
         accessModes: ["ReadWriteOnce"]
+        storageClassName: "longhorn-storage"
         resources:
           requests:
             storage: 1Gi

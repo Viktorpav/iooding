@@ -103,8 +103,6 @@ spec:
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
-              subPath: pgdata
-
           lifecycle:
             preStop:
               exec:
@@ -141,7 +139,7 @@ spec:
         name: postgres-data
         labels:
           # Enable automatic backups (only for database)
-          recurring-job-group.longhorn.io/important: enabled
+          recurring-job-group.longhorn.io/backup: enabled
       spec:
         accessModes: ["ReadWriteOnce"]
         storageClassName: "longhorn-storage"
