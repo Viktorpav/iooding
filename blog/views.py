@@ -34,8 +34,15 @@ def post_list(request, tag_slug=None):
     tag = None
 
     if tag_slug:
-        tag = get_object_or_404(Tag, slug=tag_slug)
-        posts = posts.filter(tags__in=[tag])
+        tag = Tag.objects.filter(slug=tag_slug).first()
+        if tag:
+            posts = posts.filter(tags__in=[tag])
+        else:
+            posts = posts.none()
+            # Create a dummy tag object so the template still has a title to render
+            class DummyTag:
+                name = tag_slug.replace('-', ' ').title()
+            tag = DummyTag()
 
     query = request.GET.get('q', '').strip()
     if query:
