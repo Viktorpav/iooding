@@ -2,7 +2,6 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
-from django_ckeditor_5.fields import CKEditor5Field
 from taggit.managers import TaggableManager
 import re
 
@@ -22,7 +21,7 @@ class Post(models.Model):
     slug     = models.SlugField(max_length=250, unique_for_date='publish')
     image    = models.ImageField(upload_to='featured_image/%Y/%m/%d/', blank=True, null=True)
     author   = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_posts')
-    body     = CKEditor5Field('Text', config_name='extends')
+    body     = models.TextField(help_text='Markdown supported')
     publish  = models.DateTimeField(default=timezone.now, db_index=True)
     created  = models.DateTimeField(auto_now_add=True)
     updated  = models.DateTimeField(auto_now=True)
@@ -46,9 +45,15 @@ class Post(models.Model):
         return reverse('blog:post_detail', args=[self.slug])
 
     @property
+    def body_html(self):
+        """Renders body markdown to HTML with code highlighting support."""
+        import markdown
+        return markdown.markdown(self.body, extensions=['extra', 'codehilite', 'toc'])
+
+    @property
     def read_time(self) -> int:
         """Estimated reading time in minutes (≈200 wpm)."""
-        text = re.sub(r'<[^<]+?>', '', self.body)
+        text = self.body # Plain text for markdown is close enough
         return max(1, round(len(text.split()) / 200))
 
     def get_comments(self):

@@ -3,11 +3,11 @@
 {% block title %} - {{ post.title }}{% endblock title %}
 
 {% block content %}
-
-
+{% load cache %}
 
 <div class="row justify-content-center">
     <div class="col-12">
+        {% cache 600 post_detail post.id post.updated %}
         <article class="mb-4 reveal">
             <div class="premium-card p-4 p-lg-4">
                 <header class="premium-header">
@@ -32,15 +32,17 @@
                 {% endif %}
 
                 <div class="article-body ck-content fs-5 opacity-75">
-                    {{ post.body|safe }}
+                    {{ post.body_html|safe }}
                 </div>
             </div>
         </article>
+        {% endcache %}
     </div>
 </div>
 
 <hr class="my-4 opacity-10">
 
+{% cache 600 similar_posts post.id %}
 <div class="mb-4">
     <h3 class="fw-bold">Similar Posts</h3>
 </div>
@@ -69,6 +71,7 @@
     <p class="opacity-50">No similar posts yet.</p>
     {% endfor %}
 </div>
+{% endcache %}
 
 {% with comments.count as total_comments %}
 <h3 class="fw-bold mt-5 mb-4">

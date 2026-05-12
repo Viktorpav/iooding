@@ -1,0 +1,85 @@
+<div class="search-results-dropdown premium-card">
+    {% if results %}
+        <div class="results-header d-flex justify-content-between align-items-center p-3 border-bottom border-secondary border-opacity-10">
+            <span class="small text-uppercase tracking-wider opacity-50 fw-bold">
+                {% if search_type == 'neural' %}Neural AI Matches{% else %}Top Matches{% endif %}
+            </span>
+            <span class="badge bg-primary bg-opacity-10 text-primary">{{ results|length }} found</span>
+        </div>
+        <div class="results-list">
+            {% for post in results %}
+                <a href="{{ post.get_absolute_url }}" class="result-item d-flex align-items-center p-3 text-decoration-none">
+                    {% if post.image %}
+                        <img src="{{ post.image.url }}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle me-3 bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="opacity-50">
+                                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5z"/>
+                            </svg>
+                        </div>
+                    {% endif %}
+                    <div class="result-info">
+                        <div class="result-title fw-bold text-truncate" style="max-width: 300px;">{{ post.title }}</div>
+                        <div class="result-meta small opacity-50">{{ post.publish|date:"M d, Y" }} • by {{ post.author.username }}</div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+        <div class="results-footer p-2 text-center border-top border-secondary border-opacity-10">
+            <button class="btn btn-link btn-sm text-decoration-none opacity-75" onclick="document.querySelector('.search-input-premium').submit()">
+                View all results for "{{ query }}"
+            </button>
+        </div>
+    {% else %}
+        <div class="p-4 text-center">
+            <div class="opacity-25 mb-2">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                </svg>
+            </div>
+            <div class="fw-bold opacity-50">No results found</div>
+            <div class="small opacity-25">Try adjusting your query or search mode</div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.search-results-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    overflow: hidden;
+    animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.result-item {
+    transition: background 0.2s;
+    border-bottom: 1px solid rgba(var(--text-rgb), 0.05);
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.result-item:hover {
+    background: rgba(var(--text-rgb), 0.03);
+}
+
+.result-title {
+    color: var(--text);
+    transition: color 0.2s;
+}
+
+.result-item:hover .result-title {
+    color: var(--primary);
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>

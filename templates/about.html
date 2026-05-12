@@ -3,6 +3,8 @@
 {% block title %} | Architecture & Laboratory{% endblock %}
 
 {% block content %}
+{% load cache %}
+{% cache 3600 about_page %}
 <div class="row justify-content-center">
     <div class="col-12">
         <article class="mb-4 reveal">
@@ -119,4 +121,5 @@
         </article>
     </div>
 </div>
+{% endcache %}
 {% endblock %}

@@ -8,6 +8,8 @@
 		{% endif %}
 
 		{% for post in posts %}
+		{% load cache %}
+		{% cache 600 post_card post.id post.updated %}
 		<div class="premium-card mb-4 reveal">
 			<div class="card-body p-0">
 				<div class="row g-0 post-card-row">
@@ -40,7 +42,7 @@
 						</div>
 						<div class="premium-excerpt-container article-body ck-content opacity-75 mb-auto"
 							style="font-size: 0.95rem; line-height: 1.6;">
-							{{ post.body|safe|truncatechars_html:200 }}
+							{{ post.body_html|safe|truncatechars_html:200 }}
 						</div>
 						<div class="mt-3">
 							<a href="{{ post.get_absolute_url }}" class="btn btn-primary btn-sm px-3">Read more</a>
@@ -49,6 +51,7 @@
 				</div>
 			</div>
 		</div>
+		{% endcache %}
 		{% empty %}
 		<div class="premium-empty-state">
 			<div class="empty-state-content">

@@ -25,6 +25,15 @@ class PostAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
         }),
     )
+    
+    class Media:
+        css = {
+            'all': ('vendor/css/easymde.min.css',)
+        }
+        js = (
+            'vendor/js/easymde.min.js',
+            'js/admin_markdown.js',
+        )
     actions = ['make_published', 'make_draft']
 
     @admin.action(description='✅ Mark selected posts as published')

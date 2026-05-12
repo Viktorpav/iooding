@@ -40,12 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.sitemaps',
     'blog',
-    'django_ckeditor_5',
     'taggit',
 ]
 
@@ -58,7 +56,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -74,7 +71,6 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
             ],
         },
     },
@@ -148,41 +144,7 @@ STORAGES = {
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# ─── CKEditor 5 ───────────────────────────────────────────────────────────────
-CKEDITOR_5_CONFIGS = {
-    'default': {
-        'toolbar': {
-            'items': ['heading', '|', 'bold', 'italic', 'link',
-                      'bulletedList', 'numberedList', 'blockQuote', 'imageUpload'],
-        }
-    },
-    'extends': {
-        'blockToolbar': [
-            'paragraph', 'heading1', 'heading2', 'heading3',
-            '|', 'bulletedList', 'numberedList', 'blockQuote',
-        ],
-        'toolbar': {
-            'items': [
-                'heading', '|', 'bold', 'italic', 'link', 'underline', 'strikethrough',
-                'code', 'codeBlock', '|', 'fontSize', 'fontColor', '|',
-                'bulletedList', 'numberedList', 'todoList', '|',
-                'outdent', 'indent', '|', 'alignment', '|',
-                'imageUpload', 'blockQuote', 'insertTable', 'sourceEditing',
-            ],
-            'shouldNotGroupWhenFull': True,
-        },
-        'codeBlock': {
-            'languages': [
-                {'language': 'python',     'label': 'Python'},
-                {'language': 'javascript', 'label': 'JavaScript'},
-                {'language': 'html',       'label': 'HTML'},
-                {'language': 'css',        'label': 'CSS'},
-                {'language': 'yaml',       'label': 'YAML'},
-                {'language': 'bash',       'label': 'Bash'},
-            ]
-        },
-    },
-}
+
 
 # ─── Proxy & Security ─────────────────────────────────────────────────────────
 USE_X_FORWARDED_HOST = True

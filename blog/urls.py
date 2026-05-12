@@ -15,6 +15,7 @@ urlpatterns = [
     path('games/', cache_page(86400)(views.games), name='games'),
     path('api/chat/', views.chat_api, name='chat_api'),
     path('api/chat/status/', views.ai_status, name='ai_status'),
+    path('search/live/', views.search_live, name='search_live'),
     # Note: health/ is also registered at root level in iooding/urls.py
     path('<slug:post>/', views.post_detail, name='post_detail'),
 ]

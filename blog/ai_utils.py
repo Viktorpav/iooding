@@ -214,6 +214,14 @@ async def generate_rag_context(user_msg: str, client) -> str:
         if msg_lower in SKIP_RAG_PATTERNS or len(msg_lower) < 3:
             return "NO_RAG_NEEDED"
 
+        # ── Semantic Context Cache ────────────────────────────────────────────
+        import hashlib
+        msg_hash = hashlib.md5(msg_lower.encode()).hexdigest()[:16]
+        cache_key = f"rag:context:{msg_hash}"
+        cached_context = cache.get(cache_key)
+        if cached_context:
+            return cached_context
+
         post_count, site_inventory = await get_site_inventory()
         if post_count == 0:
             return "NO_RAG_NEEDED"
@@ -274,9 +282,13 @@ async def generate_rag_context(user_msg: str, client) -> str:
             total_chars += len(entry)
 
         if not context_parts:
-            return site_inventory
+            final_context = site_inventory
+        else:
+            final_context = site_inventory + "\n\n" + "\n\n".join(context_parts)
 
-        return site_inventory + "\n\n" + "\n\n".join(context_parts)
+        # Store in cache for 5 minutes (300s)
+        cache.set(cache_key, final_context, timeout=300)
+        return final_context
 
     except Exception as e:
         logger.error(f"RAG pipeline error: {e}")

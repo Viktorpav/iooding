@@ -1,9 +1,11 @@
 {% extends "base.html" %}
+{% load cache %}
 {% load static %}
 
 {% block title %} | Infrastructure Games{% endblock %}
 
 {% block content %}
+{% cache 3600 games_page %}
 <div class="row justify-content-center">
     <div class="col-12">
         <article class="mb-4 reveal">
@@ -201,4 +203,5 @@
         <script src="{% static 'js/games/infrastructure.js' %}"></script>
     </div>
 </div>
+{% endcache %}
 {% endblock %}

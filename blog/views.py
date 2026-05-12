@@ -297,3 +297,62 @@ def terms(request):
 
 def games(request):
     return render(request, 'games.html')
+
+
+from .redis_vectors import search_similar_async, get_cached_embedding_async, cache_embedding_async
+
+async def search_live(request):
+    """
+    HTMX live search endpoint.
+    Supports 'neural' (vector similarity) and 'classic' (postgres keyword) search.
+    """
+    query = request.GET.get('q', '').strip()
+    search_type = request.GET.get('type', 'classic')
+    
+    if not query or len(query) < 2:
+        return HttpResponse('') # Return empty for short queries
+
+    results = []
+    
+    if search_type == 'neural':
+        try:
+            client = get_ai_client()
+            # 1. Check cache for embedding
+            embedding = await get_cached_embedding_async(query)
+            if not embedding:
+                # 2. Generate new embedding
+                emb_resp = await client.embeddings(model=None, prompt=query)
+                embedding = emb_resp['embedding']
+                await cache_embedding_async(query, embedding)
+            
+            # 3. Search Redis
+            vector_results = await search_similar_async(embedding, top_k=5, max_distance=0.6)
+            
+            # 4. Hydrate Post objects
+            post_ids = [r['post_id'] for r in vector_results]
+            # Use sync_to_async if needed, but since we are just doing a simple filter:
+            from asgiref.sync import sync_to_async
+            @sync_to_async
+            def get_posts(ids):
+                # Maintain order from vector results
+                order = {id: i for i, id in enumerate(ids)}
+                qs = list(Post.published.filter(id__in=ids).select_related('author'))
+                qs.sort(key=lambda p: order.get(p.id, 999))
+                return qs
+            
+            results = await get_posts(post_ids)
+        except Exception as e:
+            logger.warning(f"Live Neural Search error: {e}")
+            search_type = 'classic' # Fallback
+            
+    if search_type == 'classic':
+        @sync_to_async
+        def get_classic_results(q):
+            return list(Post.published.filter(title__icontains=q).select_related('author')[:5])
+        results = await get_classic_results(query)
+
+    return render(request, 'blog/partials/search_results.html', {
+        'results': results,
+        'query': query,
+        'search_type': search_type
+    })

@@ -5,7 +5,7 @@ httptools>=0.6.0
 psycopg2-binary==2.9.10
 Pillow==11.1.0
 django-taggit==6.1.0
-django-ckeditor-5==0.2.20
+markdown==3.7
 django-redis==5.4.0
 whitenoise==6.8.2
 
