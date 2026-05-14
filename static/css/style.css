@@ -529,8 +529,7 @@ select:focus {
 
 input:invalid,
 textarea:invalid {
-    box-shadow: none !important;
-    border-color: var(--border) !important;
+    box-shadow: none;
 }
 
 label {

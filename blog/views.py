@@ -133,7 +133,7 @@ def reply_page(request):
         return redirect(post_url + '#' + str(reply.id))
     
     logger.warning(f"Comment form invalid: {form.errors}")
-    return redirect('/')
+    return HttpResponse(f"Form is invalid: {form.errors}", status=400)
 
 def health_check(request):
     try:
