@@ -21,13 +21,11 @@ from .ai_utils import (
     get_ai_client,
     get_rag_system_prompt,
 )
+from .redis_vectors import search_similar_async, get_cached_embedding_async, cache_embedding_async
 
 logger = logging.getLogger(__name__)
 
-
-
 POSTS_PER_PAGE = 10
-
 
 def post_list(request, tag_slug=None):
     posts = Post.published.select_related('author').prefetch_related('tags')
@@ -39,12 +37,10 @@ def post_list(request, tag_slug=None):
             posts = posts.filter(tags__in=[tag])
         else:
             posts = posts.none()
-            # Create a dummy tag dictionary so the template still has a title to render
             tag = {'name': tag_slug.replace('-', ' ').title(), 'slug': tag_slug}
 
     query = request.GET.get('q', '').strip()
     if query:
-        # Combine title and tags for robust search, ranking title higher
         search_vector = SearchVector('title', weight='A') + SearchVector('tags__name', weight='B')
         search_query = SearchQuery(query)
         posts = posts.annotate(
@@ -65,8 +61,6 @@ def post_list(request, tag_slug=None):
         'tag': tag,
         'query': query,
     })
-
-
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -112,10 +106,8 @@ def post_detail(request, post):
         'similar_posts': similar_posts,
     })
 
-
 @require_POST
 def reply_page(request):
-    """Save a comment reply with basic rate limiting."""
     ip = get_client_ip(request)
     cache_key = f"comment_rate:{ip}"
     if cache.get(cache_key):
@@ -136,12 +128,7 @@ def reply_page(request):
         return redirect(post_url + '#' + str(reply.id))
     return redirect('/')
 
-
 def health_check(request):
-    """
-    Robust K8s liveness/readiness probe.
-    Verifies database connectivity synchronously.
-    """
     try:
         with connections['default'].cursor() as cursor:
             cursor.execute("SELECT 1")
@@ -150,9 +137,7 @@ def health_check(request):
         logger.error(f"Health check failed: {e}")
         return HttpResponse('Service Unavailable', status=503, content_type='text/plain')
 
-
 async def ai_status(request):
-    """Check Ollama availability with error handling."""
     try:
         is_online = await check_ai_status()
         return HttpResponse(
@@ -164,18 +149,10 @@ async def ai_status(request):
         return HttpResponse(
             json.dumps({'online': False, 'error': str(e)}),
             content_type='application/json',
-            status=200, # Still return 200 so UI can handle 'offline' state gracefully
+            status=200,
         )
 
-
 async def chat_api(request):
-    """
-    Async SSE endpoint for AI chat with RAG.
-    Features:
-    - Exact Redis cache for repeated questions (1 hour TTL)
-    - Streaming SSE with thinking indicator
-    - Context trimmed to ~3k chars
-    """
     if request.method != 'POST':
         return HttpResponse('Method not allowed', status=405)
 
@@ -190,20 +167,16 @@ async def chat_api(request):
                 status=400, content_type='application/json',
             )
 
-        # Keep last 4 turns only — more history = more prefill tokens = slower first token
         messages = list(history[-4:])
         if not messages or messages[-1].get('content') != user_msg:
             messages.append({'role': 'user', 'content': user_msg})
 
-        # ── Exact Redis Cache ─────────────────────────────────────────────────
-        # Key: SHA256 of normalized user message (case-insensitive, stripped)
         cache_key = f"ai:exact:{hashlib.sha256(user_msg.lower().encode()).hexdigest()}"
         cached = cache.get(cache_key)
 
         if cached:
             async def stream_cached():
                 yield f"data: {json.dumps({'thinking': '⚡ Cached response — instant answer'})}\n\n"
-                # Re-stream stored content in small chunks to keep UI live
                 for i in range(0, len(cached['content']), 60):
                     yield f"data: {json.dumps({'content': cached['content'][i:i+60]})}\n\n"
                 metrics = {**cached['metrics'], 'cached': True}
@@ -215,21 +188,17 @@ async def chat_api(request):
             resp['Content-Encoding'] = 'identity'
             return resp
 
-        # ── Generate ──────────────────────────────────────────────────────────
         client = get_ai_client()
 
         async def stream_response():
             accumulated = ""
             try:
                 yield f"data: {json.dumps({'thinking': 'Searching knowledge base...'})}\n\n"
-
                 context_text = await generate_rag_context(user_msg, client)
 
                 if context_text == 'NO_RAG_NEEDED':
                     yield f"data: {json.dumps({'thinking': 'Responding directly...'})}\n\n"
-                    messages.insert(0, {'role': 'system', 'content':
-                        "You are Ding AI for iooding.local. Be concise, use markdown."
-                    })
+                    messages.insert(0, {'role': 'system', 'content': "You are Ding AI for iooding.local. Be concise, use markdown."})
                 else:
                     messages.insert(0, {'role': 'system', 'content': get_rag_system_prompt(context_text)})
                     yield f"data: {json.dumps({'thinking': 'Context found — generating answer...'})}\n\n"
@@ -251,61 +220,41 @@ async def chat_api(request):
                         metrics = {
                             'total_duration': round(chunk.get('total_duration', 0) / 1e9, 2),
                             'eval_count': chunk.get('eval_count', 0),
-                            'tokens_per_sec': round(
-                                chunk.get('eval_count', 0) /
-                                max(chunk.get('eval_duration', 1) / 1e9, 0.001), 1
-                            ),
+                            'tokens_per_sec': round(chunk.get('eval_count', 0) / max(chunk.get('eval_duration', 1) / 1e9, 0.001), 1),
                             'cached': False,
                         }
-                        # Store in Redis for 1 hour
                         if accumulated:
                             cache.set(cache_key, {'content': accumulated, 'metrics': metrics}, timeout=3600)
                         yield f"data: {json.dumps({'done': True, 'metrics': metrics})}\n\n"
-
             except Exception as exc:
-                import traceback
-                error_msg = f"Stream Error: {type(exc).__name__}: {exc}"
-                logger.error(error_msg)
-                yield f"data: {json.dumps({'error': error_msg})}\n\n"
+                logger.error(f"Stream Error: {exc}")
+                yield f"data: {json.dumps({'error': str(exc)})}\n\n"
 
         response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
         response['X-Accel-Buffering'] = 'no'
         response['Cache-Control'] = 'no-cache, no-transform'
         response['Content-Encoding'] = 'identity'
         return response
-
     except Exception as exc:
-        import traceback
-        error_msg = f"{type(exc).__name__}: {exc}"
-        logger.exception('chat_api error: %s', error_msg)
-        return HttpResponse(
-            json.dumps({'error': error_msg, 'traceback': traceback.format_exc()}),
-            status=500, content_type='application/json',
-        )
-
+        logger.exception('chat_api error: %s', exc)
+        return HttpResponse(json.dumps({'error': str(exc)}), status=500, content_type='application/json')
 
 def privacy(request):
     return render(request, 'privacy.html')
 
-
 def about(request):
     return render(request, 'about.html')
-
 
 def terms(request):
     return render(request, 'terms.html')
 
-
 def games(request):
     return render(request, 'games.html')
-
-
-from .redis_vectors import search_similar_async, get_cached_embedding_async, cache_embedding_async
 
 async def search_live(request):
     """
     HTMX live search endpoint.
-    Integrated hybrid search: Keyword first, Neural fallback.
+    Ultra-clean Hybrid Search: Ranked Keywords -> Neural Fallback.
     """
     query = request.GET.get('q', '').strip()
     if not query or len(query) < 2:
@@ -313,16 +262,25 @@ async def search_live(request):
 
     from asgiref.sync import sync_to_async
 
-    # 1. Try Keyword Search (Classic)
+    # 1. Advanced Keyword Search (Ranked)
     @sync_to_async
-    def get_keyword_results(q):
-        return list(Post.published.filter(title__icontains=q).select_related('author')[:5])
+    def get_ranked_results(q):
+        search_vector = SearchVector('title', weight='A') + SearchVector('tags__name', weight='B')
+        search_query = SearchQuery(q)
+        return list(
+            Post.published.annotate(rank=SearchRank(search_vector, search_query))
+            .filter(rank__gte=0.03)
+            .select_related('author')
+            .prefetch_related('tags')
+            .order_by('-rank')[:5]
+        )
     
-    results = await get_keyword_results(query)
+    results = await get_ranked_results(query)
     search_type = 'classic'
 
-    # 2. Try Neural Search (Fallback) if keyword finds nothing
-    if not results:
+    # 2. Neural Fallback (if classic finds nothing or very little)
+    # We trigger neural if classic results are < 2 to ensure high-quality suggestions
+    if len(results) < 2:
         try:
             client = get_ai_client()
             embedding = await get_cached_embedding_async(query)
@@ -331,7 +289,7 @@ async def search_live(request):
                 embedding = emb_resp['embedding']
                 await cache_embedding_async(query, embedding)
             
-            vector_results = await search_similar_async(embedding, top_k=5, max_distance=0.6)
+            vector_results = await search_similar_async(embedding, top_k=5, max_distance=0.5)
             if vector_results:
                 post_ids = [r['post_id'] for r in vector_results]
                 
@@ -339,17 +297,26 @@ async def search_live(request):
                 def get_posts(ids):
                     order = {id: i for i, id in enumerate(ids)}
                     qs = list(Post.published.filter(id__in=ids).select_related('author'))
-                    qs.sort(key=lambda p: order.get(p.id, 999))
+                    # Merge results if any classic existed, otherwise just neural
                     return qs
                 
-                results = await get_posts(post_ids)
-                if results:
+                neural_results = await get_posts(post_ids)
+                
+                # Deduplicate and prioritize classic results
+                existing_ids = {p.id for p in results}
+                for p in neural_results:
+                    if p.id not in existing_ids:
+                        results.append(p)
+                        if len(results) >= 5: break
+                
+                if any(p for p in results if p.id not in existing_ids):
                     search_type = 'neural'
+                    
         except Exception as e:
-            logger.warning(f"Live Neural Search fallback failed: {e}")
+            logger.warning(f"Live Neural Search failed: {e}")
 
     return render(request, 'blog/partials/search_results.html', {
-        'results': results,
+        'results': results[:5],
         'query': query,
         'search_type': search_type
     })

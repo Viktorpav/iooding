@@ -18,9 +18,17 @@
                             </svg>
                         </div>
                     {% endif %}
-                    <div class="result-info">
-                        <div class="result-title fw-bold text-truncate" style="max-width: 300px;">{{ post.title }}</div>
-                        <div class="result-meta small opacity-50">{{ post.publish|date:"M d, Y" }} • by {{ post.author.username }}</div>
+                    <div class="result-info flex-grow-1 overflow-hidden">
+                        <div class="result-title fw-bold text-truncate">{{ post.title }}</div>
+                        <div class="result-meta d-flex align-items-center gap-2 small opacity-50">
+                            <span>{{ post.publish|date:"M d, Y" }}</span>
+                            <span class="opacity-25">•</span>
+                            <div class="d-flex gap-1 overflow-hidden">
+                                {% for tag in post.tags.all|slice:":2" %}
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary" style="font-size: 0.65rem;">{{ tag.name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                 </a>
             {% endfor %}
