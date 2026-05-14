@@ -37,7 +37,6 @@ urlpatterns = [
         path('', views.health_check, name='health_check'),
     ])),
     path('', include('blog.urls', namespace='blog')),
-    path("ckeditor5/", include('django_ckeditor_5.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps},name='django.contrib.sitemaps.views.sitemap'),
     
     # Explicitly serve media files (user uploads) from the PersistentVolume in production

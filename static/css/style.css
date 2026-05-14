@@ -1264,16 +1264,16 @@ body.ai-active {
     transform: translateX(4px);
 }
 
-/* --- Article & CKEditor Content Styling --- */
-.article-body, .ck-content {
+/* --- Article Content Styling (Markdown) --- */
+.article-body {
     line-height: 1.8;
 }
 
-.article-body p, .ck-content p {
+.article-body p {
     margin-bottom: 1.5rem;
 }
 
-.article-body code, .ck-content code {
+.article-body code {
     background: rgba(120, 120, 120, 0.1);
     color: #e83e8c;
     padding: 0.2em 0.4em;
@@ -1282,7 +1282,7 @@ body.ai-active {
     font-size: 0.9em;
 }
 
-.article-body pre, .ck-content pre {
+.article-body pre {
     background: #282c34 !important;
     padding: 1.25rem;
     border-radius: 8px;
@@ -1292,7 +1292,7 @@ body.ai-active {
 }
 
 /* Blockquotes */
-.article-body blockquote, .ck-content blockquote {
+.article-body blockquote {
     border-left: 4px solid var(--primary);
     padding: 1rem 1.5rem;
     background: rgba(var(--primary-rgb), 0.05);
@@ -1302,22 +1302,22 @@ body.ai-active {
     color: var(--text) !important;
 }
 
-.article-body blockquote *, .ck-content blockquote * {
+.article-body blockquote * {
     color: var(--text) !important;
     background-color: transparent !important;
 }
 
-.article-body blockquote p:last-child, .ck-content blockquote p:last-child {
+.article-body blockquote p:last-child {
     margin-bottom: 0;
 }
 
 /* Tables */
-.article-body figure.table, .ck-content figure.table {
+.article-body figure.table {
     margin: 2rem 0;
     overflow-x: auto;
 }
 
-.article-body table, .ck-content table {
+.article-body table {
     width: 100%;
     border-collapse: collapse;
     background: var(--surface) !important;
@@ -1326,8 +1326,8 @@ body.ai-active {
     color: var(--text) !important;
 }
 
-.article-body th, .ck-content th,
-.article-body td, .ck-content td {
+.article-body th,
+.article-body td {
     padding: 1rem;
     border: 1px solid var(--border) !important;
     text-align: left;
@@ -1335,18 +1335,18 @@ body.ai-active {
     background: transparent !important;
 }
 
-.article-body td *, .ck-content td *,
-.article-body th *, .ck-content th * {
+.article-body td *,
+.article-body th * {
     color: var(--text) !important;
     background-color: transparent !important;
 }
 
-.article-body th, .ck-content th {
+.article-body th {
     background: rgba(var(--text-rgb), 0.05) !important;
     font-weight: 600;
 }
 
-.article-body pre code, .ck-content pre code {
+.article-body pre code {
     background: transparent;
     color: inherit;
     padding: 0;
@@ -1354,14 +1354,14 @@ body.ai-active {
 }
 
 @media (prefers-color-scheme: dark) {
-    .article-body pre, .ck-content pre {
+    .article-body pre {
         background: #1e1e1e !important;
     }
-    .article-body code, .ck-content code {
+    .article-body code {
         color: #ff87b3;
         background: rgba(255, 255, 255, 0.1);
     }
-    .article-body pre code, .ck-content pre code {
+    .article-body pre code {
         background: transparent;
         color: inherit;
     }

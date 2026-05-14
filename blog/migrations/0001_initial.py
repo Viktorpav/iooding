@@ -2,7 +2,6 @@
 
 import django.db.models.deletion
 import django.utils.timezone
-import django_ckeditor_5.fields
 import taggit.managers
 from django.conf import settings
 from django.db import migrations, models
@@ -25,7 +24,7 @@ class Migration(migrations.Migration):
                 ('title', models.CharField(max_length=250)),
                 ('slug', models.SlugField(max_length=250, unique_for_date='publish')),
                 ('image', models.ImageField(blank=True, null=True, upload_to='featured_image/%Y/%m/%d/')),
-                ('body', django_ckeditor_5.fields.CKEditor5Field(verbose_name='Text')),
+                ('body', models.TextField(help_text='Markdown supported')),
                 ('publish', models.DateTimeField(default=django.utils.timezone.now)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('updated', models.DateTimeField(auto_now=True)),
