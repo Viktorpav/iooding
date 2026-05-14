@@ -80,8 +80,8 @@ def post_detail(request, post):
         ip = get_client_ip(request)
         cache_key = f"comment_rate:{ip}"
         if cache.get(cache_key):
-            return HttpResponse('Rate limit exceeded. Please wait 30s.', status=429)
-        cache.set(cache_key, True, timeout=30)
+            return HttpResponse('Rate limit exceeded. Please wait 10s.', status=429)
+        cache.set(cache_key, True, timeout=10)
 
         comment_form = CommentForm(data=request.POST)
         if comment_form.is_valid():
@@ -111,9 +111,9 @@ def reply_page(request):
     ip = get_client_ip(request)
     cache_key = f"comment_rate:{ip}"
     if cache.get(cache_key):
-        return HttpResponse('Rate limit exceeded. Please wait 30s.', status=429)
+        return HttpResponse('Rate limit exceeded. Please wait 10s.', status=429)
     
-    cache.set(cache_key, True, timeout=30)
+    cache.set(cache_key, True, timeout=10)
 
     form = CommentForm(request.POST)
     if form.is_valid():
@@ -121,11 +121,18 @@ def reply_page(request):
         parent_id = request.POST.get('parent')
         post_url = request.POST.get('post_url', '/')
 
+        if not post_id:
+            logger.warning("Reply attempt without post_id")
+            return redirect('/')
+
         reply = form.save(commit=False)
-        reply.post_id = post_id
-        reply.parent_id = parent_id
+        reply.post_id = int(post_id)
+        if parent_id:
+            reply.parent_id = int(parent_id)
         reply.save()
         return redirect(post_url + '#' + str(reply.id))
+    
+    logger.warning(f"Comment form invalid: {form.errors}")
     return redirect('/')
 
 def health_check(request):

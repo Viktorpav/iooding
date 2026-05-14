@@ -519,10 +519,18 @@ textarea {
 }
 
 input:focus,
-textarea:focus {
+textarea:focus,
+select:focus {
     background: var(--bg) !important;
     border-color: var(--primary) !important;
     box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+    outline: none !important;
+}
+
+input:invalid,
+textarea:invalid {
+    box-shadow: none !important;
+    border-color: var(--border) !important;
 }
 
 label {

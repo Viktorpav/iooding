@@ -32,7 +32,7 @@
 
         {% for comment in comment.get_comments %}
         <div class="mt-3">
-            {% include 'comment.html' with comment=comment %}
+            {% include 'comment.html' with comment=comment post=post comment_form=comment_form %}
         </div>
         {% endfor %}
     </div>
