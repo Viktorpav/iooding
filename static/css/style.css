@@ -527,10 +527,6 @@ select:focus {
     outline: none !important;
 }
 
-input:invalid,
-textarea:invalid {
-    box-shadow: none;
-}
 
 label {
     display: block;
