@@ -26,7 +26,6 @@ data:
   DEBUG: "False"
   CSRF_TRUSTED_ORIGINS: "https://iooding.local"
   # MLX Native Server with Speculative Decoding (Port 8080)
-  LM_STUDIO_HOST: "http://192.168.0.16:1234/v1"
   AI_HOST: "http://192.168.0.16:1234/v1"
   AI_COMPLETION_MODEL: "gemma-4-e2b-it-optiq"
   AI_EMBEDDING_MODEL: "nomic-embed-text"

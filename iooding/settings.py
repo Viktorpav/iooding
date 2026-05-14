@@ -28,11 +28,7 @@ AI_API_KEY = env('AI_API_KEY', default=env('LM_STUDIO_API_KEY', default='mlx'))
 AI_COMPLETION_MODEL = env('AI_COMPLETION_MODEL', default=env('LM_STUDIO_COMPLETION_MODEL', default='gemma-4-e2b-it-optiq'))
 AI_EMBEDDING_MODEL = env('AI_EMBEDDING_MODEL', default=env('LM_STUDIO_EMBEDDING_MODEL', default='nomic-embed-text'))
 
-# Backward Compatibility
-LM_STUDIO_HOST = AI_HOST
-LM_STUDIO_API_KEY = AI_API_KEY
-LM_STUDIO_COMPLETION_MODEL = AI_COMPLETION_MODEL
-LM_STUDIO_EMBEDDING_MODEL = AI_EMBEDDING_MODEL
+
 
 # ─── Applications ─────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -43,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.sitemaps',
+    'django.contrib.messages',
     'blog',
     'taggit',
 ]
@@ -56,6 +53,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -71,6 +69,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
         },
     },
@@ -171,32 +170,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'json': {
-            '()': 'pythonjsonlogger.json.JsonFormatter',
-            'format': '%(levelname)s %(asctime)s %(module)s %(message)s',
-        },
-    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'json',
         },
     },
     'root': {
         'handlers': ['console'],
-        'level': 'WARNING',
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'django.db.backends': {
-            'handlers': ['console'],
-            'level': 'WARNING',   # suppress SQL noise in production
-            'propagate': False,
-        },
+        'level': 'INFO',
     },
 }

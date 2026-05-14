@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from taggit.managers import TaggableManager
 import re
+import markdown
 
 
 class PublishedManager(models.Manager):
@@ -47,7 +48,6 @@ class Post(models.Model):
     @property
     def body_html(self):
         """Renders body markdown to HTML with code highlighting support."""
-        import markdown
         return markdown.markdown(self.body, extensions=['extra', 'codehilite', 'toc'])
 
     @property
