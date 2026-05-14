@@ -21,7 +21,7 @@ metadata:
   namespace: iooding
 data:
   DB_HOST: postgres
-  REDIS_URL: redis://redis:6379/1
+  REDIS_URL: redis://redis:6379/0
   ALLOWED_HOSTS: "*"
   DEBUG: "False"
   CSRF_TRUSTED_ORIGINS: "https://iooding.local"

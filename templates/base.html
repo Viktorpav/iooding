@@ -89,21 +89,8 @@
             hx-get="{% url 'blog:search_live' %}"
             hx-trigger="keyup changed delay:300ms, search"
             hx-target="#search-results"
-            hx-include="#search-type-input"
             autocomplete="off">
           
-          <div class="neural-toggle-wrapper ms-2" title="Toggle Neural AI Search">
-            <input type="checkbox" id="neural-search-toggle" onchange="document.getElementById('search-type-input').value = this.checked ? 'neural' : 'classic'; document.getElementById('nav-search-field').dispatchEvent(new Event('search'))">
-            <label for="neural-search-toggle" class="neural-label">
-                <span class="neural-icon">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <path d="M12 2v8m0 4v8M2 12h8m4 0h8M5.6 5.6l5.7 5.7m1.4 1.4l5.7 5.7M5.6 18.4l5.7-5.7m1.4-1.4l5.7-5.7"/>
-                    </svg>
-                </span>
-                <span class="neural-text">Neural</span>
-            </label>
-            <input type="hidden" name="type" id="search-type-input" value="classic">
-          </div>
         </form>
         <div id="search-results"></div>
       </div>
