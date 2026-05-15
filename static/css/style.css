@@ -518,13 +518,13 @@ textarea {
     color: var(--text) !important;
 }
 
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="url"]:focus,
-input[type="password"]:focus,
-input[type="search"]:focus,
-textarea:focus,
-select:focus {
+html body input[type="text"]:focus,
+html body input[type="email"]:focus,
+html body input[type="url"]:focus,
+html body input[type="password"]:focus,
+html body input[type="search"]:focus,
+html body textarea:focus,
+html body select:focus {
     background: var(--bg) !important;
     border-color: rgba(var(--primary-rgb), 0.5) !important;
     box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1) !important;
