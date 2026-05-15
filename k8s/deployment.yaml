@@ -57,7 +57,7 @@ spec:
       securityContext: { runAsNonRoot: true, runAsUser: 100, fsGroup: 100 }
       containers:
         - name: migrate
-          image: viktor2003/iooding:v110
+          image: viktor2003/iooding:v111
           command: ["sh", "-c", "/app/docker-entrypoint.sh deploy"]
           envFrom:
             - configMapRef:
@@ -124,7 +124,7 @@ spec:
           command: ["sh", "-c", "until nc -z postgres 5432; do sleep 1; done"]
       containers:
         - name: iooding
-          image: viktor2003/iooding:v110
+          image: viktor2003/iooding:v111
           ports: [{ containerPort: 8000 }]
           envFrom:
             - configMapRef:
