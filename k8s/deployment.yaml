@@ -74,8 +74,8 @@ spec:
             - name: LM_STUDIO_API_KEY
               valueFrom: { secretKeyRef: { name: iooding-secrets, key: lm_studio_api_key } }
           resources:
-            requests: { cpu: 50m, memory: 256Mi }
-            limits: { cpu: 500m, memory: 512Mi }
+            requests: { cpu: 25m, memory: 128Mi }
+            limits: { cpu: 300m, memory: 256Mi }
 
 ---
 apiVersion: v1
@@ -95,6 +95,7 @@ metadata:
   namespace: iooding
 spec:
   replicas: 1
+  revisionHistoryLimit: 2
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: iooding-blog }
@@ -138,11 +139,11 @@ spec:
               valueFrom: { secretKeyRef: { name: iooding-secrets, key: lm_studio_api_key } }
           resources:
             requests:
-              cpu: 50m
-              memory: 192Mi
+              cpu: 25m
+              memory: 128Mi
             limits:
-              cpu: 500m
-              memory: 384Mi
+              cpu: 400m
+              memory: 256Mi
           volumeMounts:
             - { name: media-storage, mountPath: /app/media }
             - { name: tmp-volume, mountPath: /tmp }
