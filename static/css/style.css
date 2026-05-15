@@ -1237,7 +1237,27 @@ body.ai-active {
 }
 
 .article-body p {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.8rem;
+    line-height: 1.8;
+}
+
+.article-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    display: block;
+    margin: 2.5rem auto;
+    border: 1px solid var(--border);
+}
+
+.article-body img + em {
+    display: block;
+    text-align: center;
+    font-size: 0.9rem;
+    opacity: 0.6;
+    margin-top: -2rem;
+    margin-bottom: 2.5rem;
 }
 
 .article-body code {
