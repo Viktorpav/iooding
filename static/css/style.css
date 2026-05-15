@@ -494,9 +494,8 @@ main.container {
 }
 
 /* --- Global Premium Forms --- */
-input[type="text"]:not(.search-input-premium input),
-input[type="email"],
-input[type="search"]:not(.search-input-premium input),
+/* Base Input Styling - Broad Architectual Approach */
+input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="range"]):not([type="file"]):not(.search-input-premium input),
 textarea,
 select {
     width: 100%;
@@ -515,14 +514,10 @@ select {
 textarea {
     min-height: 160px;
     line-height: 1.6;
-    color: var(--text) !important;
 }
 
-html body input[type="text"]:focus,
-html body input[type="email"]:focus,
-html body input[type="url"]:focus,
-html body input[type="password"]:focus,
-html body input[type="search"]:focus,
+/* Unified Focus State - High Specificity */
+html body input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="range"]):not([type="file"]):focus,
 html body textarea:focus,
 html body select:focus {
     background: var(--bg) !important;
