@@ -89,11 +89,7 @@
             hx-get="{% url 'blog:search_live' %}"
             hx-trigger="keyup changed delay:200ms, search"
             hx-target="#search-results"
-            hx-indicator="#search-loading"
             autocomplete="off">
-          <div id="search-loading" class="htmx-indicator position-absolute end-0 me-3">
-            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-          </div>
           
         </form>
         <div id="search-results"></div>

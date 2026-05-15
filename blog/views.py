@@ -269,20 +269,21 @@ async def search_live(request):
 
     from asgiref.sync import sync_to_async
 
-    # 1. Advanced Keyword Search (Ranked)
+    # 1. Simple but Effective Partial Match Search
     @sync_to_async
-    def get_ranked_results(q):
-        search_vector = SearchVector('title', weight='A') + SearchVector('tags__name', weight='B')
-        search_query = SearchQuery(q)
+    def get_simple_results(q):
+        from django.db.models import Q
         return list(
-            Post.published.annotate(rank=SearchRank(search_vector, search_query))
-            .filter(rank__gte=0.03)
+            Post.published.filter(
+                Q(title__icontains=q) | 
+                Q(tags__name__icontains=q)
+            )
             .select_related('author')
             .prefetch_related('tags')
-            .order_by('-rank')[:5]
+            .distinct()[:5]
         )
     
-    results = await get_ranked_results(query)
+    results = await get_simple_results(query)
     search_type = 'classic'
 
     # 2. Neural Fallback (if classic finds nothing or very little)
