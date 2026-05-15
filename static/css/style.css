@@ -520,13 +520,14 @@ textarea {
 
 input[type="text"]:focus,
 input[type="email"]:focus,
-input[type="search"]:focus,
+input[type="url"]:focus,
 input[type="password"]:focus,
+input[type="search"]:focus,
 textarea:focus,
 select:focus {
     background: var(--bg) !important;
-    border-color: var(--primary) !important;
-    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1) !important;
+    border-color: rgba(var(--primary-rgb), 0.5) !important;
+    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1) !important;
     outline: none !important;
 }
 
