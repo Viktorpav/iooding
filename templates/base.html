@@ -87,9 +87,13 @@
           <input id="nav-search-field" type="search" value="{{ request.GET.q }}" name="q"
             placeholder="Search (Press '/')"
             hx-get="{% url 'blog:search_live' %}"
-            hx-trigger="keyup changed delay:300ms, search"
+            hx-trigger="keyup changed delay:200ms, search"
             hx-target="#search-results"
+            hx-indicator="#search-loading"
             autocomplete="off">
+          <div id="search-loading" class="htmx-indicator position-absolute end-0 me-3">
+            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+          </div>
           
         </form>
         <div id="search-results"></div>
@@ -197,6 +201,35 @@
   <link rel="stylesheet" href="{% static 'vendor/css/atom-one-dark.min.css' %}">
   <script src="{% static 'vendor/js/highlight.min.js' %}"></script>
   <script>hljs.highlightAll();</script>
+  <script>
+    // Keyboard navigation for search results
+    const searchField = document.getElementById('nav-search-field');
+    const searchResults = document.getElementById('search-results');
+
+    document.addEventListener('keydown', function(e) {
+      const items = searchResults.querySelectorAll('.result-item');
+      if (items.length === 0) return;
+
+      let current = Array.from(items).indexOf(document.activeElement);
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (current < items.length - 1) items[current + 1].focus();
+        else if (current === -1) items[0].focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (current > 0) items[current - 1].focus();
+        else if (current === 0) searchField.focus();
+      }
+    });
+
+    // Hide search results when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.header-center')) {
+        searchResults.innerHTML = '';
+      }
+    });
+  </script>
 </body>
 
 </html>
