@@ -269,21 +269,26 @@ async def search_live(request):
 
     from asgiref.sync import sync_to_async
 
-    # 1. Simple but Effective Partial Match Search
+    # 1. Advanced Trigram Similarity Search (Fast & Typo-Tolerant)
     @sync_to_async
-    def get_simple_results(q):
+    def get_advanced_results(q):
+        from django.contrib.postgres.search import TrigramSimilarity
         from django.db.models import Q
+        
+        # We use a combination of icontains (for exact partials) 
+        # and TrigramSimilarity (for typos/rankings)
         return list(
-            Post.published.filter(
-                Q(title__icontains=q) | 
-                Q(tags__name__icontains=q)
+            Post.published.annotate(
+                similarity=TrigramSimilarity('title', q)
             )
+            .filter(Q(similarity__gt=0.1) | Q(title__icontains=q) | Q(tags__name__icontains=q))
             .select_related('author')
             .prefetch_related('tags')
+            .order_by('-similarity', 'title')
             .distinct()[:5]
         )
     
-    results = await get_simple_results(query)
+    results = await get_advanced_results(query)
     search_type = 'classic'
 
     # 2. Neural Fallback (if classic finds nothing or very little)
