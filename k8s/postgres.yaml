@@ -30,6 +30,7 @@ spec:
         longhorn.io/disable-replica-rebuild: "true"
     spec:
       # Fast pod deletion on node failure
+      priorityClassName: iooding-critical
       terminationGracePeriodSeconds: 10
       nodeSelector:
         infra.iooding.local/storage: "true"
