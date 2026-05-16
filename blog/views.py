@@ -3,14 +3,13 @@ import hashlib
 import logging
 
 from django.db import connections
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponse, StreamingHttpResponse
 from django.views.decorators.http import require_POST
 from django.core.cache import cache
-from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
-
+from django.contrib.postgres.search import TrigramSimilarity
 from taggit.models import Tag
 
 from .models import Post
@@ -41,11 +40,14 @@ def post_list(request, tag_slug=None):
 
     query = request.GET.get('q', '').strip()
     if query:
-        search_vector = SearchVector('title', weight='A') + SearchVector('tags__name', weight='B')
-        search_query = SearchQuery(query)
+        # Use the same robust logic as search_live: Trigram + IContains
         posts = posts.annotate(
-            rank=SearchRank(search_vector, search_query)
-        ).filter(rank__gte=0.1).order_by('-rank').distinct()
+            similarity=TrigramSimilarity('title', query)
+        ).filter(
+            Q(similarity__gt=0.05) | 
+            Q(title__icontains=query) | 
+            Q(tags__name__icontains=query)
+        ).order_by('-similarity', '-publish').distinct()
 
     paginator = Paginator(posts, POSTS_PER_PAGE)
     page = request.GET.get('page')
