@@ -58,7 +58,7 @@ def post_list(request, tag_slug=None):
     except EmptyPage:
         posts = paginator.page(paginator.num_pages)
 
-    return render(request, 'post_list.html', {
+    return render(request, 'blog/post_list.html', {
         'posts': posts,
         'tag': tag,
         'query': query,
@@ -98,10 +98,10 @@ def post_detail(request, post):
         .filter(tags__in=post_tags_ids)
         .exclude(id=post.id)
         .annotate(same_tags=Count('tags'))
-        .order_by('-same_tags', '-publish')[:6]
+        .order_by('-same_tags', '-publish').distinct()[:6]
     )
 
-    return render(request, 'post_detail.html', {
+    return render(request, 'blog/post_detail.html', {
         'post': post,
         'comments': comments,
         'comment_form': comment_form,

@@ -93,7 +93,7 @@
     <p class="opacity-50">No comments yet. Be the first to comment!</p>
     {% else %}
     {% for comment in post.get_comments %}
-    {% include 'comment.html' with comment=comment %}
+    {% include 'blog/comment.html' with comment=comment %}
     {% endfor %}
     {% endif %}
 </div>

@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
 from taggit.managers import TaggableManager
+from django.contrib.postgres.indexes import GinIndex
 import re
 import markdown
 
@@ -37,6 +38,7 @@ class Post(models.Model):
         ordering = ('-publish',)
         indexes = [
             models.Index(fields=['status', 'publish']),
+            GinIndex(fields=['title'], name='title_trgm_idx', opclasses=['gin_trgm_ops']),
         ]
 
     def __str__(self):
