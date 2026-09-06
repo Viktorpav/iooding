@@ -98,7 +98,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': env('REDIS_URL', default='redis://redis:6379/1'),
+        'LOCATION': env('REDIS_URL', default='redis://redis:6379/0'),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'SOCKET_CONNECT_TIMEOUT': 5,
@@ -153,7 +153,6 @@ _production = not DEBUG
 SECURE_SSL_REDIRECT          = False  # Handled by Ingress-NGINX at the edge
 SESSION_COOKIE_SECURE        = _production
 CSRF_COOKIE_SECURE           = _production
-SECURE_BROWSER_XSS_FILTER    = True
 SECURE_CONTENT_TYPE_NOSNIFF  = True
 SECURE_HSTS_SECONDS          = 31_536_000 if _production else 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = _production
@@ -170,9 +169,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[%(asctime)s] [%(levelname)s] [%(name)s]: %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
     'root': {

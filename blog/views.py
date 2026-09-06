@@ -137,7 +137,12 @@ def reply_page(request):
     logger.warning(f"Comment form invalid: {form.errors}")
     return HttpResponse(f"Form is invalid: {form.errors}", status=400)
 
+def live_check(request):
+    """Liveness probe: verifies the ASGI/web worker process is alive and responding."""
+    return HttpResponse('ok', content_type='text/plain')
+
 def health_check(request):
+    """Readiness probe: verifies the database connection is operational."""
     try:
         with connections['default'].cursor() as cursor:
             cursor.execute("SELECT 1")

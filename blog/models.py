@@ -6,6 +6,7 @@ from taggit.managers import TaggableManager
 from django.contrib.postgres.indexes import GinIndex
 import re
 import markdown
+from functools import cached_property
 
 
 class PublishedManager(models.Manager):
@@ -47,7 +48,7 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse('blog:post_detail', args=[self.slug])
 
-    @property
+    @cached_property
     def body_html(self):
         """Renders body markdown to HTML with code highlighting support."""
         return markdown.markdown(self.body, extensions=['extra', 'codehilite', 'toc'])
