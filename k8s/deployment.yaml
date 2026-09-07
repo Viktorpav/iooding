@@ -148,11 +148,11 @@ spec:
             - { name: media-storage, mountPath: /app/media }
             - { name: tmp-volume, mountPath: /tmp }
           startupProbe:
-            httpGet: { path: /health/live/, port: 8000 }
+            httpGet: { path: /health/, port: 8000 }
             failureThreshold: 30
             periodSeconds: 5
           livenessProbe:
-            httpGet: { path: /health/live/, port: 8000 }
+            httpGet: { path: /health/, port: 8000 }
             periodSeconds: 10
           readinessProbe:
             httpGet: { path: /health/, port: 8000 }
